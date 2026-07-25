@@ -2488,3 +2488,91 @@ to its committed form (verified by `diff` in the acceptance below). No API calls
 - **Bright line intact.** One file added; documentation only; no code, task, or result
   changed; no API calls; no key printed; `phase1_tasks/` byte-for-byte unchanged; staging is
   explicit below (this file + this log only).
+
+---
+
+## V2-P0.1 — Pre-flight certification + v2 skeleton
+
+**Step ID / date:** V2-P0.1 — 2026-07-26
+
+*(This begins Experiment 2, "the capability ladder," built beside the completed and
+immutable Experiment 1. V2 entries share this one append-only log; nothing under
+`phase1_tasks/` … `phase7_writeup/` is edited, moved, or renamed. V2 standing rules
+inherited verbatim: corpus, split, D18 bare-code presentation, prompts, step cap 8,
+temperature 0; dev set only through V2-P4; the 87 test tasks untouched until then; keys
+never printed or committed; budget cap $20.)*
+
+**What was built:** the empty v2 skeleton only — `v2_ladder/{adapter,runs/logs,
+runs/manifests,analysis,writeup}/`, each holding a `.gitkeep`. No code. This step certifies
+that the inherited v1 state is byte-for-byte what V2 will build on, and stands up the
+directory tree for V2-P1 onward.
+
+**Provenance:** hashes recomputed by the frozen v1 tools (`phase1_tasks/generator/
+freeze_hash.py` and `shasum`). Directories created this step; everything else is the
+unchanged v1 tree at commit `f1117c5` (tag `final-results`).
+
+**Evidence of correctness — certification (raw output, verbatim):**
+
+Task-set fingerprint (frozen tool) — MATCHES the v1 pin `dfc14c26…2f2017`:
+```
+tracked files under phase1_tasks/tasks: 388
+task directories: 97  (files/dir: expected 4)
+counts OK: 97 tasks x 4 files = 388
+FREEZE_HASH sha256 dfc14c26ec267b03c2789752cf7e63c34a06fd3b94dc6cebe14f9f70b62f2017
+hash-exit=0
+```
+Split sha256 — MATCHES the v1 pin `6f69be75…9e75015`:
+```
+6f69be75d4c1b1ea0348e7b0217ac83e7cfc8c19732a6d6d71e2ec5be9e75015  phase1_tasks/validation/split.json
+```
+Tags present (`phase1-freeze`, `experiment-complete` both exist; `final-results` also
+exists ⇒ P7.2 closure evidence delivered below):
+```
+experiment-complete
+final-results
+phase1-freeze
+```
+
+**P7.2 closure evidence (`final-results` exists, so item 6 is delivered).**
+`FINAL_RESULTS.md` size + hash:
+```
+     303 phase7_writeup/FINAL_RESULTS.md
+59034896275c65b2277c2fa539724fc4bf480a932252281bb04586b9e90bb8f0  phase7_writeup/FINAL_RESULTS.md
+```
+Key-number grep loop (all present ≥1×):
+```
+90.8              2
++9.2              5
+0.0078125         2
+6f69be75          1
+dfc14c26          1
+task_009          4
+6 forced repairs  2
+```
+`git show final-results --format=%s --stat | head -6`:
+```
+P7.2: FINAL_RESULTS.md — verbatim compilation
+
+ EXPERIMENT_LOG.md               |  68 +++++++++
+ phase7_writeup/FINAL_RESULTS.md | 303 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 371 insertions(+)
+```
+
+**Worked example — the certification gate itself.** `freeze_hash.py` walks the 388
+git-tracked files under `phase1_tasks/tasks` (97 dirs × 4 files), hashes them in sorted
+order, and prints `dfc14c26…2f2017`; `shasum` independently prints `6f69be75…9e75015` for
+`split.json`. Both were checked character-for-character against the v1 pins before any
+directory was created or anything staged — a mismatch on either would have been a full stop
+with no changes made. Both matched, so the skeleton was created and this entry appended.
+
+**Decisions / surprises:**
+- **Certification is a hard gate, run first.** Hashes were verified before `mkdir`; nothing
+  would have been created or committed on a mismatch.
+- **`final-results` present.** All three v1 tags exist, so the optional P7.2 closure evidence
+  was owed and is included above; `FINAL_RESULTS.md` is intact (303 lines, every key figure
+  present).
+- **Skeleton only, no code.** Five leaf dirs, five `.gitkeep`s; `runs/` carries no keep of
+  its own since it will hold `logs/` and `manifests/`. Code lands in V2-P1+.
+- **Bright line intact.** No frozen v1 file was read for solving, edited, moved, or renamed;
+  `phase1_tasks/` byte-for-byte unchanged (hash re-verified above); no API calls; no key
+  printed; staging for this commit is explicit (the five new `.gitkeep`s + this log only).
