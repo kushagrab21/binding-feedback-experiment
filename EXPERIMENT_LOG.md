@@ -2882,3 +2882,77 @@ complete and certified.
   — under the $5 expectation, far under the $10 stop-gate and the $20 cap.
 - **Bright line intact.** No frozen v1 file edited; `phase1_tasks/` untouched; the tag precedes
   every episode (proof in the acceptance paste); keys never printed; staging explicit below.
+
+---
+
+## V2-P5.1 — Registered analysis
+
+**Step ID / date:** V2-P5.1 — 2026-07-26
+
+*(Read-only analysis over committed artifacts: the 14 full-run cell logs, the 14 cell
+manifests, the frozen task `meta.json`s, and the tagged `PREREGISTRATION.md`. No API calls;
+nothing outside `v2_ladder/analysis/` written; v1 and `phase1_tasks/` immutable. The §(d)
+tests run exactly as registered — no post-hoc substitutions.)*
+
+**What was built:** `v2_ladder/analysis/analyze_v2.py` — one deterministic command →
+`results.md` + `results.json` + `curve.txt`. Two runs are byte-identical (no timestamp in
+outputs; the run date lives here).
+
+**Determinism (raw):**
+```
+run1 results.md sha256 = 306d83f0c79862b82475a0ddc49f7cb3405e369f6f163854ee6a70d0eef1dc5e
+run2 results.md sha256 = 306d83f0c79862b82475a0ddc49f7cb3405e369f6f163854ee6a70d0eef1dc5e   MATCH
+run1/run2 results.json + curve.txt also MATCH
+```
+
+**The Δ ladder + exact McNemar (raw):**
+```
+rank model                  adv   bind   Δpp     b   c   McNemar exact p
+1    gpt-4.1 (strong)       87    87    +0.0    0   0   1
+2    gemini-2.5-flash-lite  79    87    +9.2    0   8   0.0078125
+3    gpt-4o-mini (weak)     79    87    +9.2    0   8   0.0078125
+4    claude-3-haiku         72    82   +11.5    2  12   0.0129395
+5    qwen2.5-7b             71    84   +14.9    0  13   0.000244141
+6    llama-3.1-8b           80    82    +2.3    3   5   0.726562
+7    llama-3.2-3b (weakest) 66    63    -3.4    9   6   0.607239
+(rank 1 = strongest, per the §(d) convention)
+```
+
+**Registered Spearman (prediction ii):** rank vector (strong→weak) `[1..7]`, Δ vector
+`[0,8,8,10,13,2,-3]` → **rho = −0.1261; exact one-sided 7!-permutation p = 3132/5040 =
+0.6214** (expected *positive*; observed slightly negative — the weak-end reversal breaks
+monotonicity).
+
+**The five predictions, scored against verbatim §(c):**
+- **(i) DISCONFIRMED** — Δ<0 at llama-3.2-3b (−3.4pp); binding does not "never hurt."
+- **(ii) DISCONFIRMED** — Spearman rho=−0.126, perm p=0.62; no significant positive Δ-vs-rank.
+- **(iii) DISCONFIRMED** — advisory false-DONE vs rank non-monotone (0→8→8→15→16→4→1 across
+  ranks 1→7): rises through the capable half, collapses at the weakest two (they step_cap
+  instead of false-declaring). Spearman(rank,false-DONE)=0.090.
+- **(iv) CONFIRMED** — sole at-ceiling rung gpt-4.1 (87/87 advisory): binding $0.10367 ≤
+  advisory $0.15728.
+- **(v) EXPLORATORY — OBSERVED** — llama-3.2-3b: Δ<0, 30 advisory step_caps, and 9 tasks
+  advisory solved that binding *lost* (all escalated/step_cap). Scored exploratory, as
+  registered.
+
+**Runner re-derivations (independent, raw):**
+```
+(a) rung1 advisory step_cap (raw logs)     = 30   MATCH (expected 30)
+(b) rung3 discordants (two cell logs)      = b 0, c 13   (matches analyzer)
+(c) rung7 cost (manifests): binding $0.10367 ≤ advisory $0.15728  (prediction iv key cell)
+```
+
+**Headline reading.** The confirmatory predictions (i) and (ii) are **disconfirmed**, and
+that is the finding, not a failure: binding help is a **capability window**, not monotone in
+weakness. It peaks in the middle (qwen2.5-7b +14.9pp, McNemar p=0.00024, 12 forced repairs)
+and fails at *both* ends — nothing for the at-ceiling gpt-4.1, and *negative* for the
+too-weak llama-3.2-3b. Both v1 anchors reproduce exactly (gpt-4o-mini +9.2, gpt-4.1 +0.0).
+
+**Decisions / surprises:**
+- **Registered tests run as written; the result is what it is.** The monotone prediction was
+  couriered as confirmatory; the data disconfirms it. Reporting rho=−0.126 straight (not
+  reaching for a one-tailed reframing or dropping the weak end) is the point of pre-registration.
+- **McNemar reuses v1's exact `math.comb` method verbatim**; the analyzer imports nothing from
+  v1 for *solving* — it only reads committed logs/metas.
+- **Bright line intact.** No API; nothing outside `v2_ladder/analysis/`; v1 untouched; staging
+  explicit below.

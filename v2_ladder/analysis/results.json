@@ -1,0 +1,1196 @@
+{
+  "bug_breakdown_c_discordants": {
+    "rung1_llama-3.2-3b": {
+      "input-mutation": 0,
+      "inverted-condition": 1,
+      "missing-edge-case": 0,
+      "off-by-one": 2,
+      "wrong-comparison": 2,
+      "wrong-operator": 1,
+      "wrong-return": 0,
+      "wrong-variable": 0
+    },
+    "rung2_llama-3.1-8b": {
+      "input-mutation": 0,
+      "inverted-condition": 0,
+      "missing-edge-case": 4,
+      "off-by-one": 0,
+      "wrong-comparison": 0,
+      "wrong-operator": 1,
+      "wrong-return": 0,
+      "wrong-variable": 0
+    },
+    "rung3_qwen2.5-7b": {
+      "input-mutation": 1,
+      "inverted-condition": 0,
+      "missing-edge-case": 8,
+      "off-by-one": 1,
+      "wrong-comparison": 2,
+      "wrong-operator": 0,
+      "wrong-return": 1,
+      "wrong-variable": 0
+    },
+    "rung4_claude-3-haiku": {
+      "input-mutation": 1,
+      "inverted-condition": 0,
+      "missing-edge-case": 6,
+      "off-by-one": 1,
+      "wrong-comparison": 1,
+      "wrong-operator": 1,
+      "wrong-return": 2,
+      "wrong-variable": 0
+    },
+    "rung5_gpt-4o-mini": {
+      "input-mutation": 0,
+      "inverted-condition": 0,
+      "missing-edge-case": 6,
+      "off-by-one": 0,
+      "wrong-comparison": 1,
+      "wrong-operator": 0,
+      "wrong-return": 1,
+      "wrong-variable": 0
+    },
+    "rung6_gemini-2.5-flash-lite": {
+      "input-mutation": 0,
+      "inverted-condition": 0,
+      "missing-edge-case": 4,
+      "off-by-one": 0,
+      "wrong-comparison": 2,
+      "wrong-operator": 0,
+      "wrong-return": 2,
+      "wrong-variable": 0
+    },
+    "rung7_gpt-4.1": {
+      "input-mutation": 0,
+      "inverted-condition": 0,
+      "missing-edge-case": 0,
+      "off-by-one": 0,
+      "wrong-comparison": 0,
+      "wrong-operator": 0,
+      "wrong-return": 0,
+      "wrong-variable": 0
+    }
+  },
+  "ceiling_cost": [
+    {
+      "adv_cost": 0.15728399999999998,
+      "bind_cost": 0.103674,
+      "bind_le_adv": true,
+      "model": "gpt-4.1-2025-04-14",
+      "slug": "rung7_gpt-4.1"
+    }
+  ],
+  "cells": {
+    "rung1_llama-3.2-3b__advisory": {
+      "cost_usd": 0.01497965,
+      "done_ignored": 0,
+      "escalated": 0,
+      "false_done": 1,
+      "mean_steps": 5.206896551724138,
+      "mode": "advisory",
+      "model": "meta-llama/llama-3.2-3b-instruct",
+      "model_resolved": "meta-llama/llama-3.2-3b-instruct",
+      "n": 87,
+      "n_solved": 66,
+      "provider": "Meta",
+      "rank_value": 7,
+      "resub_rejected": 0,
+      "rung": 1,
+      "slug": "rung1_llama-3.2-3b",
+      "step_cap": 30,
+      "tokens_in": 168616,
+      "tokens_out": 19845
+    },
+    "rung1_llama-3.2-3b__binding": {
+      "cost_usd": 0.00972697,
+      "done_ignored": 0,
+      "escalated": 10,
+      "false_done": null,
+      "mean_steps": 3.218390804597701,
+      "mode": "binding",
+      "model": "meta-llama/llama-3.2-3b-instruct",
+      "model_resolved": "meta-llama/llama-3.2-3b-instruct",
+      "n": 87,
+      "n_solved": 63,
+      "provider": "Meta",
+      "rank_value": 7,
+      "resub_rejected": 37,
+      "rung": 1,
+      "slug": "rung1_llama-3.2-3b",
+      "step_cap": 14,
+      "tokens_in": 94226,
+      "tokens_out": 15199
+    },
+    "rung2_llama-3.1-8b__advisory": {
+      "cost_usd": 0.0058152099999999995,
+      "done_ignored": 0,
+      "escalated": 0,
+      "false_done": 4,
+      "mean_steps": 2.471264367816092,
+      "mode": "advisory",
+      "model": "meta-llama/llama-3.1-8b-instruct",
+      "model_resolved": "meta-llama/llama-3.1-8b-instruct",
+      "n": 87,
+      "n_solved": 80,
+      "provider": "Meta",
+      "rank_value": 6,
+      "resub_rejected": 0,
+      "rung": 2,
+      "slug": "rung2_llama-3.1-8b",
+      "step_cap": 3,
+      "tokens_in": 85925,
+      "tokens_out": 18987
+    },
+    "rung2_llama-3.1-8b__binding": {
+      "cost_usd": 0.004140090000000001,
+      "done_ignored": 0,
+      "escalated": 2,
+      "false_done": null,
+      "mean_steps": 1.6091954022988506,
+      "mode": "binding",
+      "model": "meta-llama/llama-3.1-8b-instruct",
+      "model_resolved": "meta-llama/llama-3.1-8b-instruct",
+      "n": 87,
+      "n_solved": 82,
+      "provider": "Meta",
+      "rank_value": 6,
+      "resub_rejected": 13,
+      "rung": 2,
+      "slug": "rung2_llama-3.1-8b",
+      "step_cap": 3,
+      "tokens_in": 55989,
+      "tokens_out": 16758
+    },
+    "rung3_qwen2.5-7b__advisory": {
+      "cost_usd": 0.0014474400000000001,
+      "done_ignored": 0,
+      "escalated": 0,
+      "false_done": 16,
+      "mean_steps": 1.0459770114942528,
+      "mode": "advisory",
+      "model": "qwen/qwen-2.5-7b-instruct",
+      "model_resolved": "qwen/qwen-2.5-7b-instruct",
+      "n": 87,
+      "n_solved": 71,
+      "provider": "Alibaba/Qwen",
+      "rank_value": 5,
+      "resub_rejected": 0,
+      "rung": 3,
+      "slug": "rung3_qwen2.5-7b",
+      "step_cap": 0,
+      "tokens_in": 18341,
+      "tokens_out": 7138
+    },
+    "rung3_qwen2.5-7b__binding": {
+      "cost_usd": 0.00317718,
+      "done_ignored": 0,
+      "escalated": 3,
+      "false_done": null,
+      "mean_steps": 1.367816091954023,
+      "mode": "binding",
+      "model": "qwen/qwen-2.5-7b-instruct",
+      "model_resolved": "qwen/qwen-2.5-7b-instruct",
+      "n": 87,
+      "n_solved": 84,
+      "provider": "Alibaba/Qwen",
+      "rank_value": 5,
+      "resub_rejected": 7,
+      "rung": 3,
+      "slug": "rung3_qwen2.5-7b",
+      "step_cap": 0,
+      "tokens_in": 38742,
+      "tokens_out": 16275
+    },
+    "rung4_claude-3-haiku__advisory": {
+      "cost_usd": 0.01687025,
+      "done_ignored": 0,
+      "escalated": 0,
+      "false_done": 15,
+      "mean_steps": 1.0,
+      "mode": "advisory",
+      "model": "anthropic/claude-3-haiku",
+      "model_resolved": "anthropic/claude-3-haiku",
+      "n": 87,
+      "n_solved": 72,
+      "provider": "Anthropic",
+      "rank_value": 4,
+      "resub_rejected": 0,
+      "rung": 4,
+      "slug": "rung4_claude-3-haiku",
+      "step_cap": 0,
+      "tokens_in": 18636,
+      "tokens_out": 9769
+    },
+    "rung4_claude-3-haiku__binding": {
+      "cost_usd": 0.0397865,
+      "done_ignored": 0,
+      "escalated": 4,
+      "false_done": null,
+      "mean_steps": 1.4827586206896552,
+      "mode": "binding",
+      "model": "anthropic/claude-3-haiku",
+      "model_resolved": "anthropic/claude-3-haiku",
+      "n": 87,
+      "n_solved": 82,
+      "provider": "Anthropic",
+      "rank_value": 4,
+      "resub_rejected": 10,
+      "rung": 4,
+      "slug": "rung4_claude-3-haiku",
+      "step_cap": 1,
+      "tokens_in": 55726,
+      "tokens_out": 20684
+    },
+    "rung5_gpt-4o-mini__advisory": {
+      "cost_usd": 0.0076288499999999995,
+      "done_ignored": 0,
+      "escalated": 0,
+      "false_done": 8,
+      "mean_steps": 1.1839080459770115,
+      "mode": "advisory",
+      "model": "gpt-4o-mini-2024-07-18",
+      "model_resolved": "gpt-4o-mini-2024-07-18",
+      "n": 87,
+      "n_solved": 79,
+      "provider": "OpenAI",
+      "rank_value": 3,
+      "resub_rejected": 0,
+      "rung": 5,
+      "slug": "rung5_gpt-4o-mini",
+      "step_cap": 0,
+      "tokens_in": 21155,
+      "tokens_out": 7426
+    },
+    "rung5_gpt-4o-mini__binding": {
+      "cost_usd": 0.007810949999999999,
+      "done_ignored": 0,
+      "escalated": 0,
+      "false_done": null,
+      "mean_steps": 1.0689655172413792,
+      "mode": "binding",
+      "model": "gpt-4o-mini-2024-07-18",
+      "model_resolved": "gpt-4o-mini-2024-07-18",
+      "n": 87,
+      "n_solved": 87,
+      "provider": "OpenAI",
+      "rank_value": 3,
+      "resub_rejected": 0,
+      "rung": 5,
+      "slug": "rung5_gpt-4o-mini",
+      "step_cap": 0,
+      "tokens_in": 20069,
+      "tokens_out": 8001
+    },
+    "rung6_gemini-2.5-flash-lite__advisory": {
+      "cost_usd": 0.0738887,
+      "done_ignored": 0,
+      "escalated": 0,
+      "false_done": 8,
+      "mean_steps": 1.0229885057471264,
+      "mode": "advisory",
+      "model": "google/gemini-2.5-flash-lite",
+      "model_resolved": "google/gemini-2.5-flash-lite",
+      "n": 87,
+      "n_solved": 79,
+      "provider": "Google",
+      "rank_value": 2,
+      "resub_rejected": 0,
+      "rung": 6,
+      "slug": "rung6_gemini-2.5-flash-lite",
+      "step_cap": 0,
+      "tokens_in": 149115,
+      "tokens_out": 147443
+    },
+    "rung6_gemini-2.5-flash-lite__binding": {
+      "cost_usd": 0.0061275,
+      "done_ignored": 0,
+      "escalated": 0,
+      "false_done": null,
+      "mean_steps": 1.1149425287356323,
+      "mode": "binding",
+      "model": "google/gemini-2.5-flash-lite",
+      "model_resolved": "google/gemini-2.5-flash-lite",
+      "n": 87,
+      "n_solved": 87,
+      "provider": "Google",
+      "rank_value": 2,
+      "resub_rejected": 1,
+      "rung": 6,
+      "slug": "rung6_gemini-2.5-flash-lite",
+      "step_cap": 0,
+      "tokens_in": 22071,
+      "tokens_out": 9801
+    },
+    "rung7_gpt-4.1__advisory": {
+      "cost_usd": 0.15728399999999998,
+      "done_ignored": 0,
+      "escalated": 0,
+      "false_done": 0,
+      "mean_steps": 2.045977011494253,
+      "mode": "advisory",
+      "model": "gpt-4.1-2025-04-14",
+      "model_resolved": "gpt-4.1-2025-04-14",
+      "n": 87,
+      "n_solved": 87,
+      "provider": "OpenAI",
+      "rank_value": 1,
+      "resub_rejected": 0,
+      "rung": 7,
+      "slug": "rung7_gpt-4.1",
+      "step_cap": 0,
+      "tokens_in": 45714,
+      "tokens_out": 8232
+    },
+    "rung7_gpt-4.1__binding": {
+      "cost_usd": 0.103674,
+      "done_ignored": 0,
+      "escalated": 0,
+      "false_done": null,
+      "mean_steps": 1.0689655172413792,
+      "mode": "binding",
+      "model": "gpt-4.1-2025-04-14",
+      "model_resolved": "gpt-4.1-2025-04-14",
+      "n": 87,
+      "n_solved": 87,
+      "provider": "OpenAI",
+      "rank_value": 1,
+      "resub_rejected": 0,
+      "rung": 7,
+      "slug": "rung7_gpt-4.1",
+      "step_cap": 0,
+      "tokens_in": 19961,
+      "tokens_out": 7969
+    }
+  },
+  "false_done_vs_rank": {
+    "by_rank_value": [
+      [
+        1,
+        0
+      ],
+      [
+        2,
+        8
+      ],
+      [
+        3,
+        8
+      ],
+      [
+        4,
+        15
+      ],
+      [
+        5,
+        16
+      ],
+      [
+        6,
+        4
+      ],
+      [
+        7,
+        1
+      ]
+    ],
+    "rho": 0.0900937462695559
+  },
+  "header": {
+    "config": {
+      "show_description": false,
+      "step_cap": 8,
+      "temperature": 0
+    },
+    "convention": "capability rank 1 = strongest; prediction (ii) one-sided Spearman, expected POSITIVE correlation of \u0394 with numeric rank value.",
+    "freeze_hash": "dfc14c26ec267b03c2789752cf7e63c34a06fd3b94dc6cebe14f9f70b62f2017",
+    "model_snapshots": {
+      "rung1_llama-3.2-3b": "meta-llama/llama-3.2-3b-instruct",
+      "rung2_llama-3.1-8b": "meta-llama/llama-3.1-8b-instruct",
+      "rung3_qwen2.5-7b": "qwen/qwen-2.5-7b-instruct",
+      "rung4_claude-3-haiku": "anthropic/claude-3-haiku",
+      "rung5_gpt-4o-mini": "gpt-4o-mini-2024-07-18",
+      "rung6_gemini-2.5-flash-lite": "google/gemini-2.5-flash-lite",
+      "rung7_gpt-4.1": "gpt-4.1-2025-04-14"
+    },
+    "n_cells": 14,
+    "n_episodes": 1218,
+    "n_rungs": 7,
+    "n_test_tasks": 87,
+    "prereg_tag_commit": "996631ac7280ea4c1e5cc52d19e4c43a9d11c723",
+    "presentation": "bare-code",
+    "split_sha256": "6f69be75d4c1b1ea0348e7b0217ac83e7cfc8c19732a6d6d71e2ec5be9e75015"
+  },
+  "per_rung": [
+    {
+      "adv_false_done": 1,
+      "adv_solved": 66,
+      "adv_step_cap": 30,
+      "b_tasks": [
+        "task_010",
+        "task_011",
+        "task_012",
+        "task_027",
+        "task_035",
+        "task_042",
+        "task_044",
+        "task_059",
+        "task_072"
+      ],
+      "bind_solved": 63,
+      "c_tasks": [
+        "task_019",
+        "task_043",
+        "task_054",
+        "task_062",
+        "task_076",
+        "task_089"
+      ],
+      "delta_count": -3,
+      "delta_pp": -3.4482758620689653,
+      "mcnemar_b": 9,
+      "mcnemar_c": 6,
+      "mcnemar_n": 15,
+      "mcnemar_p": 0.60723876953125,
+      "model": "meta-llama/llama-3.2-3b-instruct",
+      "provider": "Meta",
+      "rank_value": 7,
+      "rung": 1,
+      "slug": "rung1_llama-3.2-3b"
+    },
+    {
+      "adv_false_done": 4,
+      "adv_solved": 80,
+      "adv_step_cap": 3,
+      "b_tasks": [
+        "task_025",
+        "task_035",
+        "task_093"
+      ],
+      "bind_solved": 82,
+      "c_tasks": [
+        "task_029",
+        "task_031",
+        "task_042",
+        "task_079",
+        "task_088"
+      ],
+      "delta_count": 2,
+      "delta_pp": 2.2988505747126435,
+      "mcnemar_b": 3,
+      "mcnemar_c": 5,
+      "mcnemar_n": 8,
+      "mcnemar_p": 0.7265625,
+      "model": "meta-llama/llama-3.1-8b-instruct",
+      "provider": "Meta",
+      "rank_value": 6,
+      "rung": 2,
+      "slug": "rung2_llama-3.1-8b"
+    },
+    {
+      "adv_false_done": 16,
+      "adv_solved": 71,
+      "adv_step_cap": 0,
+      "b_tasks": [],
+      "bind_solved": 84,
+      "c_tasks": [
+        "task_002",
+        "task_005",
+        "task_007",
+        "task_022",
+        "task_031",
+        "task_037",
+        "task_042",
+        "task_075",
+        "task_079",
+        "task_088",
+        "task_093",
+        "task_094",
+        "task_096"
+      ],
+      "delta_count": 13,
+      "delta_pp": 14.942528735632184,
+      "mcnemar_b": 0,
+      "mcnemar_c": 13,
+      "mcnemar_n": 13,
+      "mcnemar_p": 0.000244140625,
+      "model": "qwen/qwen-2.5-7b-instruct",
+      "provider": "Alibaba/Qwen",
+      "rank_value": 5,
+      "rung": 3,
+      "slug": "rung3_qwen2.5-7b"
+    },
+    {
+      "adv_false_done": 15,
+      "adv_solved": 72,
+      "adv_step_cap": 0,
+      "b_tasks": [
+        "task_052",
+        "task_091"
+      ],
+      "bind_solved": 82,
+      "c_tasks": [
+        "task_014",
+        "task_015",
+        "task_018",
+        "task_031",
+        "task_037",
+        "task_042",
+        "task_055",
+        "task_056",
+        "task_075",
+        "task_079",
+        "task_088",
+        "task_096"
+      ],
+      "delta_count": 10,
+      "delta_pp": 11.494252873563218,
+      "mcnemar_b": 2,
+      "mcnemar_c": 12,
+      "mcnemar_n": 14,
+      "mcnemar_p": 0.012939453125,
+      "model": "anthropic/claude-3-haiku",
+      "provider": "Anthropic",
+      "rank_value": 4,
+      "rung": 4,
+      "slug": "rung4_claude-3-haiku"
+    },
+    {
+      "adv_false_done": 8,
+      "adv_solved": 79,
+      "adv_step_cap": 0,
+      "b_tasks": [],
+      "bind_solved": 87,
+      "c_tasks": [
+        "task_002",
+        "task_005",
+        "task_031",
+        "task_055",
+        "task_079",
+        "task_088",
+        "task_089",
+        "task_096"
+      ],
+      "delta_count": 8,
+      "delta_pp": 9.195402298850574,
+      "mcnemar_b": 0,
+      "mcnemar_c": 8,
+      "mcnemar_n": 8,
+      "mcnemar_p": 0.0078125,
+      "model": "gpt-4o-mini-2024-07-18",
+      "provider": "OpenAI",
+      "rank_value": 3,
+      "rung": 5,
+      "slug": "rung5_gpt-4o-mini"
+    },
+    {
+      "adv_false_done": 8,
+      "adv_solved": 79,
+      "adv_step_cap": 0,
+      "b_tasks": [],
+      "bind_solved": 87,
+      "c_tasks": [
+        "task_002",
+        "task_005",
+        "task_007",
+        "task_031",
+        "task_039",
+        "task_048",
+        "task_088",
+        "task_096"
+      ],
+      "delta_count": 8,
+      "delta_pp": 9.195402298850574,
+      "mcnemar_b": 0,
+      "mcnemar_c": 8,
+      "mcnemar_n": 8,
+      "mcnemar_p": 0.0078125,
+      "model": "google/gemini-2.5-flash-lite",
+      "provider": "Google",
+      "rank_value": 2,
+      "rung": 6,
+      "slug": "rung6_gemini-2.5-flash-lite"
+    },
+    {
+      "adv_false_done": 0,
+      "adv_solved": 87,
+      "adv_step_cap": 0,
+      "b_tasks": [],
+      "bind_solved": 87,
+      "c_tasks": [],
+      "delta_count": 0,
+      "delta_pp": 0.0,
+      "mcnemar_b": 0,
+      "mcnemar_c": 0,
+      "mcnemar_n": 0,
+      "mcnemar_p": 1.0,
+      "model": "gpt-4.1-2025-04-14",
+      "provider": "OpenAI",
+      "rank_value": 1,
+      "rung": 7,
+      "slug": "rung7_gpt-4.1"
+    }
+  ],
+  "prediction_scores": {
+    "i": {
+      "detail": "\u0394<0 at meta-llama/llama-3.2-3b-instruct (\u0394=-3, -3.4pp); binding does NOT never-hurt.",
+      "verdict": "DISCONFIRMED"
+    },
+    "ii": {
+      "detail": "one-sided Spearman(\u0394 vs rank_value, 1=strongest) rho=-0.126, exact 7!-permutation p=0.6214 (expected positive; not significant). The weak-end reversal (ranks 6\u20137) breaks monotonicity.",
+      "verdict": "DISCONFIRMED"
+    },
+    "iii": {
+      "detail": "advisory false-DONE vs rank is non-monotone: rises 0\u219216 across ranks 1\u21925 then collapses to 4,1 at ranks 6\u20137 (the weakest models step_cap instead of false-declaring). Spearman(rank_value, false-DONE) rho=0.090 \u2014 the monotone decrease-with-capability does not hold across all 7.",
+      "verdict": "DISCONFIRMED"
+    },
+    "iv": {
+      "detail": "at-ceiling rung(s): gpt-4.1-2025-04-14 (bind $0.10367 \u2264 adv $0.15728)",
+      "verdict": "CONFIRMED"
+    },
+    "v": {
+      "detail": "at meta-llama/llama-3.2-3b-instruct (weakest): \u0394=-3.4pp (<0), 30 advisory step_caps, 1 advisory false-DONEs of which 1 are NOT rescued by binding (end step_cap/escalated). A too-weak-to-rescue window, as registered exploratorily.",
+      "verdict": "EXPLORATORY \u2014 OBSERVED"
+    }
+  },
+  "prereg_predictions_verbatim": "(i) \u0394 \u2265 0 for every model (binding never hurts). (ii) \u0394 decreases with pre-registered capability rank (Spearman, one-sided). (iii) False-DONE rate in advisory decreases with capability rank. (iv) For models at advisory ceiling, binding total cost \u2264 advisory total cost. (v) EXPLORATORY: \u0394 may be non-monotonic at the weak end \u2014 a model can be too weak to rescue (false-DONEs in advisory AND fails to repair under forced iteration, ending at step_cap). If observed, this defines a \"capability window\" for completion-gating; it is registered as exploratory, not confirmatory.",
+  "rescue": {
+    "rung1_llama-3.2-3b": {
+      "first_sample": [
+        {
+          "bug_type": "wrong-comparison",
+          "difficulty": "easy",
+          "n_check_verdicts": 1,
+          "steps": 1,
+          "task_id": "task_019"
+        },
+        {
+          "bug_type": "inverted-condition",
+          "difficulty": "easy",
+          "n_check_verdicts": 1,
+          "steps": 2,
+          "task_id": "task_054"
+        },
+        {
+          "bug_type": "off-by-one",
+          "difficulty": "easy",
+          "n_check_verdicts": 1,
+          "steps": 4,
+          "task_id": "task_076"
+        },
+        {
+          "bug_type": "wrong-comparison",
+          "difficulty": "medium",
+          "n_check_verdicts": 1,
+          "steps": 1,
+          "task_id": "task_089"
+        }
+      ],
+      "forced": [
+        {
+          "bug_type": "off-by-one",
+          "difficulty": "easy",
+          "n_check_verdicts": 3,
+          "steps": 3,
+          "task_id": "task_043"
+        },
+        {
+          "bug_type": "wrong-operator",
+          "difficulty": "medium",
+          "n_check_verdicts": 4,
+          "steps": 5,
+          "task_id": "task_062"
+        }
+      ],
+      "n_first_sample": 4,
+      "n_forced": 2
+    },
+    "rung2_llama-3.1-8b": {
+      "first_sample": [],
+      "forced": [
+        {
+          "bug_type": "wrong-operator",
+          "difficulty": "easy",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_029"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "medium",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_031"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_042"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_079"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 3,
+          "steps": 3,
+          "task_id": "task_088"
+        }
+      ],
+      "n_first_sample": 0,
+      "n_forced": 5
+    },
+    "rung3_qwen2.5-7b": {
+      "first_sample": [
+        {
+          "bug_type": "wrong-return",
+          "difficulty": "easy",
+          "n_check_verdicts": 1,
+          "steps": 1,
+          "task_id": "task_096"
+        }
+      ],
+      "forced": [
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_002"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_005"
+        },
+        {
+          "bug_type": "wrong-comparison",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 3,
+          "task_id": "task_007"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "easy",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_022"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "medium",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_031"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_037"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_042"
+        },
+        {
+          "bug_type": "input-mutation",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_075"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_079"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_088"
+        },
+        {
+          "bug_type": "off-by-one",
+          "difficulty": "easy",
+          "n_check_verdicts": 4,
+          "steps": 4,
+          "task_id": "task_093"
+        },
+        {
+          "bug_type": "wrong-comparison",
+          "difficulty": "easy",
+          "n_check_verdicts": 4,
+          "steps": 4,
+          "task_id": "task_094"
+        }
+      ],
+      "n_first_sample": 1,
+      "n_forced": 12
+    },
+    "rung4_claude-3-haiku": {
+      "first_sample": [
+        {
+          "bug_type": "off-by-one",
+          "difficulty": "easy",
+          "n_check_verdicts": 1,
+          "steps": 1,
+          "task_id": "task_018"
+        },
+        {
+          "bug_type": "wrong-comparison",
+          "difficulty": "hard",
+          "n_check_verdicts": 1,
+          "steps": 1,
+          "task_id": "task_056"
+        }
+      ],
+      "forced": [
+        {
+          "bug_type": "wrong-operator",
+          "difficulty": "easy",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_014"
+        },
+        {
+          "bug_type": "wrong-return",
+          "difficulty": "easy",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_015"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "medium",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_031"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_037"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_042"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_055"
+        },
+        {
+          "bug_type": "input-mutation",
+          "difficulty": "hard",
+          "n_check_verdicts": 5,
+          "steps": 5,
+          "task_id": "task_075"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 3,
+          "steps": 3,
+          "task_id": "task_079"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 3,
+          "steps": 3,
+          "task_id": "task_088"
+        },
+        {
+          "bug_type": "wrong-return",
+          "difficulty": "easy",
+          "n_check_verdicts": 3,
+          "steps": 3,
+          "task_id": "task_096"
+        }
+      ],
+      "n_first_sample": 2,
+      "n_forced": 10
+    },
+    "rung5_gpt-4o-mini": {
+      "first_sample": [
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 1,
+          "steps": 1,
+          "task_id": "task_002"
+        },
+        {
+          "bug_type": "wrong-comparison",
+          "difficulty": "medium",
+          "n_check_verdicts": 1,
+          "steps": 1,
+          "task_id": "task_089"
+        }
+      ],
+      "forced": [
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_005"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "medium",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_031"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_055"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_079"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_088"
+        },
+        {
+          "bug_type": "wrong-return",
+          "difficulty": "easy",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_096"
+        }
+      ],
+      "n_first_sample": 2,
+      "n_forced": 6
+    },
+    "rung6_gemini-2.5-flash-lite": {
+      "first_sample": [
+        {
+          "bug_type": "wrong-comparison",
+          "difficulty": "hard",
+          "n_check_verdicts": 1,
+          "steps": 1,
+          "task_id": "task_007"
+        },
+        {
+          "bug_type": "wrong-comparison",
+          "difficulty": "hard",
+          "n_check_verdicts": 1,
+          "steps": 1,
+          "task_id": "task_039"
+        },
+        {
+          "bug_type": "wrong-return",
+          "difficulty": "easy",
+          "n_check_verdicts": 1,
+          "steps": 1,
+          "task_id": "task_048"
+        }
+      ],
+      "forced": [
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_002"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_005"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "medium",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_031"
+        },
+        {
+          "bug_type": "missing-edge-case",
+          "difficulty": "hard",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_088"
+        },
+        {
+          "bug_type": "wrong-return",
+          "difficulty": "easy",
+          "n_check_verdicts": 2,
+          "steps": 2,
+          "task_id": "task_096"
+        }
+      ],
+      "n_first_sample": 3,
+      "n_forced": 5
+    },
+    "rung7_gpt-4.1": {
+      "first_sample": [],
+      "forced": [],
+      "n_first_sample": 0,
+      "n_forced": 0
+    }
+  },
+  "rung1_deep_dive": {
+    "adv_false_done_tasks": [
+      "task_018"
+    ],
+    "adv_step_cap_n": 30,
+    "adv_step_cap_tasks": [
+      "task_001",
+      "task_005",
+      "task_019",
+      "task_025",
+      "task_029",
+      "task_040",
+      "task_041",
+      "task_042",
+      "task_043",
+      "task_046",
+      "task_052",
+      "task_053",
+      "task_054",
+      "task_055",
+      "task_057",
+      "task_058",
+      "task_060",
+      "task_061",
+      "task_062",
+      "task_075",
+      "task_076",
+      "task_079",
+      "task_087",
+      "task_088",
+      "task_089",
+      "task_090",
+      "task_091",
+      "task_092",
+      "task_093",
+      "task_094"
+    ],
+    "b_direction": [
+      {
+        "binding_status": "escalated",
+        "binding_steps": 3,
+        "bug_type": "off-by-one",
+        "task_id": "task_010"
+      },
+      {
+        "binding_status": "escalated",
+        "binding_steps": 8,
+        "bug_type": "wrong-comparison",
+        "task_id": "task_011"
+      },
+      {
+        "binding_status": "escalated",
+        "binding_steps": 3,
+        "bug_type": "wrong-operator",
+        "task_id": "task_012"
+      },
+      {
+        "binding_status": "escalated",
+        "binding_steps": 3,
+        "bug_type": "off-by-one",
+        "task_id": "task_027"
+      },
+      {
+        "binding_status": "escalated",
+        "binding_steps": 3,
+        "bug_type": "wrong-return",
+        "task_id": "task_035"
+      },
+      {
+        "binding_status": "step_cap",
+        "binding_steps": 8,
+        "bug_type": "missing-edge-case",
+        "task_id": "task_042"
+      },
+      {
+        "binding_status": "step_cap",
+        "binding_steps": 8,
+        "bug_type": "wrong-operator",
+        "task_id": "task_044"
+      },
+      {
+        "binding_status": "step_cap",
+        "binding_steps": 8,
+        "bug_type": "missing-edge-case",
+        "task_id": "task_059"
+      },
+      {
+        "binding_status": "step_cap",
+        "binding_steps": 8,
+        "bug_type": "wrong-comparison",
+        "task_id": "task_072"
+      }
+    ],
+    "unrescued_false_done": [
+      "task_018"
+    ]
+  },
+  "spearman": {
+    "delta_vector": [
+      0,
+      8,
+      8,
+      10,
+      13,
+      2,
+      -3
+    ],
+    "perm_ge": 3132,
+    "perm_p": 0.6214285714285714,
+    "perm_total": 5040,
+    "rank_vector_1strong": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "rho": -0.12613124477737825
+  }
+}

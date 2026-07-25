@@ -1,0 +1,10 @@
+Δ (binding − advisory), pp — curve ordered strongest→weakest (rank 1 = strongest):
+
+rank1 rung7 gpt-4.1-2025-04-14       +0.0                    |
+rank2 rung6 gemini-2.5-flash-lite    +9.2                    |#####
+rank3 rung5 gpt-4o-mini-2024-07-18   +9.2                    |#####
+rank4 rung4 claude-3-haiku          +11.5                    |######
+rank5 rung3 qwen-2.5-7b-instruct    +14.9                    |#######
+rank6 rung2 llama-3.1-8b-instruct    +2.3                    |#
+rank7 rung1 llama-3.2-3b-instruct    -3.4                  ##|
+                  ^ zero
