@@ -2956,3 +2956,44 @@ too-weak llama-3.2-3b. Both v1 anchors reproduce exactly (gpt-4o-mini +9.2, gpt-
   v1 for *solving* — it only reads committed logs/metas.
 - **Bright line intact.** No API; nothing outside `v2_ladder/analysis/`; v1 untouched; staging
   explicit below.
+
+---
+
+## V2-P6.1 — Write-up, stranger test, close (tag `v2-complete`)
+
+**Step ID / date:** V2-P6.1 — 2026-07-26
+
+**What was written:**
+- `README.md` gains an **Experiment 2 — the capability ladder** section: the interaction-first
+  framing (capability *window*, not monotone trend), the Δ-vs-rank curve table + ASCII, and the
+  deflations placed **adjacent to the headline** — prediction (i)'s disconfirmation, the two
+  SIGALRM-recovered cells, the single-corpus / D18-only scope, and the single-provider top rung.
+- `v2_ladder/writeup/post_v2.md` — "The capability window for completion-gating": rung 1
+  (llama-3.2-3b) as the cautionary tale (too weak to rescue — binding *hurts*), rungs 3–5 as the
+  payoff zone (strong enough to false-DONE, strong enough to repair), the mechanism read off the
+  false-DONE / forced-repair / bug-type columns, and an explicit "what this does and doesn't
+  establish" scope paragraph. Same honesty standard as v1's `post.md`.
+
+**Stranger test (fresh clone → regenerate → diff; captured in the acceptance paste):** a clean
+`git clone` of the repo, then `python3 v2_ladder/analysis/analyze_v2.py` reproduces
+`results.md` **byte-identical** to the committed copy, and `python3 phase6_analysis/analyze.py`
+reproduces v1's `results.md` **byte-identical** too — proving both that v2's analysis is
+deterministic from committed artifacts alone and that building v2 did not disturb v1.
+
+**Close:** tag `v2-complete` on this commit. Experiment 2 is done — registration (`v2-prereg`)
+→ 1218-episode run → registered analysis → write-up, all committed, the one run-integrity
+incident (two wedged cells) diagnosed and recovered on the record.
+
+**The result, stated plainly for the close.** Experiment 1's two-point "binding helps the weak"
+does **not** extrapolate monotonically. Across a 7-rung / 5-provider ladder, completion-gating
+is a **windowed** intervention: +14.9pp at the peak (qwen2.5-7b) but +0.0 at the ceiling
+(gpt-4.1) and **−3.4pp** at the floor (llama-3.2-3b, too weak to rescue). The pre-registered
+monotone Spearman is disconfirmed (rho=−0.126); the exploratory too-weak-to-rescue window is
+observed. The design lesson: the question is not "is the model weak?" but "is it *in the
+window* — wrong in a checker-catchable way, and competent enough to act on the catch?"
+
+**Decisions / surprises:**
+- **Deflations sit next to the headline, not in a footnote** — prediction (i)'s fate and the two
+  recovered cells are in the README's V2 section body, matching v1's honesty standard.
+- **Bright line intact.** v1 files untouched (proven by the v1-analyze clone diff); no API; keys
+  never printed; staging explicit; tag applied last.
