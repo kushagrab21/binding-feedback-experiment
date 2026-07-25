@@ -55,6 +55,25 @@ contains the temp path and unittest's ``Ran N tests in X.XXXs`` timing line — 
 byte-for-byte comparison of two runs must normalise those two volatile substrings
 first (see ``test_checker.py``'s determinism test).
 
+Static pre-execution guard (safety-only)
+----------------------------------------
+Before ANY subprocess is spawned, the candidate is ``ast.parse``d and, if it
+parses, statically scanned. A candidate is rejected *without being executed at all*
+(verdict ``__banned__``) if it imports any module whose top-level name is on
+``BANNED_IMPORTS`` (network / OS / process / filesystem / dynamic-import surface) or
+calls any bare builtin on ``BANNED_CALLS`` (``open``/``exec``/``eval``/``input``/
+``compile``/``__import__``). If the candidate does NOT parse (a syntax error), the
+guard does nothing and control falls through to the subprocess path, so syntax-error
+behaviour is byte-identical to the pre-guard checker.
+
+The guard is deliberately SAFETY-ONLY. It bans only what can reach the network, the
+filesystem, other processes, or arbitrary dynamic execution — never what is merely
+inelegant. In particular ``print`` and every import NOT on the ban list are allowed
+by design: a chatty-but-correct model fix must still be graded ``passed=True``.
+Banning cosmetic impurity would reject correct submissions and silently distort the
+advisory-vs-binding success-rate comparison that is the whole point of the
+experiment. Safety bans only; style is never a ground for rejection.
+
 Isolation and its limits
 -------------------------
 The subprocess runs with ``-E -s -B``:
@@ -79,6 +98,7 @@ access. Network/filesystem sandboxing is explicitly out of scope and is recorded
 a known limitation in EXPERIMENT_LOG.md.
 """
 
+import ast
 import os
 import re
 import shutil
@@ -88,6 +108,20 @@ import tempfile
 
 # Default wall-clock ceiling for a single suite run, in seconds (the contract).
 DEFAULT_TIMEOUT_S = 10.0
+
+# --- Static pre-execution guard (safety-only). ---
+# Top-level module names the candidate may not import: anything reaching the
+# network, the OS/process table, the filesystem, or dynamic import machinery.
+BANNED_IMPORTS = frozenset({
+    "socket", "subprocess", "os", "sys", "shutil", "pathlib", "tempfile",
+    "urllib", "http", "ctypes", "multiprocessing", "threading", "signal",
+    "importlib",
+})
+# Bare builtin names the candidate may not call: file access, arbitrary code
+# execution, and dynamic import.
+BANNED_CALLS = frozenset({
+    "open", "exec", "eval", "input", "compile", "__import__",
+})
 
 # A verbose per-test result line: "name (mod.Class.name) ... ok|FAIL|ERROR".
 # group(1) = test method name, group(2) = fully-qualified test id, group(3) = status.
@@ -106,6 +140,56 @@ _DASH = re.compile(r"^-+$")      # sub-separator / footer line (70 '-')
 
 # Marker that unittest turned an import-time failure into a synthetic failing test.
 _FAILED_TEST_MARKER = "_FailedTest"
+
+
+def _static_guard(candidate_code):
+    """Return a rejection reason string if the candidate is statically unsafe.
+
+    Parses ``candidate_code`` and scans for a banned import or a banned bare-name
+    call. Returns ``None`` if the candidate is safe *or does not parse* — a syntax
+    error is left for the subprocess path so that behaviour is unchanged. When
+    multiple violations exist, the earliest by (line, column) is reported, so the
+    reason is deterministic.
+    """
+    try:
+        tree = ast.parse(candidate_code)
+    except SyntaxError:
+        return None  # do not reject here; fall through to the subprocess path
+
+    violations = []  # (lineno, col_offset, reason)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                top = alias.name.split(".")[0]
+                if top in BANNED_IMPORTS:
+                    violations.append((
+                        node.lineno, node.col_offset,
+                        f"import of banned module '{top}'"))
+        elif isinstance(node, ast.ImportFrom):
+            # node.module is None for `from . import x` (relative); level>0 has no
+            # importable top-level name to ban.
+            if node.module and node.level == 0:
+                top = node.module.split(".")[0]
+                if top in BANNED_IMPORTS:
+                    violations.append((
+                        node.lineno, node.col_offset,
+                        f"import from banned module '{top}'"))
+        elif isinstance(node, ast.Call):
+            func = node.func
+            if isinstance(func, ast.Name) and func.id in BANNED_CALLS:
+                violations.append((
+                    node.lineno, node.col_offset,
+                    f"call to banned builtin '{func.id}'"))
+
+    if not violations:
+        return None
+    violations.sort(key=lambda v: (v[0], v[1]))
+    _lineno, _col, what = violations[0]
+    return (
+        f"{what} at line {_lineno}: the static safety guard forbids "
+        f"network / OS / process / filesystem / dynamic-execution access in "
+        f"candidate code, so it was rejected WITHOUT being executed. "
+        f"(Safety-only: print and non-banned imports are allowed.)")
 
 
 def _scrub(text, *paths):
@@ -176,6 +260,20 @@ def run_checks(task_dir, candidate_code, timeout=DEFAULT_TIMEOUT_S):
     """
     task_dir = os.fspath(task_dir)
     tests_src = os.path.join(task_dir, "tests.py")
+
+    # --- Static pre-execution guard: reject unsafe candidates without running. ---
+    banned_reason = _static_guard(candidate_code)
+    if banned_reason is not None:
+        return {
+            "passed": False,
+            "failures": [{"test": "__banned__", "error": banned_reason}],
+            "raw_output": ("static guard: candidate rejected before execution "
+                           "(no subprocess run)\n" + banned_reason),
+            "timed_out": False,
+            "returncode": None,
+            "n_total": 0,
+            "n_failed": 1,
+        }
 
     tmp = tempfile.mkdtemp(prefix="checker_")
     real_tmp = os.path.realpath(tmp)

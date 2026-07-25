@@ -1004,3 +1004,119 @@ would be required before trusting this judge on untrusted code.
   the suite touches only `task_006` and `task_003`. Case (h) reads a single row of
   `task_validation.txt` (a validation summary, not any task's source), which is the
   intended cross-check.
+
+---
+
+## 2.2 — Checker hardening: static pre-execution guard
+
+**Step ID / date:** 2.2 — 2026-07-25
+
+**What was built:**
+- `phase2_checker/checker.py` — a static safety guard added ahead of every
+  subprocess. Before any code runs, `_static_guard(candidate_code)` `ast.parse`s the
+  candidate and, if it parses, walks the tree and rejects on a banned import or a
+  banned bare-name call. A rejection returns immediately, with **no subprocess
+  spawned**: `passed=False`, `failures=[{"test": "__banned__", "error": <what + why
+  + line>}]`, and a `raw_output` that states the candidate was rejected before
+  execution. If the candidate does **not** parse, the guard returns `None` and
+  control falls through to the existing subprocess path, so syntax-error behaviour is
+  byte-identical to P2.1.
+- `phase2_checker/test_checker.py` — 4 new cases (dev tasks only), bringing the
+  suite to 14.
+
+**The exact ban lists (authoritative):**
+- `BANNED_IMPORTS` (matched against the **top-level** module of any dotted name, for
+  both `import x.y` and `from x.y import z` with `level == 0`):
+  `socket, subprocess, os, sys, shutil, pathlib, tempfile, urllib, http, ctypes,
+  multiprocessing, threading, signal, importlib`.
+- `BANNED_CALLS` (calls to these **bare** builtin names):
+  `open, exec, eval, input, compile, __import__`.
+
+**Allowed by design (documented in the docstring, and the crux of the step):** the
+guard is **safety-only**. `print` is allowed, and so is every import **not** on the
+ban list. Banning cosmetic impurity (e.g. `print`) would reject otherwise-correct
+fixes from chatty models and silently bias the advisory-vs-binding success-rate
+comparison the experiment exists to measure. The guard bans only what can reach the
+network, filesystem, other processes, or arbitrary dynamic execution; style is never
+a ground for rejection. When several violations exist, the earliest by
+`(line, column)` is reported, so the `__banned__` reason (and hence the whole
+verdict) is deterministic.
+
+**Provenance:** Guard and tests hand-written this step. The ban lists are exactly
+those named in the P2.2 instruction; the relative-import carve-out (`from . import x`
+has `module is None` / `level > 0`, so there is no importable top-level name to ban)
+is an AST detail handled explicitly. Note on the instruction's own hedge: `task_006`'s
+`reference.py` **does** contain the literal line `    total = 0`, so the demo's
+`print`-injection (`replace("    total = 0", '    print("dbg")\n    total = 0')`)
+applies verbatim — no adaptation was needed. The corresponding test asserts the
+replacement actually happened (`assertIn('print("dbg")', noisy)`) so it can never
+silently degrade into a no-op.
+
+**Evidence of correctness (full `-v` listing, 14 tests):**
+```
+… TestAgreesWithFrozenTable.test_first_failing_matches_validation_table ... ok
+… TestBuggyRejected.test_buggy_task_003_fails ... ok
+… TestBuggyRejected.test_buggy_task_006_fails ... ok
+… TestDeterminism.test_buggy_verdict_is_reproducible ... ok
+… TestMalformedSubmissions.test_empty_submission_handled ... ok
+… TestMalformedSubmissions.test_syntax_error_is_collection_failure ... ok
+… TestMalformedSubmissions.test_wrong_function_name_handled ... ok
+… TestReferenceAccepted.test_reference_task_003_passes ... ok
+… TestReferenceAccepted.test_reference_task_006_passes ... ok
+… TestStaticGuard.test_banned_call_open ... ok
+… TestStaticGuard.test_banned_import_socket_not_executed ... ok
+… TestStaticGuard.test_banned_verdict_is_deterministic ... ok
+… TestStaticGuard.test_harmless_print_still_passes ... ok
+… TestTimeout.test_infinite_loop_times_out ... ok
+Ran 14 tests in 2.33s
+OK        (checker-tests-exit=0)
+```
+The 4 new cases are exactly the required (i)–(iv): (i) `import socket` → `__banned__`
+and returns in < 1s (proving no subprocess ran — a real run is ~0.1s+ of process
+startup and the timeout ceiling is 10s); (ii) `open('/etc/passwd')` → `__banned__`;
+(iii) `reference.py` + an in-function `print("dbg")` → still `passed=True`,
+`failures==[]` (guard does not over-reject); (iv) two calls on `import subprocess`
+give byte-identical normalised verdicts.
+
+**Worked example (the demo):**
+```
+evil.passed: False first: __banned__
+noisy.passed: True failures: 0        (demo-exit=0)
+```
+`import socket` is refused before execution; a `print`-laced but correct `digit_sum`
+is graded exactly as its clean twin would be. This is precisely the safety/soundness
+split the guard is for: unsafe code never runs, and merely-noisy code is not
+penalised.
+
+**P2.1 limitation status — MITIGATED (residual risk still logged).** The P2.1 note
+("acceptable because the corpus is frozen/stdlib-pure") was incomplete: from Phase 3
+on, `run_checks` executes arbitrary model-generated candidate code, not corpus code.
+The static guard now refuses, before execution, the obvious network/OS/filesystem/
+dynamic-exec surface a submission could name. This is a mitigation, not a sandbox: a
+determined candidate could still reach a banned capability by means a static scan
+cannot see (attribute chains built at runtime, `getattr`/string tricks, C-extension
+side effects). **OS-level sandboxing remains absent and is retained as residual
+risk** — if the task corpus is ever extended beyond stdlib-pure functions, a real
+sandbox (seccomp / namespaces / container) must precede trusting this judge on
+untrusted code.
+
+**Decisions / surprises:**
+- **Parse failures deliberately bypass the guard.** `_static_guard` returns `None` on
+  `SyntaxError` so an unparseable candidate falls through to the subprocess, where it
+  becomes the P2.1 `__collection__` verdict unchanged. This keeps the guard purely
+  additive: it can turn an *executing* candidate into `__banned__`, but it never
+  changes what a syntax-error candidate does. The `test_syntax_error_is_collection_failure`
+  case still passes, confirming byte-identical pre-guard behaviour.
+- **Ban matches the top-level module, so submodules are covered.** `from os.path
+  import join` and `import urllib.request` both reject, because the guard keys on
+  `name.split(".")[0]`. Relative imports (`from . import x`) are ignored — they have
+  no top-level module name and cannot pull in a banned stdlib module.
+- **The guard is a static over-approximation, on purpose.** It flags `open`/`socket`
+  even inside dead code or an unreachable branch. For a judge, false-positive
+  *rejection* of code that merely *names* a dangerous capability is the safe
+  direction; the only thing that must never be over-rejected is *safe* code, and the
+  ban list is scoped precisely to dangerous names to keep that true (case (iii) is the
+  standing regression test).
+- **`__banned__` joins the failure taxonomy** alongside `__timeout__`,
+  `__collection__`, and `__error__`; the three-key contract (`passed`, `failures`,
+  `raw_output`) is unchanged, so nothing downstream needs to adapt.

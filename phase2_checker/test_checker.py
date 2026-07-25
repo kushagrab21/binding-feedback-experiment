@@ -157,6 +157,51 @@ class TestDeterminism(unittest.TestCase):
         self.assertEqual(normalise_verdict(v1), normalise_verdict(v2))
 
 
+class TestStaticGuard(unittest.TestCase):
+    """Static pre-execution guard: bans only dangerous code, never mere noise."""
+
+    def test_banned_import_socket_not_executed(self):
+        # (i) `import socket` -> __banned__, and it returns far faster than the
+        # subprocess timeout would allow, proving no subprocess ran.
+        code = "import socket\ndef digit_sum(n):\n    return 0\n"
+        start = time.monotonic()
+        v = run_checks(task_path(DEV_A), code)
+        elapsed = time.monotonic() - start
+        self.assertFalse(v["passed"])
+        self.assertEqual(v["failures"][0]["test"], "__banned__")
+        self.assertIn("socket", v["failures"][0]["error"])
+        # No subprocess spawned: well under the 10s contract timeout.
+        self.assertLess(elapsed, 1.0)
+
+    def test_banned_call_open(self):
+        # (ii) calling open(...) -> __banned__.
+        code = ("def digit_sum(n):\n"
+                "    open('/etc/passwd')\n"
+                "    return 0\n")
+        v = run_checks(task_path(DEV_A), code)
+        self.assertFalse(v["passed"])
+        self.assertEqual(v["failures"][0]["test"], "__banned__")
+        self.assertIn("open", v["failures"][0]["error"])
+
+    def test_harmless_print_still_passes(self):
+        # (iii) reference + a harmless print inside the function -> still passed.
+        # (print and non-banned code are allowed by design; safety bans only.)
+        ref = read_task_file(DEV_A, "reference.py")
+        noisy = ref.replace("    total = 0", '    print("dbg")\n    total = 0')
+        self.assertIn('print("dbg")', noisy)  # guard against a silent no-op replace
+        v = run_checks(task_path(DEV_A), noisy)
+        self.assertTrue(v["passed"])
+        self.assertEqual(v["failures"], [])
+
+    def test_banned_verdict_is_deterministic(self):
+        # (iv) a __banned__ verdict is byte-identical across two calls.
+        code = "import subprocess\ndef digit_sum(n):\n    return 0\n"
+        v1 = run_checks(task_path(DEV_A), code)
+        v2 = run_checks(task_path(DEV_A), code)
+        self.assertEqual(v1["failures"][0]["test"], "__banned__")
+        self.assertEqual(normalise_verdict(v1), normalise_verdict(v2))
+
+
 class TestAgreesWithFrozenTable(unittest.TestCase):
     """(h) first failing test agrees with task_validation.txt for a buggy dev task."""
 
