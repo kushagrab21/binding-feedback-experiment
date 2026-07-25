@@ -86,9 +86,14 @@ def _success(mode, status, final_passed):
     return bool(final_passed) if mode == "advisory" else (status == "solved")
 
 
-def run_pilot(hide_description=False):
-    # D17: when hiding the description, this is the "pilot2" run under withheld-spec.
-    tag = "pilot2" if hide_description else "pilot"
+def run_pilot(hide_description=False, tag=None, presentation=None):
+    # When hiding the description the shared builder applies D17 (withheld spec) and,
+    # post-D18, also strips docstrings/comments (bare-code). ``tag``/``presentation`` let
+    # a caller name the run (e.g. the D18 sweep is tag="pilot3", presentation="bare-code").
+    if tag is None:
+        tag = "pilot2" if hide_description else "pilot"
+    if presentation is None:
+        presentation = "hidden-description" if hide_description else "description-shown"
     show_description = not hide_description
     pilot_log_dir = os.path.join(_HERE, "logs", tag)
     manifest_path = os.path.join(_HERE, "manifests", "%s_manifest.json" % tag)
@@ -153,8 +158,8 @@ def run_pilot(hide_description=False):
                 time.sleep(SLEEP_BETWEEN)
 
     manifest = {
-        "phase": "5.2 dev-set pilot (D17, description withheld)" if hide_description
-                 else "5.1 dev-set pilot",
+        "phase": "%s dev-set pilot (presentation=%s)" % (tag, presentation),
+        "presentation": presentation,
         "date": datetime.datetime.now().astimezone().isoformat(),
         "models": MODELS,
         "model_labels": {
@@ -180,4 +185,10 @@ def run_pilot(hide_description=False):
 
 
 if __name__ == "__main__":
-    sys.exit(run_pilot(hide_description="--hide-description" in sys.argv))
+    _bare = "--bare-code" in sys.argv
+    _hide = _bare or ("--hide-description" in sys.argv)
+    sys.exit(run_pilot(
+        hide_description=_hide,
+        tag="pilot3" if _bare else None,
+        presentation="bare-code" if _bare else None,
+    ))

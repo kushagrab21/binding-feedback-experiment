@@ -34,6 +34,7 @@ under ``dev_logs/`` (one line per event), so the verdict text that entered the
 model's context is literally visible in the log.
 """
 
+import ast
 import datetime
 import itertools
 import json
@@ -81,22 +82,53 @@ WITHHELD_NOTICE = (
 )
 
 
+def strip_doc_and_comments(source):
+    """Design revision D18 — return ``source`` with all docstrings and comments removed.
+
+    Deterministic: the source is parsed to an AST; the leading string-literal
+    expression (the docstring) of the module and of every function/class is dropped;
+    then ``ast.unparse`` re-emits the tree. Because comments and docstrings are not part
+    of the AST that ``unparse`` emits, **no docstring or comment text can survive** in
+    the output. Only the presentation changes — the code's *semantics* (including the
+    injected bug and any runtime string literals such as error messages) are preserved.
+    This is a presentation-layer transform; the frozen ``buggy.py`` on disk is never
+    modified.
+    """
+    tree = ast.parse(source)
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef,
+                             ast.ClassDef)):
+            body = node.body
+            if (body and isinstance(body[0], ast.Expr)
+                    and isinstance(body[0].value, ast.Constant)
+                    and isinstance(body[0].value.value, str)):
+                node.body = body[1:] or [ast.Pass()]
+    return ast.unparse(tree)
+
+
 def build_first_user_message(meta, buggy_source, show_description=True):
     """The first user turn: (description | withheld-notice) + function name + buggy source.
 
     This is the ONE shared first-message builder (the binding harness imports it), so
-    both arms present the task identically. When ``show_description`` is False (D17), the
-    task's ``meta["description"]`` is withheld entirely — it must not appear anywhere in
-    the message — and replaced by the fixed ``WITHHELD_NOTICE`` sentence; the function
-    name and full buggy source are still shown.
+    both arms present the task identically. When ``show_description`` is False, the task's
+    ``meta["description"]`` is withheld entirely (D17) — replaced by the fixed
+    ``WITHHELD_NOTICE`` sentence — and the buggy source is additionally presented with all
+    docstrings and comments stripped (D18). Neither the description, nor any docstring or
+    comment text, appears anywhere in the message; the function name and the (bare) code
+    are still shown.
     """
-    header = meta["description"] if show_description else WITHHELD_NOTICE
+    if show_description:
+        header = meta["description"]
+        code = buggy_source.rstrip("\n")
+    else:
+        header = WITHHELD_NOTICE
+        code = strip_doc_and_comments(buggy_source).rstrip("\n")
     return (
         "%s\n\n"
         "Function to fix: %s\n\n"
         "Here is the current (buggy) implementation:\n\n"
         "```python\n%s\n```\n"
-        % (header, meta["function_name"], buggy_source.rstrip("\n"))
+        % (header, meta["function_name"], code)
     )
 
 

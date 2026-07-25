@@ -1975,3 +1975,126 @@ the $20 ceiling; the projected full D17 run is ~$0.33.
 - **Bright line intact.** Only the ten dev tasks and the frozen config (with
   `show_description:false`) were run; the API key was never printed; `phase1_tasks/`
   untouched; the 87 test tasks remain unopened.
+
+---
+
+## 5.3 — Design revision D18 (bare-code presentation) + final dev pilot
+
+**Step ID / date:** 5.3 — 2026-07-26
+
+**Design revision D18 — bare-code presentation (presentation-layer only, frozen files
+untouched).** D17 (5.2) withheld the separate `meta["description"]` but still showed the
+`buggy.py` docstrings, which describe intended behavior — and both models kept one-
+shotting every dev task. D18 goes further: when `show_description` is false, the buggy
+source is additionally shown with **all module/function docstrings and all comments
+stripped**, so the model is handed only the function name + bare code + the withheld-
+notice sentence. The `buggy.py` files on disk are **not** modified — this is a display
+transform applied at message-build time (asserted post-pilot with a `git status` over
+`phase1_tasks/`).
+
+**Stripping implementation (`strip_doc_and_comments` in `phase3_advisory/harness.py`).**
+Deterministic and AST-based: `ast.parse` the source; for the module and every
+function/class, drop a leading string-literal expression statement (the docstring);
+then `ast.unparse` re-emits the tree. Comments and docstrings are not part of the AST
+`unparse` emits, so **no docstring or comment text can survive** in the output; only the
+presentation changes — the code's semantics (the injected bug, and runtime string
+literals such as error messages) are preserved. Verified on `task_003`: the bare form
+keeps `if low >= high:` (the bug) and `raise ValueError('low must not exceed high')` (a
+runtime string, not a docstring), drops both docstrings, and `clamp` is
+behaviourally identical before/after; on the `weighted_average` fixture the `# NOTE`
+comment is gone and the divide-by-`len(values)` bug is preserved. It is wired into the
+one shared `build_first_user_message` (both arms inherit it), gated on the existing
+`show_description` config; a new mock test per suite
+(`test_f_bare_code_strips_docstrings_and_comments`) asserts the step-0 message contains
+neither the description, nor any docstring line, nor any `#` comment text, and that a
+docstring+comment snippet is stripped while its code is preserved. All prior tests still
+pass (6/6 per suite).
+
+**PRE-REGISTRATION (recorded BEFORE any D18 episode was run), verbatim:**
+> Recorded before any D18 episode: (i) under bare-code presentation, MODEL_A (gpt-4o-mini) is expected to fail more dev tasks than MODEL_B (gpt-4.1); (ii) in advisory mode, some post-failure episodes are expected to end as false-DONEs (D14); (iii) binding is expected to convert some would-be false-DONEs into solved (via forced iteration) or escalated/step_cap; (iv) the mode difference is expected to be larger for MODEL_A than MODEL_B (the thesis interaction).
+
+**The pilot3 table (40 live episodes, `--bare-code`, presentation=bare-code):**
+
+| model (arm) | mode | eps | success | eps w/ FAILED | false-DONE | done_ign/rej/esc | mean steps | tok in/out | pilot cost | proj full-run (×87) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| gpt-4o-mini-2024-07-18 (cheap/weak) | advisory | 10 | **9/10** | 1 | **1** | — | 1.60 | 3101 / 657 | $0.0009 | $0.0075 |
+| gpt-4o-mini-2024-07-18 (cheap/weak) | binding  | 10 | **10/10** | 1 | — | 0/0/0 | 1.10 | 2103 / 715 | $0.0007 | $0.0065 |
+| gpt-4.1 (frontier/strong)           | advisory | 10 | 10/10 | 1 | 0 | — | 2.10 | 4704 / 755 | $0.0154 | $0.1344 |
+| gpt-4.1 (frontier/strong)           | binding  | 10 | 10/10 | 1 | — | 0/0/0 | 1.10 | 2090 / 701 | $0.0098 | $0.0852 |
+
+Pilot3 total **$0.0268** (40 episodes); projected full run **$0.2335** (348 episodes).
+
+**Signal assessment — the corpus finally discriminates.** Bare-code presentation broke
+the ceiling on exactly one dev task, `task_009` (`count_divisors`, a *missing-edge-case*
+bug: the `n < 1 -> raise ValueError` guard was deleted, and D18 stripped the docstring
+that documented it, so the model has no non-checker way to know the guard is required):
+```
+gpt-4o-mini-2024-07-18  (cheap/weak)     : final-failed 1/10 [task_009] ; any-FAILED-verdict 1/10 [task_009]
+gpt-4.1                 (frontier/strong) : final-failed 0/10          ; any-FAILED-verdict 1/10 [task_009]
+```
+This matches the pre-registered *direction*: **MODEL_A (weak) is the one that finally
+fails a task** (9/10 advisory success vs 10/10 for MODEL_B), the failure surfaces as an
+advisory **false-DONE** (pre-reg ii), and **binding converts that same task into a
+solve** via forced iteration (pre-reg iii). MODEL_B repaired `task_009` in *both* arms
+(no false-DONE), so the mode difference is larger for MODEL_A than MODEL_B (pre-reg iv)
+on this sample. It is a *small* effect (one task), but it is the **first genuine
+advisory-vs-binding behavioral contrast of the entire experiment.**
+
+**FAILED → FALSE-DONE — full trace (gpt-4o-mini, advisory, `task_009`).** The model is
+handed only the bare `count_divisors` body (no docstring) + the withheld notice, submits
+a fix **and** `DONE` in one turn; the checker fails it (the deleted negative-input guard),
+but advisory accepts the declaration regardless — a wrong answer stands:
+```
+step0 USER : "The specification of the intended behavior is withheld. Use the checker's
+              feedback to determine correct behavior.  Function to fix: count_divisors
+              ```python  def count_divisors(n): ...```"   (docstring & comments stripped)
+step1 MODEL: code=True  DONE=True
+step1 CHECK: passed=False  "FAILED ... - test_negative_raises: ValueError not raised"
+END        : status=model_declared_done  final_passed=False  steps=1
+```
+
+**FAILED → REPAIR (solve) — full trace (gpt-4o-mini, binding, `task_009`, same model &
+task, opposite arm).** No `DONE` exists in binding; the FAILED verdict is fed back and
+the model repairs on the next turn — the checker computes completion:
+```
+step0 USER : (identical bare-code prompt)
+step1 MODEL: code=True  DONE=False
+step1 CHECK: passed=False  "FAILED ... - test_negative_raises: ValueError not raised"
+step1 USER : (same FAILED verdict fed back into context)
+step2 MODEL: code=True  DONE=False
+step2 CHECK: passed=True   "PASSED ... all tests passed"
+END        : status=solved  final_passed=True  steps=2
+```
+Same model, same bug, same first-turn failure — advisory ends *wrong* (false-DONE),
+binding ends *right* (forced iteration). This is the thesis, observed live.
+
+**Frozen-files assertion.** `git status --short phase1_tasks` prints **nothing** after the
+pilot (frozen-exit=0): D18 is purely a message-build transform; no `buggy.py`/task file
+was modified. The bare code exists only in the prompt, reconstructed by
+`strip_doc_and_comments` at run time.
+
+**Costs.** P5.3 live spend = the pilot3 sweep, **$0.0268** (40 episodes, 0 errors — no
+403 flakiness). Bare-code prompts are *cheaper* than D17 (shorter input: no docstrings),
+so the projected full D18 run is ~**$0.23**. Cumulative live spend across the whole
+experiment remains well under **$0.15**.
+
+**Decisions / surprises:**
+- **The discriminating bug is a missing-edge-case whose only spec lived in the
+  docstring.** `task_009` is the cleanest possible D18 demonstration: the required
+  behavior (raise on `n < 1`) was knowable *only* from the description or the docstring,
+  both now withheld, so the model must learn it from the checker — and advisory lets it
+  quit before it does. Missing-edge-case is exactly the bug class where a hidden spec
+  bites, consistent with its hard-skew noted back in 1.6.
+- **The effect is real but thin on the dev set (1/10 task).** With n=10 dev tasks the
+  contrast rests on a single task; the full 87-task run (pre-authorized under D18) is
+  what will tell whether the interaction holds at scale or is a one-task fluke. The
+  pre-registration above is the yardstick the full-run table will be read against.
+- **gpt-4.1 self-repairs even in advisory.** On `task_009` the frontier model failed its
+  first submission too (any-FAILED-verdict 1/10) but, in advisory, iterated to a correct
+  answer *before* declaring DONE rather than false-DONE-ing — so binding's forced
+  iteration is (on this sample) redundant for the strong model and load-bearing for the
+  weak one, exactly the thesis interaction.
+- **Bright line intact.** Only the ten dev tasks and the frozen config
+  (`show_description:false`) were run; the API key was never printed; `phase1_tasks/` is
+  byte-for-byte unchanged (asserted); the 87 test tasks remain unopened.
+

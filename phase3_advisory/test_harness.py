@@ -16,6 +16,7 @@ The four required cases:
   event, and non-zero token fields.
 """
 
+import ast
 import json
 import os
 import unittest
@@ -159,6 +160,43 @@ class TestAdvisoryFlow(unittest.TestCase):
         first_shown = self._first_user(s_shown["log_path"])
         self.assertIn(desc, first_shown)
         self.assertNotIn(self.WITHHELD, first_shown)
+
+    # (f) D18 — bare-code presentation strips docstrings + comments -----------
+    def test_f_bare_code_strips_docstrings_and_comments(self):
+        with open(os.path.join(TASK_DIR, "meta.json"), encoding="utf-8") as fh:
+            meta = json.load(fh)
+        # Every docstring in the task's buggy source (module + functions).
+        tree = ast.parse(self.buggy)
+        docstrings = []
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.Module, ast.FunctionDef,
+                                 ast.AsyncFunctionDef, ast.ClassDef)):
+                d = ast.get_docstring(node, clean=False)
+                if d:
+                    docstrings.append(d)
+        self.assertTrue(docstrings, "task_003 buggy source should have a docstring")
+
+        cfg = dict(CONFIG)
+        cfg["show_description"] = False
+        s = harness.run_episode(
+            TASK_DIR, MockModel([_py_block(self.reference) + "\nDONE"]), cfg)
+        first = self._first_user(s["log_path"])
+        # Neither the description nor any docstring text appears in the message.
+        self.assertNotIn(meta["description"], first)
+        for d in docstrings:
+            for line in (ln.strip() for ln in d.splitlines()):
+                if line:
+                    self.assertNotIn(line, first)
+
+        # Direct: strip removes a docstring AND a # comment, preserving code.
+        snippet = ('def f(x):\n'
+                   '    """doc-secret-text."""\n'
+                   '    y = x + 1  # inline-secret-comment\n'
+                   '    return y\n')
+        stripped = harness.strip_doc_and_comments(snippet)
+        self.assertNotIn("doc-secret-text", stripped)
+        self.assertNotIn("inline-secret-comment", stripped)
+        self.assertIn("return y", stripped)
 
 
 if __name__ == "__main__":
