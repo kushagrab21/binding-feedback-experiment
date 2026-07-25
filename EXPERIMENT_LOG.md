@@ -1573,3 +1573,142 @@ model, same feedback text, opposite terminal behaviour — the whole point of th
   `fixtures/`, so it can never touch a phase1 task.
 - **Bright line intact.** Only `task_003` and the fixture were opened this step; no
   task code was authored; `phase1_tasks/` untouched.
+
+---
+
+## 4.2 — Live binding dev episodes: the Phase 4 acceptance gate (redefined)
+
+**Step ID / date:** 4.2 — 2026-07-25
+
+**What was built / run:**
+- `phase4_binding/run_dev_episode.py` — the binding runner, mirroring advisory's CLI
+  shape: `python3 run_dev_episode.py <task_id>` (dev-list only) or `--task-dir <path>`
+  containment-checked to a `fixtures/` root of *either* phase. It drives the binding
+  loop on the shared `phase3_advisory/config.json` (gpt-4.1-mini, temp 0, cap 8) and
+  logs to `phase4_binding/dev_logs/`.
+- `phase3_advisory/fixtures/task_fx_nothing_wrong/` — a second synthetic fixture whose
+  `buggy.py` is a **plainly-correct** `median_of_three` (so the model has nothing to
+  fix), with the same opaque-digest, unpassable-by-construction `tests.py` pattern as
+  `task_fx_unpassable`, `meta.json` marked `"fixture": true`. Same standing exclusion
+  as the first fixture (outside `phase1_tasks/`, excluded from every experiment metric
+  forever). Its `buggy.py` was rewritten from a verbose docstring version to a minimal
+  one-line-body form mid-step (see D15); the committed state is the minimal variant.
+- Three committed episodes under `phase4_binding/acceptance_episodes/`:
+  `episode_task_006_solved.jsonl`, `episode_fx_unpassable_stepcap.jsonl`,
+  `episode_fx_nothing_wrong_stepcap.jsonl` (the final minimal variant).
+
+**Committed evidence (sha256):**
+```
+episode_task_006_solved.jsonl            9e7cbd908b4fee47a47f322ac9e38373bce4472834f1902bd518790e34325efd
+episode_fx_unpassable_stepcap.jsonl      b95e06ca603b275dc3a4519ec8a2518519d87790bffaafb54fcf84359ebcdd3a
+episode_fx_nothing_wrong_stepcap.jsonl   5abd01c80fec99a4adae02d43ae7b0b5217bf1e5a2d25d0deb2ee60d98bf470f
+```
+
+**(a) Mechanism -> evidence map.**
+
+| binding mechanism | evidence | detail |
+|---|---|---|
+| **1. Computed completion** (no declare-done; checker decides) | **LIVE** — `episode_task_006_solved.jsonl` | `task_006` (`digit_sum`): the model submitted a fix at step 1, emitted **no** `DONE` (so zero `done_ignored` events), the checker verdicted `PASSED`, and the harness set `status=solved` / `final_passed=True` purely from the checker. This is the D14 property (completion is computed, not declared) exercised live. The P4.1 worked example already showed the sharper case — a `DONE` beside *failing* code logged `done_ignored` and the loop continued — which advisory would have accepted as a false DONE. |
+| **2. Blocked identical resubmission** | **MOCK** — `test_harness.py::test_b_identical_resubmission_rejected_checker_runs_once` | Re-passed this step: buggy, buggy, reference -> exactly one `resubmission_rejected`, the checker invoked **once** for the two identical submissions, `solved` at step 3, and the rejection re-sent the prior verdict text byte-for-byte. |
+| **3. Escalation** | **MOCK** — `test_harness.py::test_c_three_consecutive_identical_escalate` | Re-passed this step: three identical buggy submissions -> two `resubmission_rejected` (counters 2, 3), one `check_verdict`, `status=escalated` at step 3. |
+
+Mechanisms 2 and 3 could not be produced **live** (finding D15); they are pinned by
+the two mock tests above, which are load-bearing gate evidence and re-run green in the
+4.2 acceptance paste.
+
+**Per-episode summaries + per-step traces** (one line per model turn;
+"distinct/identical" is relative to the *immediately previous* submission, which is
+what the harness compares):
+
+*`episode_task_006_solved` — status=solved, final_passed=True, steps=1, 232 in / 115 out.*
+```
+step 1  distinct  verdict=PASSED   submitted a correct digit_sum; checker passed -> computed solve
+```
+
+*`episode_fx_unpassable_stepcap` — status=step_cap, final_passed=False, steps=8,
+9646 in / 953 out. 5 distinct code bodies / 8 turns.*
+```
+step 1..8  distinct  verdict=FAILED (all)   kept rewriting weighted_average (varied algorithm/comments);
+                                            opaque digest never matches; never two byte-identical in a row
+```
+(5 unique bodies across 8 turns means the model *reused* some forms non-consecutively,
+but never repeated the *immediately previous* one — so no `resubmission_rejected`.)
+
+*`episode_fx_nothing_wrong_stepcap` — status=step_cap, final_passed=False, steps=8,
+8070 in / 770 out. 8 distinct code bodies / 8 turns.*
+```
+step 1..8  distinct  verdict=FAILED (all)   buggy.py is already CORRECT; model still rewrote every turn
+                                            (added comments, switched sort<->comparison ladder); 8/8 distinct
+```
+
+**(b) Finding D15 — gpt-4.1-mini does not byte-repeat under inscrutable feedback.**
+Across every live fixture episode the model, told by the binding prompt to "keep
+submitting a *corrected* replacement" and shown only an opaque digest mismatch (no
+value that could pass), responded by forming a **fresh hypothesis and rewriting the
+code every turn** rather than resubmitting an identical block. It theorised about the
+inscrutable failure — e.g. "maybe the values are opaque types that can't be sorted" —
+and switched `sorted((a, b, c))[1]` to a `<=`-comparison ladder, added defensive
+comments, etc. This held even on plainly-correct one-line code:
+
+| fixture | code under repair | status | distinct bodies / turns | rejections |
+|---|---|---|---|---|
+| `task_fx_unpassable` | numeric `weighted_average` | step_cap | **5 / 8** | 0 |
+| `task_fx_nothing_wrong` (verbose docstring) | correct `median_of_three` | step_cap | **7 / 8** | 0 |
+| `task_fx_nothing_wrong` (minimal one-liner) | correct `median_of_three` | step_cap | **8 / 8** | 0 |
+
+Minimising the fixture to a bare one-line body (to remove any surface to elaborate)
+made repetition *less* likely, not more (8/8 distinct) — the variation is driven by the
+model theorising about the opaque failure, not by docstring real-estate. Consequence:
+the binding harness's identical-resubmission rejection and escalation paths, though
+correct (mock-proven), are effectively **unreachable live for this model** on
+opaque-feedback fixtures within the sanctioned envelope (unchanged config, unchanged
+prompt/harness, opaque-digest fixtures only). D15 sharpens D13: not only does the model
+one-shot the solvable dev tasks, it never gives up by repeating on the unsolvable ones.
+
+**(c) Pre-registered expectations (recorded now, before any Phase 5 data):**
+> Recorded before any Phase 5 data: (i) identical-resubmission rate for gpt-4.1-mini
+> predicted ≈ 0 in both arms; (ii) escalations predicted rare-to-absent; (iii) any
+> advisory-vs-binding success-rate difference is expected to be carried by computed
+> completion rejecting false DONEs (D14), not by resubmission blocking; (iv) per D13,
+> absolute success rates may be near ceiling — the comparison lives in the failures.
+
+**(d) Gate-redefinition record (deviation, logged — not silent).** The literal 4.2 gate
+demanded a *committed live episode* containing `resubmission_rejected ≥ 1` and one
+`status=escalated`. That could not be met live within the sanctioned envelope: per D15
+the experiment model never resubmits a byte-identical block under inscrutable feedback,
+so neither event can fire on any opaque-digest fixture without improvising a trigger
+(fuzzing the identical-match, altering the binding system prompt, or hand-crafting
+non-opaque feedback) — each of which would corrupt the binding arm. Following the
+standing "report, don't improvise" rule, the situation was reported to the Runner
+rather than forced. **The Runner redefined the gate** to: *live* demonstration of
+mechanism 1 (computed completion) plus *mock-pinned* mechanisms 2 and 3 (`test_b`,
+`test_c`), with the non-repetition result recorded as finding **D15**, and both fixture
+`step_cap` episodes committed as the behavioural evidence for D15. No new fixtures,
+model, or prompt changes were authorised beyond the already-built
+`task_fx_nothing_wrong`. The redefined gate is what this step closes.
+
+**Live cost.** Four live episodes (three committed + the one discarded verbose
+`nothing_wrong` variant): 28,201 input + 3,080 output tokens. At gpt-4.1-mini rates
+($0.40/1M in, $1.60/1M out) ≈ **$0.0162** — under two cents, well within guard. (The
+many `task_003-binding` files in `dev_logs/` are offline MockModel runs from the P4.1
+tests and cost nothing.)
+
+**Decisions / surprises:**
+- **The correct-code fixture backfired in an instructive way.** The premise was
+  "nothing to fix -> byte-identical resubmission -> escalation." Empirically, telling a
+  capable model its *correct* code failed an unexplained check makes it *more* creative,
+  not less — it invents reasons and rewrites. The escalation path is a real safety net
+  for a stuck/looping model, but gpt-4.1-mini is not that model. Recorded as D15 so
+  Phase 5/6 does not expect binding's resubmission machinery to move the numbers.
+- **Non-consecutive repetition doesn't trigger rejection, by design.** `fx_unpassable`
+  reused 5 forms across 8 turns yet never fired a rejection, because the harness
+  compares only against the *immediately previous* submission (a genuine "stuck
+  repeating" signal), not against all history. This is the intended semantics; noted so
+  the 5/8 figure is not mistaken for a missed rejection.
+- **`run_dev_episode.py` accepts fixtures from either phase's `fixtures/` dir.** Both
+  fixtures currently live under `phase3_advisory/fixtures/`; the containment check
+  allows a future `phase4_binding/fixtures/` too, but still refuses any `phase1_tasks/`
+  path (verified live: a phase1 `--task-dir` is rejected with exit 2).
+- **Bright line intact.** Only `task_006` (dev) and the two fixtures were opened; the
+  only task code authored was the fixture's deliberately-correct `median_of_three`
+  (harness infrastructure, not a fix to any experiment task); `phase1_tasks/` untouched.

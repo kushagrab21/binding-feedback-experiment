@@ -1,0 +1,10 @@
+{
+  "task_id": "task_fx_nothing_wrong",
+  "seed_name": "fixture",
+  "bug_type": "synthetic-unpassable",
+  "difficulty": "fixture",
+  "function_name": "median_of_three",
+  "description": "Return the median (the middle value when the three are sorted) of three numbers a, b, and c. Ties are allowed; e.g. the median of 2, 2, 5 is 2.",
+  "fixture": true,
+  "note": "synthetic; buggy.py is deliberately CORRECT (nothing to fix) so the model resubmits byte-identically; tests are unpassable by construction; for binding escalation-path demos only; excluded from every experiment metric forever"
+}
