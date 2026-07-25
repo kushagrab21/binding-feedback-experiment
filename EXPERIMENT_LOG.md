@@ -698,3 +698,180 @@ the dev set, giving it one task at each difficulty from the low end of task_ids.
 - **Seed corpus untouched; tasks remain regenerate-only.** 1.6 changed only the
   `difficulty` field (via the generator) and added three generator/validation
   artifacts. The 1.7 freeze is next.
+
+---
+
+## 1.7 — Phase 1 freeze (task set immutable)
+
+**Step ID / date:** 1.7 — 2026-07-25
+
+**What was built:**
+- `phase1_tasks/generator/freeze_hash.py` — computes a single deterministic
+  `FREEZE_HASH` over **git-tracked task content only**. It lists
+  `git ls-files phase1_tasks/tasks` restricted to files inside a `task_*/`
+  directory (dropping the tracked `tasks/.gitkeep` scaffold), sorts them, hashes
+  each as `sha256(path + '\0' + tracked-blob-bytes)` (blob read via
+  `git show :path`), then `sha256`es the concatenation of the per-file hex
+  digests. Prints the task-dir/file counts (asserts 97 × 4 = 388) and the
+  `FREEZE_HASH`. Reading tracked blobs (not the working tree) means untracked
+  noise — iCloud conflict copies, `__pycache__`, `acceptance_*.txt` — cannot
+  perturb the hash.
+- `.gitignore` — added `acceptance_p*.txt` so per-step acceptance transcripts
+  (e.g. the stray `acceptance_p15.txt`) stay untracked and out of `git status`.
+- This 1.7 log entry, declaring the freeze.
+
+**Provenance:** `freeze_hash.py` hand-written this step. No task content was
+created or edited in 1.7 — the freeze is a read-only fingerprint of the task set
+as committed at 1.6 (`fa1bab0`). The spot-check reads existing task files only.
+
+**Evidence of correctness — full validation sweep (raw final lines + real exits):**
+```
+$ python3 phase1_tasks/seeds/validate_seeds.py | tail -1
+RESULT: OK — 25 seeds validated, all invariants satisfied
+  (direct run, no pipe) seeds-exit=0
+$ python3 phase1_tasks/seeds/run_seed_tests.py | tail -1
+SEED TESTS: OK (25 suites, 161 tests, 0.79s wall)
+  (direct run, no pipe) suites-exit=0
+$ python3 phase1_tasks/generator/validate_tasks.py | tail -1
+TASK VALIDATION: OK (97 accepted, both invariants hold for every task, >= 95 required)
+  (direct run, no pipe) tasks-exit=0
+```
+All three green. (Real exit codes were confirmed with a separate `>/dev/null`
+run because `| tail -1` reports tail's status, not the validator's.)
+
+**Freeze fingerprint (determinism guard — ran twice, identical):**
+```
+tracked files under phase1_tasks/tasks: 388
+task directories: 97  (files/dir: expected 4)
+counts OK: 97 tasks x 4 files = 388
+FREEZE_HASH sha256 dfc14c26ec267b03c2789752cf7e63c34a06fd3b94dc6cebe14f9f70b62f2017
+```
+
+**Companion artifact hashes at freeze:**
+```
+split.json      6f69be75d4c1b1ea0348e7b0217ac83e7cfc8c19732a6d6d71e2ec5be9e75015
+difficulty.json d2b54518001a169076f1316ce9789dbba4a84dae3945e982417fa746045aa6ca
+task_validation.txt (from 1.5) b8a12d904f8a7f212051e47729efc58bc158b97e05be2bd9bf3ebb4acd7d70f3
+```
+
+**Spot-check — 10 Runner-chosen tasks (diff + verdict). Every task passed all
+three inspection criteria: (i) bug matches labeled `bug_type` per TAXONOMY.md,
+(ii) the edit is a single local change, (iii) solvable in principle from
+`buggy.py` + failing tests alone.**
+
+*task_004 — seed_001 `clamp`, wrong-return, hard, fails `test_value_above_high_clamped_down` (1/7):*
+```diff
+-        return high
++        return low
+```
+Verdict: PASS — on the value-above-high path the function returns the wrong
+variable (`low` for `high`), the textbook wrong-return; single line; the failing
+test pins the expected clamped-down value.
+
+*task_011 — seed_003 `count_divisors`, wrong-comparison, easy, fails `test_composite` (4/7):*
+```diff
+-        if n % d == 0:
++        if n % d != 0:
+```
+Verdict: PASS — `==`↔`!=` operator swap, operands/branch unchanged (wrong-comparison,
+not inverted-condition); single line; a composite input distinguishes it.
+
+*task_019 — seed_005 `is_palindrome`, wrong-comparison, easy, fails `test_case_sensitive` (4/6):*
+```diff
+-        if s[left] != s[right]:
++        if s[left] == s[right]:
+```
+Verdict: PASS — `!=`↔`==` operator swap (wrong-comparison); single line; any
+non-palindrome / case-differing pair reveals it.
+
+*task_028 — seed_008 `caesar_shift`, wrong-comparison, medium, fails `test_mixed_case_shift` (3/7):*
+```diff
+-        if "a" <= ch <= "z":
++        if "a" < ch <= "z":
+```
+Verdict: PASS — `<=`↔`<` operator swap on the lower bound (wrong-comparison), so
+`'a'` is skipped; single line; a string containing `'a'` distinguishes it.
+
+*task_033 — seed_009 `second_largest`, wrong-comparison, medium, fails `test_duplicates_collapsed` (2/6):*
+```diff
+-    if len(distinct) < 2:
++    if len(distinct) <= 2:
+```
+Verdict: PASS — `<`↔`<=` operator swap with the boundary value `2` unchanged
+(wrong-comparison, not off-by-one, which would move the `2`); single line; a
+2-distinct-value input hits the changed boundary.
+
+*task_049 — seed_014 `merge_sum`, input-mutation, hard, fails `test_inputs_not_mutated` (1/6):*
+```diff
+-    result = {}
++    result = a
+```
+Verdict: PASS — aliases input dict `a` instead of a fresh dict, so the merge
+mutates the caller's argument while still returning the correct sum (input-mutation);
+single line; only the mutation-detecting test fails.
+
+*task_055 — seed_015 `most_common_char`, missing-edge-case, hard, fails `test_empty_raises` (1/6):*
+```diff
+-    if not s:
+-        raise ValueError("string must be non-empty")
+```
+Verdict: PASS — the empty-string validation guard is deleted (missing-edge-case),
+so the empty input is mishandled; single contiguous edit; the empty-input test pins it.
+
+*task_063 — seed_017 `is_leap_year`, inverted-condition, easy, fails `test_another_leap_century` (5/6):*
+```diff
+-    if year % 400 == 0:
++    if not year % 400 == 0:
+```
+Verdict: PASS — a `not` negates the whole predicate, exchanging the true/false
+paths (inverted-condition); single line; a %400 century year reveals it.
+
+*task_078 — seed_020 `bubble_sort`, wrong-variable, easy, fails `test_reverse_sorted` (3/6):*
+```diff
+-                result[j], result[j + 1] = result[j + 1], result[j]
++                result[j], result[j + 1] = result[j], result[j + 1]
+```
+Verdict: PASS — the swap's right-hand side references the wrong variables (each
+slot assigned itself, so no swap happens) — wrong-variable; single line; any
+out-of-order input reveals it.
+
+*task_093 — seed_024 `parse_csv_line`, off-by-one, easy, fails `test_doubled_quote_escape` (5/6):*
+```diff
+-    while index < len(line):
++    while index < len(line) - 1:
+```
+Verdict: PASS — the loop bound is shifted by one (`-1` term) with the `<` operator
+kept, dropping the final character (off-by-one, not wrong-comparison); single line;
+inputs whose last char matters reveal it.
+
+**Worked example (end-to-end, task_055).** `buggy.py` for `most_common_char` has
+had its `if not s: raise ValueError(...)` guard removed. `validate_tasks.py` runs
+the seed's suite against it: `reference.py` passes all 6 tests, `buggy.py` fails
+exactly `test_empty_raises` (`FAIL(1/6)`) because the empty string no longer
+raises. A solver reading `buggy.py` and that failing test can see the missing
+empty-input guard and restore it — solvable from the task alone. This is one of
+the 388 files fingerprinted by `FREEZE_HASH`.
+
+**FREEZE DECLARATION.** Phase 1 task set FROZEN at this commit. Tasks are
+immutable; later-discovered broken tasks are excluded and logged, never fixed.
+During Phases 3–4 only the 10 dev tasks may be opened. The frozen set is pinned by
+`FREEZE_HASH = dfc14c26ec267b03c2789752cf7e63c34a06fd3b94dc6cebe14f9f70b62f2017`
+(388 tracked files across 97 task dirs) and by the git tag `phase1-freeze`.
+
+**Decisions / surprises:**
+- **`freeze_hash.py` hashes tracked blobs, not the working tree**, and restricts
+  to files inside `task_*/`. The first run surfaced 389 tracked files — the extra
+  one was `phase1_tasks/tasks/.gitkeep` (scaffold, not task content); excluding
+  non-`task_*` files gives the expected 97 × 4 = 388. Using `git show :path`
+  guarantees the hash reflects committed content and is immune to iCloud conflict
+  copies and other untracked noise.
+- **All 10 spot-checks passed on the first inspection**; no task was excluded, so
+  the freeze proceeded. Two labels that could look ambiguous were checked against
+  TAXONOMY.md explicitly: task_033 (`<`→`<=`, operator swap = wrong-comparison, not
+  off-by-one since the boundary value is unchanged) and task_093 (`<` kept, bound
+  shifted by one = off-by-one, not wrong-comparison).
+- **`acceptance_p*.txt` is now gitignored** so per-step transcripts never clutter
+  status; the pre-existing `acceptance_p15.txt` stays untracked and is not
+  committed.
+- **No task content changed in 1.7** — the freeze is a fingerprint over the 1.6
+  commit's task files plus one new tool and one `.gitignore` line.
