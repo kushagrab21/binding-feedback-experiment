@@ -9,4 +9,7 @@ def reverse_words(s):
     spaces. Leading/trailing whitespace is dropped. "" yields "".
     """
     words = s.split()
-    return " ".join(reversed(words))
+    reversed_words = []
+    for index in range(len(words) - 1, -1, -1):
+        reversed_words.append(words[index])
+    return " ".join(reversed_words)

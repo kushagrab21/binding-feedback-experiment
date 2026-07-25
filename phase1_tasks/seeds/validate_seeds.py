@@ -19,7 +19,14 @@ from pathlib import Path
 SEED_DIR = Path(__file__).resolve().parent
 MANIFEST = SEED_DIR / "SEEDS.json"
 
-EXPECTED_COUNT = 20
+EXPECTED_COUNT = 25
+
+# Inclusive bounds on the number of code lines in a seed function's body
+# (docstring, blank lines, and comment-only lines excluded). Enforced
+# uniformly across every seed: too few lines means a near-trivial one-liner
+# with little surface for bug injection; too many means an over-large task.
+MIN_BODY_LINES = 5
+MAX_BODY_LINES = 30
 
 # Required number of seeds per category.
 CATEGORY_COUNTS = {
@@ -29,6 +36,7 @@ CATEGORY_COUNTS = {
     "dictionaries": 3,
     "validation": 3,
     "algorithms": 2,
+    "parsing": 5,
 }
 
 # Consistent bug-type vocabulary. Every candidate_bug_type must be drawn
@@ -77,6 +85,33 @@ def top_level_module(name):
     return name.split(".")[0]
 
 
+def count_body_code_lines(func_node, source_lines):
+    """Return the number of code lines in a function's body, excluding the
+    docstring, blank lines, and comment-only lines.
+
+    The body region spans from the first non-docstring statement to the end
+    of the last statement. Within that region, a physical line counts only
+    if, after stripping whitespace, it is non-empty and does not begin with
+    '#'. This deliberately refuses to credit padding (blank lines / comments)
+    toward the required line count.
+    """
+    body = func_node.body
+    if (body and isinstance(body[0], ast.Expr)
+            and isinstance(body[0].value, ast.Constant)
+            and isinstance(body[0].value.value, str)):
+        body = body[1:]  # drop the docstring
+    if not body:
+        return 0
+    start = body[0].lineno
+    end = max(getattr(stmt, "end_lineno", stmt.lineno) for stmt in body)
+    count = 0
+    for lineno in range(start, end + 1):
+        stripped = source_lines[lineno - 1].strip()
+        if stripped and not stripped.startswith("#"):
+            count += 1
+    return count
+
+
 def check_module_ast(errors, seed_id, path, expected_function):
     """AST-level checks for a single seed module. Returns nothing; appends
     to `errors` on any problem."""
@@ -98,19 +133,27 @@ def check_module_ast(errors, seed_id, path, expected_function):
             fail(errors, f"{seed_id}: async function '{node.name}' is not allowed")
         elif isinstance(node, ast.FunctionDef):
             if not node.name.startswith("_"):
-                public_funcs.append(node.name)
+                public_funcs.append(node)
         elif isinstance(node, ast.ClassDef):
             fail(errors, f"{seed_id}: class '{node.name}' is not allowed")
 
     if len(public_funcs) != 1:
         fail(errors,
              f"{seed_id}: expected exactly 1 public top-level function, "
-             f"found {len(public_funcs)}: {public_funcs}")
-    elif public_funcs[0] != expected_function:
-        # (7) function name matches manifest.
-        fail(errors,
-             f"{seed_id}: function name '{public_funcs[0]}' does not match "
-             f"manifest '{expected_function}'")
+             f"found {len(public_funcs)}: {[f.name for f in public_funcs]}")
+    else:
+        func_node = public_funcs[0]
+        if func_node.name != expected_function:
+            # (7) function name matches manifest.
+            fail(errors,
+                 f"{seed_id}: function name '{func_node.name}' does not match "
+                 f"manifest '{expected_function}'")
+        # (12) function body is within the required line bounds.
+        body_lines = count_body_code_lines(func_node, source.splitlines())
+        if not (MIN_BODY_LINES <= body_lines <= MAX_BODY_LINES):
+            fail(errors,
+                 f"{seed_id}: function '{func_node.name}' body has {body_lines} "
+                 f"code line(s); required {MIN_BODY_LINES}-{MAX_BODY_LINES}")
 
     # (8)/(9) import and impurity checks over the whole tree.
     for node in ast.walk(tree):

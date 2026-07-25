@@ -8,7 +8,11 @@ def rotate_left(seq, k):
     around and negative k rotates right. An empty seq yields []. The
     input is not mutated.
     """
-    if not seq:
-        return list(seq)
-    k = k % len(seq)
-    return list(seq[k:]) + list(seq[:k])
+    result = []
+    n = len(seq)
+    if n == 0:
+        return result
+    shift = k % n
+    for index in range(n):
+        result.append(seq[(index + shift) % n])
+    return result

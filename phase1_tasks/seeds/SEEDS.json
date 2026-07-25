@@ -158,5 +158,45 @@
     "category": "algorithms",
     "description": "Sort a list of numbers in ascending order (bubble sort).",
     "candidate_bug_types": ["off-by-one", "swapped-operands"]
+  },
+  {
+    "seed_id": "seed_021",
+    "filename": "seed_021.py",
+    "function_name": "parse_signed_int",
+    "category": "parsing",
+    "description": "Parse a signed integer string without int() on the whole string.",
+    "candidate_bug_types": ["off-by-one", "wrong-comparison"]
+  },
+  {
+    "seed_id": "seed_022",
+    "filename": "seed_022.py",
+    "function_name": "parse_hhmm",
+    "category": "parsing",
+    "description": "Parse a \"HH:MM\" clock string into minutes since midnight.",
+    "candidate_bug_types": ["wrong-comparison", "boundary-omission"]
+  },
+  {
+    "seed_id": "seed_023",
+    "filename": "seed_023.py",
+    "function_name": "parse_roman",
+    "category": "parsing",
+    "description": "Parse a Roman numeral string into its integer value.",
+    "candidate_bug_types": ["wrong-comparison", "inverted-condition"]
+  },
+  {
+    "seed_id": "seed_024",
+    "filename": "seed_024.py",
+    "function_name": "parse_csv_line",
+    "category": "parsing",
+    "description": "Split a simple CSV line into fields, honoring quoted fields.",
+    "candidate_bug_types": ["off-by-one", "boundary-omission"]
+  },
+  {
+    "seed_id": "seed_025",
+    "filename": "seed_025.py",
+    "function_name": "parse_version",
+    "category": "parsing",
+    "description": "Parse a dotted version string into a tuple of integers.",
+    "candidate_bug_types": ["boundary-omission", "missing-case"]
   }
 ]

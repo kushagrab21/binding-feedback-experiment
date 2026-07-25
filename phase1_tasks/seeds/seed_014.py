@@ -7,7 +7,12 @@ def merge_sum(a, b):
     Keys present in only one input keep their value; keys present in both
     map to the sum of the two values. Neither input is mutated.
     """
-    result = dict(a)
-    for key, value in b.items():
-        result[key] = result.get(key, 0) + value
+    result = {}
+    for key in a:
+        result[key] = a[key]
+    for key in b:
+        if key in result:
+            result[key] = result[key] + b[key]
+        else:
+            result[key] = b[key]
     return result

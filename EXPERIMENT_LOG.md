@@ -119,3 +119,98 @@ mutation sites (the `low <= high` bound and the `sorted_list[mid] < target` bran
   they harden the corpus for later bug-injection.
 - `sys.stdlib_module_names` (Py 3.10+) is used for the third-party-import check; the
   code degrades gracefully if it is unavailable.
+
+---
+
+## 1.2-R — Repair: parsing seeds, line-count check, committed spot-check
+
+**Step ID / date:** 1.2-R — 2026-07-25
+
+**What was built:**
+- 5 new parsing seeds `seed_021.py`–`seed_025.py`, category `parsing`
+  (parse_signed_int, parse_hhmm, parse_roman, parse_csv_line, parse_version).
+  Corpus is now 25 seeds.
+- `phase1_tasks/seeds/spotcheck_seeds.py` — committed, reproducible behavioural
+  spot-check replacing the ad-hoc 1.2 check. Imports every seed, asserts concrete
+  input→output pairs and expected exceptions, prints one line per seed, exits
+  non-zero on any failure. 131 assertions across 25 seeds.
+- `validate_seeds.py` updated: `EXPECTED_COUNT = 25`; `CATEGORY_COUNTS["parsing"] = 5`;
+  new uniform body-line-count check (`MIN_BODY_LINES=5`, `MAX_BODY_LINES=30`) applied
+  to all 25 seeds with no grandfather clause.
+- 5 thin seeds rewritten behavior-preservingly (see deviations below).
+
+**Provenance:** Parsing seeds hand-written in 1.2-R. Rewrites of 007/009/012/013/014
+are hand-written explicit-algorithm versions of the originals. Line-count checker
+counts, for each function body, physical lines that (after strip) are non-empty and
+not comment-only, over the region from the first non-docstring statement to the last
+statement's end — so blank lines and comments cannot pad the count.
+
+**Design criteria (parsing seeds):** each parses a string into a value/structure, one
+pure public function, stdlib-only, deterministic, no banned imports/calls, docstring
+contract, body within 5–30 lines, ≥2 candidate bug types from the existing closed
+vocabulary. `parse_signed_int` deliberately avoids `int()` on the whole string.
+
+**Ordering followed (verifiable):** For the 5 rewritten seeds, ≥2 new assertions each
+(including edge cases) were added to `spotcheck_seeds.py` FIRST and run against the
+OLD seed versions — result `SPOTCHECK: OK (20 seeds, 96 assertions)`, exit 0. Only
+THEN were the seeds rewritten, and the spot-check re-run against the new versions —
+again `SPOTCHECK: OK (20 seeds, 96 assertions)`, exit 0. This proves the assertions
+pin behaviour and the rewrites preserved it. Parsing seeds and their 35 assertions
+were added afterward, bringing the final total to 131.
+
+**Body-line counts (validator's own counter):** the 5 rewrites moved from below the
+floor into range — 007 reverse_words 2→5, 009 second_largest 4→13, 012 rotate_left
+4→8, 013 word_frequencies 4→7, 014 merge_sum 4→9. All 25 seeds now fall in 5–30
+(max is seed_024 at 24). Negative control: a 1-line body counts as 1 and is rejected.
+
+**Validation / evidence of correctness:**
+- `python3 phase1_tasks/seeds/validate_seeds.py` →
+  `RESULT: OK — 25 seeds validated, all invariants satisfied` (exit 0).
+- `python3 phase1_tasks/seeds/spotcheck_seeds.py` →
+  `SPOTCHECK: OK (25 seeds, 131 assertions)` (exit 0).
+
+**Worked example (new parsing seed, seed_023 parse_roman):** input→output pairs —
+`parse_roman("IX")` → `9`; `parse_roman("LVIII")` → `58`; `parse_roman("MCMXCIV")` →
+`1994`. It reads symbols right-to-left, subtracting any symbol worth less than the one
+to its right; candidate bug types `wrong-comparison` and `inverted-condition` target
+the `current < previous` branch.
+
+**Worked example (before/after diff, seed_009 second_largest):**
+```diff
+-    distinct = sorted(set(nums))
++    distinct = []
++    for value in nums:
++        if value not in distinct:
++            distinct.append(value)
+     if len(distinct) < 2:
+         raise ValueError("need at least two distinct values")
+-    return distinct[-2]
++    largest = max(distinct)
++    second = None
++    for value in distinct:
++        if value != largest:
++            if second is None or value > second:
++                second = value
++    return second
+```
+The one-liner `sorted(set(nums))[-2]` becomes an explicit dedup + two-pass max scan:
+same result and same ValueError on <2 distinct values (proven by 6 spot-check
+assertions), but now with loops/accumulators/conditionals that are real mutation
+targets.
+
+**Deviations recorded:**
+- The `parsing` category was missing from the original 1.2 corpus; added here as
+  `seed_021`–`seed_025`.
+- The behavioural spot-check in 1.2 was uncommitted and unreproducible; it is now
+  committed as `spotcheck_seeds.py`.
+- 5 seeds (007, 009, 012, 013, 014) initially violated the 5–30 line rule (bodies of
+  2–4 lines). Per Runner instruction (D5), the "don't touch existing seeds' logic"
+  directive was amended and these were rewritten behavior-preservingly to comply;
+  grandfathering and lowering the threshold were both rejected by the Runner as
+  freezing/rewriting-around a spec violation. No freeze is in effect until step 1.7.
+
+**Decisions / surprises:**
+- The line counter intentionally excludes blank and comment lines so the rule cannot
+  be satisfied by padding; the "no padding" constraint is enforced by construction.
+- `parse_csv_line` (24 body lines) is the longest seed and the closest to the upper
+  bound; still comfortably within 30.

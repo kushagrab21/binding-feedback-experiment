@@ -7,7 +7,16 @@ def second_largest(nums):
     Duplicates are collapsed before ranking, so second_largest([5, 5, 3])
     is 3. Raise ValueError if fewer than two distinct values exist.
     """
-    distinct = sorted(set(nums))
+    distinct = []
+    for value in nums:
+        if value not in distinct:
+            distinct.append(value)
     if len(distinct) < 2:
         raise ValueError("need at least two distinct values")
-    return distinct[-2]
+    largest = max(distinct)
+    second = None
+    for value in distinct:
+        if value != largest:
+            if second is None or value > second:
+                second = value
+    return second
