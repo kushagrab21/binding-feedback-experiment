@@ -2,7 +2,7 @@
   "task_id": "task_054",
   "seed_name": "seed_015",
   "bug_type": "inverted-condition",
-  "difficulty": null,
+  "difficulty": "easy",
   "function_name": "most_common_char",
   "description": "Find the most frequent character in a string."
 }

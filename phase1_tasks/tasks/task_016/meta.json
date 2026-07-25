@@ -2,7 +2,7 @@
   "task_id": "task_016",
   "seed_name": "seed_004",
   "bug_type": "wrong-variable",
-  "difficulty": null,
+  "difficulty": "easy",
   "function_name": "gcd_two",
   "description": "Greatest common divisor of two integers via Euclid."
 }

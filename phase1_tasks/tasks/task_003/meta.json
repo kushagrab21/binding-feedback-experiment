@@ -2,7 +2,7 @@
   "task_id": "task_003",
   "seed_name": "seed_001",
   "bug_type": "wrong-comparison",
-  "difficulty": null,
+  "difficulty": "hard",
   "function_name": "clamp",
   "description": "Clamp a value into the inclusive range [low, high]."
 }

@@ -2,7 +2,7 @@
   "task_id": "task_051",
   "seed_name": "seed_014",
   "bug_type": "missing-edge-case",
-  "difficulty": null,
+  "difficulty": "medium",
   "function_name": "merge_sum",
   "description": "Merge two integer-valued dicts, summing on shared keys."
 }

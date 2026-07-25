@@ -2,7 +2,7 @@
   "task_id": "task_047",
   "seed_name": "seed_013",
   "bug_type": "wrong-operator",
-  "difficulty": null,
+  "difficulty": "medium",
   "function_name": "word_frequencies",
   "description": "Count how many times each word appears in a sequence."
 }

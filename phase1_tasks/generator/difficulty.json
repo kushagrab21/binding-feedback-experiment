@@ -1,0 +1,681 @@
+{
+  "task_001": {
+    "seed_id": "seed_001",
+    "bug_type": "inverted-condition",
+    "n_failed": 4,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_002": {
+    "seed_id": "seed_001",
+    "bug_type": "missing-edge-case",
+    "n_failed": 1,
+    "n_total": 7,
+    "difficulty": "hard"
+  },
+  "task_003": {
+    "seed_id": "seed_001",
+    "bug_type": "wrong-comparison",
+    "n_failed": 1,
+    "n_total": 7,
+    "difficulty": "hard"
+  },
+  "task_004": {
+    "seed_id": "seed_001",
+    "bug_type": "wrong-return",
+    "n_failed": 1,
+    "n_total": 7,
+    "difficulty": "hard"
+  },
+  "task_005": {
+    "seed_id": "seed_002",
+    "bug_type": "missing-edge-case",
+    "n_failed": 1,
+    "n_total": 6,
+    "difficulty": "hard"
+  },
+  "task_006": {
+    "seed_id": "seed_002",
+    "bug_type": "off-by-one",
+    "n_failed": 5,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_007": {
+    "seed_id": "seed_002",
+    "bug_type": "wrong-comparison",
+    "n_failed": 1,
+    "n_total": 6,
+    "difficulty": "hard"
+  },
+  "task_008": {
+    "seed_id": "seed_002",
+    "bug_type": "wrong-operator",
+    "n_failed": 4,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_009": {
+    "seed_id": "seed_003",
+    "bug_type": "missing-edge-case",
+    "n_failed": 2,
+    "n_total": 7,
+    "difficulty": "medium"
+  },
+  "task_010": {
+    "seed_id": "seed_003",
+    "bug_type": "off-by-one",
+    "n_failed": 5,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_011": {
+    "seed_id": "seed_003",
+    "bug_type": "wrong-comparison",
+    "n_failed": 4,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_012": {
+    "seed_id": "seed_003",
+    "bug_type": "wrong-operator",
+    "n_failed": 5,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_013": {
+    "seed_id": "seed_004",
+    "bug_type": "inverted-condition",
+    "n_failed": 1,
+    "n_total": 7,
+    "difficulty": "hard"
+  },
+  "task_014": {
+    "seed_id": "seed_004",
+    "bug_type": "wrong-operator",
+    "n_failed": 4,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_015": {
+    "seed_id": "seed_004",
+    "bug_type": "wrong-return",
+    "n_failed": 6,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_016": {
+    "seed_id": "seed_004",
+    "bug_type": "wrong-variable",
+    "n_failed": 4,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_017": {
+    "seed_id": "seed_005",
+    "bug_type": "inverted-condition",
+    "n_failed": 4,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_018": {
+    "seed_id": "seed_005",
+    "bug_type": "off-by-one",
+    "n_failed": 5,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_019": {
+    "seed_id": "seed_005",
+    "bug_type": "wrong-comparison",
+    "n_failed": 4,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_020": {
+    "seed_id": "seed_006",
+    "bug_type": "inverted-condition",
+    "n_failed": 5,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_021": {
+    "seed_id": "seed_006",
+    "bug_type": "missing-edge-case",
+    "n_failed": 1,
+    "n_total": 6,
+    "difficulty": "hard"
+  },
+  "task_022": {
+    "seed_id": "seed_007",
+    "bug_type": "missing-edge-case",
+    "n_failed": 3,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_023": {
+    "seed_id": "seed_007",
+    "bug_type": "off-by-one",
+    "n_failed": 4,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_024": {
+    "seed_id": "seed_007",
+    "bug_type": "wrong-return",
+    "n_failed": 3,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_025": {
+    "seed_id": "seed_007",
+    "bug_type": "wrong-variable",
+    "n_failed": 4,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_026": {
+    "seed_id": "seed_008",
+    "bug_type": "missing-edge-case",
+    "n_failed": 2,
+    "n_total": 7,
+    "difficulty": "medium"
+  },
+  "task_027": {
+    "seed_id": "seed_008",
+    "bug_type": "off-by-one",
+    "n_failed": 2,
+    "n_total": 7,
+    "difficulty": "medium"
+  },
+  "task_028": {
+    "seed_id": "seed_008",
+    "bug_type": "wrong-comparison",
+    "n_failed": 3,
+    "n_total": 7,
+    "difficulty": "medium"
+  },
+  "task_029": {
+    "seed_id": "seed_008",
+    "bug_type": "wrong-operator",
+    "n_failed": 5,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_030": {
+    "seed_id": "seed_009",
+    "bug_type": "inverted-condition",
+    "n_failed": 4,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_031": {
+    "seed_id": "seed_009",
+    "bug_type": "missing-edge-case",
+    "n_failed": 2,
+    "n_total": 6,
+    "difficulty": "medium"
+  },
+  "task_032": {
+    "seed_id": "seed_009",
+    "bug_type": "off-by-one",
+    "n_failed": 2,
+    "n_total": 6,
+    "difficulty": "medium"
+  },
+  "task_033": {
+    "seed_id": "seed_009",
+    "bug_type": "wrong-comparison",
+    "n_failed": 2,
+    "n_total": 6,
+    "difficulty": "medium"
+  },
+  "task_034": {
+    "seed_id": "seed_009",
+    "bug_type": "wrong-return",
+    "n_failed": 4,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_035": {
+    "seed_id": "seed_010",
+    "bug_type": "wrong-return",
+    "n_failed": 4,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_036": {
+    "seed_id": "seed_010",
+    "bug_type": "wrong-variable",
+    "n_failed": 4,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_037": {
+    "seed_id": "seed_011",
+    "bug_type": "missing-edge-case",
+    "n_failed": 1,
+    "n_total": 7,
+    "difficulty": "hard"
+  },
+  "task_038": {
+    "seed_id": "seed_011",
+    "bug_type": "off-by-one",
+    "n_failed": 3,
+    "n_total": 7,
+    "difficulty": "medium"
+  },
+  "task_039": {
+    "seed_id": "seed_011",
+    "bug_type": "wrong-comparison",
+    "n_failed": 1,
+    "n_total": 7,
+    "difficulty": "hard"
+  },
+  "task_040": {
+    "seed_id": "seed_011",
+    "bug_type": "wrong-operator",
+    "n_failed": 4,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_041": {
+    "seed_id": "seed_012",
+    "bug_type": "input-mutation",
+    "n_failed": 5,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_042": {
+    "seed_id": "seed_012",
+    "bug_type": "missing-edge-case",
+    "n_failed": 1,
+    "n_total": 6,
+    "difficulty": "hard"
+  },
+  "task_043": {
+    "seed_id": "seed_012",
+    "bug_type": "off-by-one",
+    "n_failed": 4,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_044": {
+    "seed_id": "seed_012",
+    "bug_type": "wrong-operator",
+    "n_failed": 3,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_045": {
+    "seed_id": "seed_013",
+    "bug_type": "inverted-condition",
+    "n_failed": 5,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_046": {
+    "seed_id": "seed_013",
+    "bug_type": "off-by-one",
+    "n_failed": 4,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_047": {
+    "seed_id": "seed_013",
+    "bug_type": "wrong-operator",
+    "n_failed": 2,
+    "n_total": 6,
+    "difficulty": "medium"
+  },
+  "task_048": {
+    "seed_id": "seed_013",
+    "bug_type": "wrong-return",
+    "n_failed": 6,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_049": {
+    "seed_id": "seed_014",
+    "bug_type": "input-mutation",
+    "n_failed": 1,
+    "n_total": 6,
+    "difficulty": "hard"
+  },
+  "task_050": {
+    "seed_id": "seed_014",
+    "bug_type": "inverted-condition",
+    "n_failed": 4,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_051": {
+    "seed_id": "seed_014",
+    "bug_type": "missing-edge-case",
+    "n_failed": 2,
+    "n_total": 6,
+    "difficulty": "medium"
+  },
+  "task_052": {
+    "seed_id": "seed_014",
+    "bug_type": "wrong-operator",
+    "n_failed": 2,
+    "n_total": 6,
+    "difficulty": "medium"
+  },
+  "task_053": {
+    "seed_id": "seed_014",
+    "bug_type": "wrong-variable",
+    "n_failed": 2,
+    "n_total": 6,
+    "difficulty": "medium"
+  },
+  "task_054": {
+    "seed_id": "seed_015",
+    "bug_type": "inverted-condition",
+    "n_failed": 3,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_055": {
+    "seed_id": "seed_015",
+    "bug_type": "missing-edge-case",
+    "n_failed": 1,
+    "n_total": 6,
+    "difficulty": "hard"
+  },
+  "task_056": {
+    "seed_id": "seed_015",
+    "bug_type": "wrong-comparison",
+    "n_failed": 1,
+    "n_total": 6,
+    "difficulty": "hard"
+  },
+  "task_057": {
+    "seed_id": "seed_015",
+    "bug_type": "wrong-return",
+    "n_failed": 5,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_058": {
+    "seed_id": "seed_016",
+    "bug_type": "inverted-condition",
+    "n_failed": 5,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_059": {
+    "seed_id": "seed_016",
+    "bug_type": "missing-edge-case",
+    "n_failed": 1,
+    "n_total": 7,
+    "difficulty": "hard"
+  },
+  "task_060": {
+    "seed_id": "seed_016",
+    "bug_type": "off-by-one",
+    "n_failed": 1,
+    "n_total": 7,
+    "difficulty": "hard"
+  },
+  "task_061": {
+    "seed_id": "seed_016",
+    "bug_type": "wrong-comparison",
+    "n_failed": 4,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_062": {
+    "seed_id": "seed_016",
+    "bug_type": "wrong-operator",
+    "n_failed": 3,
+    "n_total": 7,
+    "difficulty": "medium"
+  },
+  "task_063": {
+    "seed_id": "seed_017",
+    "bug_type": "inverted-condition",
+    "n_failed": 5,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_064": {
+    "seed_id": "seed_017",
+    "bug_type": "missing-edge-case",
+    "n_failed": 2,
+    "n_total": 6,
+    "difficulty": "medium"
+  },
+  "task_065": {
+    "seed_id": "seed_017",
+    "bug_type": "wrong-comparison",
+    "n_failed": 3,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_066": {
+    "seed_id": "seed_017",
+    "bug_type": "wrong-operator",
+    "n_failed": 1,
+    "n_total": 6,
+    "difficulty": "hard"
+  },
+  "task_067": {
+    "seed_id": "seed_018",
+    "bug_type": "inverted-condition",
+    "n_failed": 3,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_068": {
+    "seed_id": "seed_018",
+    "bug_type": "wrong-return",
+    "n_failed": 2,
+    "n_total": 6,
+    "difficulty": "medium"
+  },
+  "task_069": {
+    "seed_id": "seed_018",
+    "bug_type": "wrong-variable",
+    "n_failed": 2,
+    "n_total": 6,
+    "difficulty": "medium"
+  },
+  "task_070": {
+    "seed_id": "seed_019",
+    "bug_type": "inverted-condition",
+    "n_failed": 3,
+    "n_total": 7,
+    "difficulty": "medium"
+  },
+  "task_071": {
+    "seed_id": "seed_019",
+    "bug_type": "off-by-one",
+    "n_failed": 2,
+    "n_total": 7,
+    "difficulty": "medium"
+  },
+  "task_072": {
+    "seed_id": "seed_019",
+    "bug_type": "wrong-comparison",
+    "n_failed": 3,
+    "n_total": 7,
+    "difficulty": "medium"
+  },
+  "task_073": {
+    "seed_id": "seed_019",
+    "bug_type": "wrong-operator",
+    "n_failed": 4,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_074": {
+    "seed_id": "seed_019",
+    "bug_type": "wrong-return",
+    "n_failed": 4,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_075": {
+    "seed_id": "seed_020",
+    "bug_type": "input-mutation",
+    "n_failed": 1,
+    "n_total": 6,
+    "difficulty": "hard"
+  },
+  "task_076": {
+    "seed_id": "seed_020",
+    "bug_type": "off-by-one",
+    "n_failed": 3,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_077": {
+    "seed_id": "seed_020",
+    "bug_type": "wrong-comparison",
+    "n_failed": 3,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_078": {
+    "seed_id": "seed_020",
+    "bug_type": "wrong-variable",
+    "n_failed": 3,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_079": {
+    "seed_id": "seed_021",
+    "bug_type": "missing-edge-case",
+    "n_failed": 1,
+    "n_total": 8,
+    "difficulty": "hard"
+  },
+  "task_080": {
+    "seed_id": "seed_021",
+    "bug_type": "off-by-one",
+    "n_failed": 3,
+    "n_total": 8,
+    "difficulty": "medium"
+  },
+  "task_081": {
+    "seed_id": "seed_021",
+    "bug_type": "wrong-comparison",
+    "n_failed": 2,
+    "n_total": 8,
+    "difficulty": "medium"
+  },
+  "task_082": {
+    "seed_id": "seed_021",
+    "bug_type": "wrong-operator",
+    "n_failed": 3,
+    "n_total": 8,
+    "difficulty": "medium"
+  },
+  "task_083": {
+    "seed_id": "seed_022",
+    "bug_type": "missing-edge-case",
+    "n_failed": 2,
+    "n_total": 7,
+    "difficulty": "medium"
+  },
+  "task_084": {
+    "seed_id": "seed_022",
+    "bug_type": "off-by-one",
+    "n_failed": 1,
+    "n_total": 7,
+    "difficulty": "hard"
+  },
+  "task_085": {
+    "seed_id": "seed_022",
+    "bug_type": "wrong-comparison",
+    "n_failed": 1,
+    "n_total": 7,
+    "difficulty": "hard"
+  },
+  "task_086": {
+    "seed_id": "seed_022",
+    "bug_type": "wrong-operator",
+    "n_failed": 2,
+    "n_total": 7,
+    "difficulty": "medium"
+  },
+  "task_087": {
+    "seed_id": "seed_023",
+    "bug_type": "inverted-condition",
+    "n_failed": 5,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_088": {
+    "seed_id": "seed_023",
+    "bug_type": "missing-edge-case",
+    "n_failed": 1,
+    "n_total": 7,
+    "difficulty": "hard"
+  },
+  "task_089": {
+    "seed_id": "seed_023",
+    "bug_type": "wrong-comparison",
+    "n_failed": 2,
+    "n_total": 7,
+    "difficulty": "medium"
+  },
+  "task_090": {
+    "seed_id": "seed_023",
+    "bug_type": "wrong-operator",
+    "n_failed": 5,
+    "n_total": 7,
+    "difficulty": "easy"
+  },
+  "task_091": {
+    "seed_id": "seed_024",
+    "bug_type": "inverted-condition",
+    "n_failed": 4,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_092": {
+    "seed_id": "seed_024",
+    "bug_type": "missing-edge-case",
+    "n_failed": 1,
+    "n_total": 6,
+    "difficulty": "hard"
+  },
+  "task_093": {
+    "seed_id": "seed_024",
+    "bug_type": "off-by-one",
+    "n_failed": 5,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_094": {
+    "seed_id": "seed_024",
+    "bug_type": "wrong-comparison",
+    "n_failed": 6,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_095": {
+    "seed_id": "seed_025",
+    "bug_type": "inverted-condition",
+    "n_failed": 3,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_096": {
+    "seed_id": "seed_025",
+    "bug_type": "wrong-return",
+    "n_failed": 3,
+    "n_total": 6,
+    "difficulty": "easy"
+  },
+  "task_097": {
+    "seed_id": "seed_025",
+    "bug_type": "wrong-variable",
+    "n_failed": 2,
+    "n_total": 6,
+    "difficulty": "medium"
+  }
+}

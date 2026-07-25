@@ -2,7 +2,7 @@
   "task_id": "task_066",
   "seed_name": "seed_017",
   "bug_type": "wrong-operator",
-  "difficulty": null,
+  "difficulty": "hard",
   "function_name": "is_leap_year",
   "description": "Determine whether a year is a Gregorian leap year."
 }

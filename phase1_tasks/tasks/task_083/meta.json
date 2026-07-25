@@ -2,7 +2,7 @@
   "task_id": "task_083",
   "seed_name": "seed_022",
   "bug_type": "missing-edge-case",
-  "difficulty": null,
+  "difficulty": "medium",
   "function_name": "parse_hhmm",
   "description": "Parse a \"HH:MM\" clock string into minutes since midnight."
 }

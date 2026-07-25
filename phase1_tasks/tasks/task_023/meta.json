@@ -2,7 +2,7 @@
   "task_id": "task_023",
   "seed_name": "seed_007",
   "bug_type": "off-by-one",
-  "difficulty": null,
+  "difficulty": "easy",
   "function_name": "reverse_words",
   "description": "Reverse the order of whitespace-separated words."
 }

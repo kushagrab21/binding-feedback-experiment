@@ -39,6 +39,7 @@ TASKS_DIR = PHASE1_DIR / "tasks"
 
 MUTATIONS_PATH = GEN_DIR / "mutations.json"
 SEEDS_PATH = SEEDS_DIR / "SEEDS.json"
+DIFFICULTY_PATH = GEN_DIR / "difficulty.json"
 
 
 def die(message):
@@ -80,6 +81,16 @@ def main():
     seeds = {entry["seed_id"]: entry
              for entry in json.loads(SEEDS_PATH.read_text())}
 
+    # Difficulty labels (step 1.6) are optional: if difficulty.json exists, every
+    # task's difficulty is stamped from it, keyed by (seed_id, bug_type); a task
+    # with no matching entry is a hard error. If the file is absent (e.g. before
+    # 1.6 has run), difficulty stays null per TASK_FORMAT.md.
+    difficulty_map = None
+    if DIFFICULTY_PATH.exists():
+        difficulty_map = {}
+        for rec in json.loads(DIFFICULTY_PATH.read_text()).values():
+            difficulty_map[(rec["seed_id"], rec["bug_type"])] = rec["difficulty"]
+
     # Deterministic ordering: sort by (seed_id, bug_type).
     mutations = sorted(mutations, key=lambda m: (m["seed_id"], m["bug_type"]))
 
@@ -112,6 +123,14 @@ def main():
             die(f"{seed_id}/{bug_type}: mutation produced no change "
                 f"(old == new?)")
 
+        difficulty = None
+        if difficulty_map is not None:
+            key = (seed_id, bug_type)
+            if key not in difficulty_map:
+                die(f"difficulty.json has no entry for ({seed_id}, {bug_type}); "
+                    f"every task must be labelled once difficulty.json exists")
+            difficulty = difficulty_map[key]
+
         task_id = f"task_{i:03d}"
         task_dir = TASKS_DIR / task_id
         task_dir.mkdir(parents=True)
@@ -124,7 +143,7 @@ def main():
             "task_id": task_id,
             "seed_name": seed_id,
             "bug_type": bug_type,
-            "difficulty": None,
+            "difficulty": difficulty,
             "function_name": function_name,
             "description": description,
         }

@@ -2,7 +2,7 @@
   "task_id": "task_079",
   "seed_name": "seed_021",
   "bug_type": "missing-edge-case",
-  "difficulty": null,
+  "difficulty": "hard",
   "function_name": "parse_signed_int",
   "description": "Parse a signed integer string without int() on the whole string."
 }

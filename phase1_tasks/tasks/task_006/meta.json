@@ -2,7 +2,7 @@
   "task_id": "task_006",
   "seed_name": "seed_002",
   "bug_type": "off-by-one",
-  "difficulty": null,
+  "difficulty": "easy",
   "function_name": "digit_sum",
   "description": "Sum the base-10 digits of a non-negative integer."
 }

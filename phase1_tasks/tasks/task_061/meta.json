@@ -2,7 +2,7 @@
   "task_id": "task_061",
   "seed_name": "seed_016",
   "bug_type": "wrong-comparison",
-  "difficulty": null,
+  "difficulty": "easy",
   "function_name": "is_valid_identifier",
   "description": "Validate a Python-like identifier string."
 }

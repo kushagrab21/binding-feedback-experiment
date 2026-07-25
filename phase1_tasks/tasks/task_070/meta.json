@@ -2,7 +2,7 @@
   "task_id": "task_070",
   "seed_name": "seed_019",
   "bug_type": "inverted-condition",
-  "difficulty": null,
+  "difficulty": "medium",
   "function_name": "binary_search",
   "description": "Binary search for a target in a sorted list."
 }

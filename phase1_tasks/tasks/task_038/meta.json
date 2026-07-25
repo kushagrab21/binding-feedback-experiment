@@ -2,7 +2,7 @@
   "task_id": "task_038",
   "seed_name": "seed_011",
   "bug_type": "off-by-one",
-  "difficulty": null,
+  "difficulty": "medium",
   "function_name": "chunk",
   "description": "Split a sequence into consecutive fixed-size chunks."
 }

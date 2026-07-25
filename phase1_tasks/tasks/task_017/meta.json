@@ -2,7 +2,7 @@
   "task_id": "task_017",
   "seed_name": "seed_005",
   "bug_type": "inverted-condition",
-  "difficulty": null,
+  "difficulty": "easy",
   "function_name": "is_palindrome",
   "description": "Test whether a string reads the same forwards and backwards."
 }

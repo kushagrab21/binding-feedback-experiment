@@ -2,7 +2,7 @@
   "task_id": "task_042",
   "seed_name": "seed_012",
   "bug_type": "missing-edge-case",
-  "difficulty": null,
+  "difficulty": "hard",
   "function_name": "rotate_left",
   "description": "Rotate a sequence to the left by k positions."
 }

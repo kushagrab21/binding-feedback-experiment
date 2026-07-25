@@ -2,7 +2,7 @@
   "task_id": "task_096",
   "seed_name": "seed_025",
   "bug_type": "wrong-return",
-  "difficulty": null,
+  "difficulty": "easy",
   "function_name": "parse_version",
   "description": "Parse a dotted version string into a tuple of integers."
 }
