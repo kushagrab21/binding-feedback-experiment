@@ -73,14 +73,30 @@ REMINDER_MESSAGE = (
 )
 
 
-def build_first_user_message(meta, buggy_source):
-    """The first user turn: task description + function name + full buggy source."""
+# Design revision D17: when the description is withheld, this fixed sentence replaces
+# it verbatim (the meta description string must not appear anywhere in the message).
+WITHHELD_NOTICE = (
+    "The specification of the intended behavior is withheld. Use the checker's "
+    "feedback to determine correct behavior."
+)
+
+
+def build_first_user_message(meta, buggy_source, show_description=True):
+    """The first user turn: (description | withheld-notice) + function name + buggy source.
+
+    This is the ONE shared first-message builder (the binding harness imports it), so
+    both arms present the task identically. When ``show_description`` is False (D17), the
+    task's ``meta["description"]`` is withheld entirely — it must not appear anywhere in
+    the message — and replaced by the fixed ``WITHHELD_NOTICE`` sentence; the function
+    name and full buggy source are still shown.
+    """
+    header = meta["description"] if show_description else WITHHELD_NOTICE
     return (
         "%s\n\n"
         "Function to fix: %s\n\n"
         "Here is the current (buggy) implementation:\n\n"
         "```python\n%s\n```\n"
-        % (meta["description"], meta["function_name"], buggy_source.rstrip("\n"))
+        % (header, meta["function_name"], buggy_source.rstrip("\n"))
     )
 
 
@@ -185,7 +201,8 @@ def run_episode(task_dir, client, config):
     log = _EpisodeLog(log_path, model_id)
 
     system = SYSTEM_PROMPT
-    first_user = build_first_user_message(meta, buggy_source)
+    show_description = bool(config.get("show_description", True))
+    first_user = build_first_user_message(meta, buggy_source, show_description)
     messages = [
         {"role": "system", "content": system},
         {"role": "user", "content": first_user},

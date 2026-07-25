@@ -176,6 +176,38 @@ class TestBindingFlow(unittest.TestCase):
         rejected = [e for e in events if e["event"] == "resubmission_rejected"]
         self.assertEqual(len(rejected), 0)
 
+    # (e) D17 — description withheld vs shown in the first user message -------
+    WITHHELD = ("The specification of the intended behavior is withheld. "
+                "Use the checker's feedback to determine correct behavior.")
+
+    def _first_user(self, log_path):
+        for e in _events(log_path):
+            if e["event"] == "user_message" and e["step"] == 0:
+                return e["content"]
+        raise AssertionError("no step-0 user_message")
+
+    def test_e_hidden_vs_shown_description(self):
+        with open(os.path.join(TASK_DIR, "meta.json"), encoding="utf-8") as fh:
+            meta = json.load(fh)
+        desc = meta["description"]
+
+        # show_description: False -> description text absent, withheld notice present.
+        cfg_hidden = dict(CONFIG)
+        cfg_hidden["show_description"] = False
+        s_hidden = harness.run_episode(
+            TASK_DIR, MockModel([_py_block(self.reference)]), cfg_hidden)
+        first_hidden = self._first_user(s_hidden["log_path"])
+        self.assertNotIn(desc, first_hidden)
+        self.assertIn(self.WITHHELD, first_hidden)
+        self.assertIn(meta["function_name"], first_hidden)
+
+        # Default (no show_description key) -> legacy: description present, no notice.
+        s_shown = harness.run_episode(
+            TASK_DIR, MockModel([_py_block(self.reference)]), CONFIG)
+        first_shown = self._first_user(s_shown["log_path"])
+        self.assertIn(desc, first_shown)
+        self.assertNotIn(self.WITHHELD, first_shown)
+
 
 if __name__ == "__main__":
     unittest.main()

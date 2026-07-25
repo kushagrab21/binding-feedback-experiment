@@ -50,8 +50,6 @@ ADVISORY = _load_module("adv_harness", os.path.join(_REPO, "phase3_advisory", "h
 BINDING = _load_module("bind_harness", os.path.join(_REPO, "phase4_binding", "harness.py"))
 
 TASKS_DIR = os.path.join(_REPO, "phase1_tasks", "tasks")
-PILOT_LOG_DIR = os.path.join(_HERE, "logs", "pilot")
-MANIFEST_PATH = os.path.join(_HERE, "manifests", "pilot_manifest.json")
 
 FREEZE_HASH = "dfc14c26ec267b03c2789752cf7e63c34a06fd3b94dc6cebe14f9f70b62f2017"
 
@@ -83,14 +81,26 @@ def _slug(model):
     return model.replace("/", "_")
 
 
-def run_pilot():
-    # Fresh pilot dir every run -> exactly 40 committed transcripts, no stale files.
-    if os.path.isdir(PILOT_LOG_DIR):
-        shutil.rmtree(PILOT_LOG_DIR)
-    os.makedirs(PILOT_LOG_DIR, exist_ok=True)
-    os.makedirs(os.path.dirname(MANIFEST_PATH), exist_ok=True)
+def _success(mode, status, final_passed):
+    """Mode-specific success: advisory = final verdict passed; binding = status solved."""
+    return bool(final_passed) if mode == "advisory" else (status == "solved")
 
-    base_config = load_config()
+
+def run_pilot(hide_description=False):
+    # D17: when hiding the description, this is the "pilot2" run under withheld-spec.
+    tag = "pilot2" if hide_description else "pilot"
+    show_description = not hide_description
+    pilot_log_dir = os.path.join(_HERE, "logs", tag)
+    manifest_path = os.path.join(_HERE, "manifests", "%s_manifest.json" % tag)
+
+    # Fresh pilot dir every run -> exactly 40 committed transcripts, no stale files.
+    if os.path.isdir(pilot_log_dir):
+        shutil.rmtree(pilot_log_dir)
+    os.makedirs(pilot_log_dir, exist_ok=True)
+    os.makedirs(os.path.dirname(manifest_path), exist_ok=True)
+
+    base_config = dict(load_config())
+    base_config["show_description"] = show_description
     episodes = []
     n = 0
     total = len(MODELS) * len(MODES) * len(DEV_TASKS)
@@ -103,8 +113,8 @@ def run_pilot():
                 n += 1
                 task_dir = os.path.join(TASKS_DIR, task_id)
                 client = OpenAIChatClient(config)
-                dest_name = "pilot__%s__%s__%s.jsonl" % (_slug(model), mode_name, task_id)
-                dest = os.path.join(PILOT_LOG_DIR, dest_name)
+                dest_name = "%s__%s__%s__%s.jsonl" % (tag, _slug(model), mode_name, task_id)
+                dest = os.path.join(pilot_log_dir, dest_name)
 
                 row = {"model": model, "mode": mode_name, "task_id": task_id}
                 last_err = None
@@ -114,6 +124,8 @@ def run_pilot():
                         shutil.copyfile(summary["log_path"], dest)
                         row.update({
                             "status": summary["status"],
+                            "success": _success(mode_name, summary["status"],
+                                                 summary["final_passed"]),
                             "final_passed": summary["final_passed"],
                             "steps": summary["steps"],
                             "tokens_in": summary["tokens_in"],
@@ -141,7 +153,8 @@ def run_pilot():
                 time.sleep(SLEEP_BETWEEN)
 
     manifest = {
-        "phase": "5.1 dev-set pilot",
+        "phase": "5.2 dev-set pilot (D17, description withheld)" if hide_description
+                 else "5.1 dev-set pilot",
         "date": datetime.datetime.now().astimezone().isoformat(),
         "models": MODELS,
         "model_labels": {
@@ -151,18 +164,20 @@ def run_pilot():
         "modes": [m[0] for m in MODES],
         "task_ids": DEV_TASKS,
         "task_set_freeze_hash": FREEZE_HASH,
+        "show_description": show_description,
         "config": base_config,
         "episodes": episodes,
     }
-    with open(MANIFEST_PATH, "w", encoding="utf-8") as fh:
+    with open(manifest_path, "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, indent=2)
         fh.write("\n")
 
     errors = [e for e in episodes if e.get("status") == "error"]
-    print("\npilot complete: %d episodes, %d errors -> %s"
-          % (len(episodes), len(errors), os.path.relpath(MANIFEST_PATH, _REPO)))
+    print("\npilot complete: %d episodes, %d errors (show_description=%s) -> %s"
+          % (len(episodes), len(errors), show_description,
+             os.path.relpath(manifest_path, _REPO)))
     return 0 if not errors else 1
 
 
 if __name__ == "__main__":
-    sys.exit(run_pilot())
+    sys.exit(run_pilot(hide_description="--hide-description" in sys.argv))

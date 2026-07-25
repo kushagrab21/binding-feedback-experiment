@@ -100,14 +100,21 @@ def _extract_model(argv):
 
 def main(argv):
     model_override, argv = _extract_model(argv)
+    # D17: withhold the task description from the first user message.
+    hide_desc = "--hide-description" in argv
+    if hide_desc:
+        argv = [a for a in argv if a != "--hide-description"]
     task_dir = _resolve_task_dir(argv)
     if task_dir is None:
         return 2
 
     config = load_config()  # shared phase3_advisory/config.json
-    if model_override:
+    if model_override or hide_desc:
         config = dict(config)
-        config["model"] = model_override
+        if model_override:
+            config["model"] = model_override
+        if hide_desc:
+            config["show_description"] = False
     client = OpenAIChatClient(config)
     summary = harness.run_episode(task_dir, client, config)
 

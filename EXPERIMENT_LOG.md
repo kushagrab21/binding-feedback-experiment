@@ -1840,3 +1840,138 @@ b95e06ca603b275dc3a4519ec8a2518519d87790bffaafb54fcf84359ebcdd3a  episode_fx_unp
   tasks push mean steps up, the projection scales with observed tokens, not a guess.
 - **Bright line intact.** Only the ten dev tasks and the frozen config were run; the API
   key was never printed; `phase1_tasks/` untouched; the 87 test tasks remain unopened.
+
+---
+
+## 5.2 — Design revision D17 (hidden description) + re-pilot
+
+**Step ID / date:** 5.2 — 2026-07-25
+
+**Design revision D17 — withhold the task description (adopted before any test-set
+episode).** P5.1 showed both models one-shot all ten dev tasks *with* the description
+handed to them. D17 revises the task presentation to make the task harder and force the
+model to rely on the checker: the first user message no longer contains the task's
+`meta["description"]`; instead it shows the function name + full `buggy.py` source plus
+one fixed sentence, verbatim:
+> The specification of the intended behavior is withheld. Use the checker's feedback to determine correct behavior.
+
+**What was built:**
+- `phase3_advisory/config.json` gains `"show_description"` (default **true** for
+  backward compatibility; the experiment runs it **false**).
+- The ONE shared first-message builder `build_first_user_message(meta, buggy_source,
+  show_description=True)` in `phase3_advisory/harness.py` (the binding harness imports
+  it) now branches on `show_description`: when false it substitutes the fixed
+  `WITHHELD_NOTICE` for the description, which therefore **does not appear anywhere in
+  the message**. Both `run_episode` functions read `config["show_description"]` and pass
+  it through.
+- Both `run_dev_episode.py` scripts and `run_pilot.py` gain a `--hide-description`
+  switch that sets it. `run_pilot.py` writes the withheld-spec run to
+  `phase5_runs/logs/pilot2/` + `manifests/pilot2_manifest.json` (with
+  `"show_description": false`). `pilot_report.py` is parameterized with `--manifest` and
+  now also reports, per cell, the deeper **"episodes w/ FAILED"** count (≥1
+  `check_verdict` `passed=False` mid-episode) and a per-model **any-FAILED-verdict**
+  tally (the decision-rule metric).
+- One new mock test per suite (`test_e_hidden_vs_shown_description` in each): under
+  `show_description:false` the first user message omits the description text and contains
+  the withheld-notice sentence; under the default it is unchanged legacy behavior. The
+  four pre-existing tests in each suite are untouched and still pass (5/5 each).
+
+**Live D17 wiring proof (real pilot2 episode, gpt-4.1 advisory, task_003).** The step-0
+user message begins with the withheld notice and does **not** contain the description
+string `"Clamp a value into the inclusive range [low, high]."`:
+```
+STEP0 USER: "The specification of the intended behavior is withheld. Use the checker's
+             feedback to determine correct behavior.\n\nFunction to fix: clamp\n\n..."
+  contains description string : False
+  contains withheld notice    : True
+```
+
+**The pilot2 table (40 live episodes, `--hide-description`, show_description=False):**
+
+| model (arm) | mode | eps | success | eps w/ FAILED | false-DONE | done_ign/rej/esc | mean steps | tok in/out | pilot cost | proj full-run (×87) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| gpt-4o-mini-2024-07-18 (cheap/weak) | advisory | 10 | 10/10 | **0** | 0 | — | 1.30 | 3429 / 1243 | $0.0013 | $0.0110 |
+| gpt-4o-mini-2024-07-18 (cheap/weak) | binding  | 10 | 10/10 | **0** | — | 0/0/0 | 1.00 | 2440 / 1263 | $0.0011 | $0.0098 |
+| gpt-4.1 (frontier/strong)           | advisory | 10 | 10/10 | **0** | 0 | — | 2.00 | 6038 / 1158 | $0.0213 | $0.1857 |
+| gpt-4.1 (frontier/strong)           | binding  | 10 | 10/10 | **0** | — | 0/0/0 | 1.00 | 2440 / 1204 | $0.0145 | $0.1263 |
+
+Pilot2 total **$0.0382** (40 episodes); projected full run **$0.3327** (348 episodes).
+
+**Signal assessment — still zero.** Per model, dev tasks failed at least once in either
+arm:
+```
+gpt-4o-mini-2024-07-18  (cheap/weak)     : final-failed 0/10 ; any-FAILED-verdict 0/10
+gpt-4.1                 (frontier/strong) : final-failed 0/10 ; any-FAILED-verdict 0/10
+```
+**Not a single FAILED verdict occurred in any of the 40 episodes**, even with the
+description withheld. There is therefore **no FAILED→repair trace to show** — the "first
+genuine feedback-driven repair of the experiment" did not occur under D17 on the dev set.
+
+**What the model did instead — a behavioral shift, but not repair.** D17 *did* change
+gpt-4.1's advisory behavior: every one of its 10 advisory episodes now runs **2 steps**
+(mean 2.00, up from 1.40 in P5.1), and the binding arm stays at 1 step. The 2-step
+pattern is **submit → PASSED → declare**, not fail-and-fix:
+```
+step 1  model_response  code=True  DONE=False   -> check_verdict step 1 passed=True
+step 2  model_response  code=False DONE=True     -> episode_end status=model_declared_done steps=2
+```
+Without the spec, gpt-4.1 submits a (correct) implementation and **waits for the checker
+to confirm PASSED before declaring DONE**, rather than one-shot-declaring as it did with
+the description. That is genuinely feedback-*driven* (it used the verdict as
+confirmation) but not feedback-*corrected* (the first submission was already right).
+Binding never needs the second step because completion is computed — the PASSED verdict
+*is* the terminal event. So D17's only measurable effect is extra advisory confirmation
+turns (and ~40% more gpt-4.1 advisory input tokens), not any advisory-vs-binding
+correctness gap.
+
+**Why the ceiling survived withholding the description (important caveat).** Hiding
+`meta["description"]` does **not** hide the `buggy.py` source, which is shown in full and
+still carries a module docstring *and* a function docstring describing intended behavior
+(e.g. task_003's `clamp` buggy source documents "Return value constrained to the
+inclusive range [low, high]. … Raise ValueError if low > high"). So D17 withholds the
+*separate* spec string but not every behavioral hint; the models reconstruct intent from
+the function name + the docstrings + the code structure. A single-mutation bug in a
+short function with an intact docstring is still below both models' one-shot threshold.
+Fully starving the model of intent would require stripping docstrings from the presented
+source too — which would mutate the frozen task artifact and is **not** in scope here.
+
+**Pre-registration annotation.** The four pre-registered expectations recorded in the
+4.2 log (identical-resubmission rate ≈ 0; escalations rare-to-absent; any advisory-vs-
+binding difference carried by computed-completion rejecting false DONEs; success rates
+near ceiling) **predate D17**. They were written for the description-shown regime; D17 is
+a later revision. Two of the four already hold trivially here (0 resubmissions, 0
+escalations across both pilots); the "false-DONE carries the difference" expectation
+remains **untested** because no false-DONE has ever occurred on the dev set; the
+near-ceiling expectation is, if anything, strengthened (still 100% success under a
+harder presentation).
+
+**Decision-rule outcome (halt again).** The rule stated in advance: *if MODEL_A produces
+FAILED verdicts (mid-episode or final) on ≥3 of 10 dev tasks, authorize the full 348-
+episode run; 1–2, weigh it; zero again, the honest conclusion is this corpus can't
+discriminate the modes for these models.* **MODEL_A's any-FAILED-verdict count is 0/10.**
+So the full run is **NOT** authorized here; this paste returns to the Runner for the
+final call — either run the cheap full 348-episode sweep anyway to document the ceiling
+on held-out data, or close with a null-result write-up. No test task is opened until that
+call is made.
+
+**Costs.** P5.2 live spend = the pilot2 sweep, **$0.0382** (40 episodes, 0 errors — no
+403 flakiness this time; propagation had settled). Cumulative experiment spend across all
+live steps (P3.2 + P4.2 + P5.1 + P5.2 + smokes/probes) remains under **$0.12**, far inside
+the $20 ceiling; the projected full D17 run is ~$0.33.
+
+**Decisions / surprises:**
+- **D17 is implemented in exactly one place.** Because both arms share
+  `build_first_user_message`, the revision touches a single function and both harnesses
+  inherit it identically — the arms still differ only structurally, now under a harder
+  (spec-withheld) presentation.
+- **The result is a clean second null.** Two independent pilots (spec shown, spec
+  withheld) × two models × two modes = 160 dev episodes with **zero** FAILED verdicts.
+  That is strong evidence the dev split cannot discriminate the modes for these models —
+  the corpus, not the harness, is the limiting factor.
+- **The one real behavioral effect of D17 is confirmation-seeking**, visible only as
+  extra advisory turns in the stronger model. It is worth noting for the write-up: even
+  when a capable model is denied the spec, it does not *fail*; it hedges by waiting for a
+  green checker before declaring done.
+- **Bright line intact.** Only the ten dev tasks and the frozen config (with
+  `show_description:false`) were run; the API key was never printed; `phase1_tasks/`
+  untouched; the 87 test tasks remain unopened.

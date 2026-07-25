@@ -53,16 +53,36 @@ def _cost(model, tin, tout):
     return tin * rin / 1e6 + tout * rout / 1e6
 
 
-def main():
-    with open(MANIFEST_PATH, "r", encoding="utf-8") as fh:
+def _had_failed_verdict(ep):
+    """True iff any check_verdict in the episode returned passed=False (the deeper
+    'model submitted code the checker rejected and had to iterate' signal)."""
+    return any(
+        x["event"] == "check_verdict" and x.get("passed") is False
+        for x in _events(ep["log"])
+    )
+
+
+def _manifest_path_from_argv(argv):
+    if "--manifest" in argv:
+        i = argv.index("--manifest")
+        if i + 1 < len(argv):
+            return os.path.abspath(argv[i + 1])
+    return MANIFEST_PATH
+
+
+def main(argv=None):
+    argv = list(sys.argv if argv is None else argv)
+    manifest_path = _manifest_path_from_argv(argv)
+    with open(manifest_path, "r", encoding="utf-8") as fh:
         manifest = json.load(fh)
     episodes = manifest["episodes"]
     models = manifest["models"]
     modes = manifest["modes"]
 
     print("=" * 78)
-    print("PHASE 5.1 DEV-SET PILOT REPORT")
-    print("date:", manifest.get("date"))
+    print("%s DEV-SET PILOT REPORT" % manifest.get("phase", "PHASE 5").upper())
+    print("date:", manifest.get("date"), "| show_description:",
+          manifest.get("show_description"))
     print("freeze_hash:", manifest.get("task_set_freeze_hash"))
     print("=" * 78)
 
@@ -86,6 +106,7 @@ def main():
                 and not e.get("final_passed")
             )
             done_ignored = rejected = escalated = 0
+            failed_verdict_eps = sum(1 for e in ok if _had_failed_verdict(e))
             for e in ok:
                 if mode == "binding":
                     evs = _events(e["log"])
@@ -110,6 +131,8 @@ def main():
             print("  success             : %d / %d  (%s)"
                   % (success, len(ok),
                      "final_passed" if mode == "advisory" else "status=solved"))
+            print("  episodes w/ FAILED  : %d  (>=1 check_verdict passed=False mid-episode)"
+                  % failed_verdict_eps)
             if mode == "advisory":
                 print("  false-DONE          : %d  (declared_done w/ final_passed=False)"
                       % false_done)
@@ -123,28 +146,38 @@ def main():
             print("  projected full-run  : $%.4f   (avg $%.5f/ep x %d)"
                   % (proj, per_ep_cost, TEST_TASKS_PER_CELL))
 
+    n_eps = len(episodes)
+    full_run = len(models) * len(modes) * TEST_TASKS_PER_CELL
     print()
     print("-" * 78)
-    print("PILOT TOTAL cost      : $%.4f  (40 episodes)" % grand_cost)
-    print("PROJECTED FULL-RUN    : $%.4f  (348 episodes = 2 models x 2 modes x 87)"
-          % grand_proj)
+    print("PILOT TOTAL cost      : $%.4f  (%d episodes)" % (grand_cost, n_eps))
+    print("PROJECTED FULL-RUN    : $%.4f  (%d episodes = %d models x %d modes x %d)"
+          % (grand_proj, full_run, len(models), len(modes), TEST_TASKS_PER_CELL))
     print("-" * 78)
 
-    # D13 assessment: per model, dev tasks failed at least once in EITHER arm.
+    # D13 assessment: per model, dev tasks that (a) finally failed, and (b) had any
+    # FAILED verdict mid-episode (the signal — a mid-episode failure that gets repaired
+    # is a good outcome here). The decision rule keys on (b): >=3 -> authorize full run.
     print()
-    print("D13 ASSESSMENT — dev tasks failed at least once (either arm), per model:")
+    print("D13 ASSESSMENT — per model, dev tasks with a failure signal (either arm):")
     for model in models:
-        failed_tasks = set()
+        final_fail = set()
+        any_failed = set()
         for e in episodes:
             if e["model"] != model or e.get("status") == "error":
                 continue
             if not _is_success(e):
-                failed_tasks.add(e["task_id"])
+                final_fail.add(e["task_id"])
+            if _had_failed_verdict(e):
+                any_failed.add(e["task_id"])
         label = manifest.get("model_labels", {}).get(model, "")
-        print("  %-24s %-24s : %d / %d dev tasks failed >=1x  %s"
-              % (model, "(%s)" % label if label else "",
-                 len(failed_tasks), DEV_TASKS_PER_CELL,
-                 sorted(failed_tasks) if failed_tasks else "(all one-shot)"))
+        print("  %-24s %-26s" % (model, "(%s)" % label if label else ""))
+        print("      final-failed tasks        : %d / %d  %s"
+              % (len(final_fail), DEV_TASKS_PER_CELL,
+                 sorted(final_fail) if final_fail else "(none)"))
+        print("      any-FAILED-verdict tasks  : %d / %d  %s   <- decision-rule metric"
+              % (len(any_failed), DEV_TASKS_PER_CELL,
+                 sorted(any_failed) if any_failed else "(none — pure one-shot)"))
 
     any_error = any(e.get("status") == "error" for e in episodes)
     return 1 if any_error else 0

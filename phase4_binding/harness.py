@@ -114,7 +114,8 @@ def run_episode(task_dir, client, config):
     log = advisory._EpisodeLog(log_path, model_id)
 
     system = SYSTEM_PROMPT
-    first_user = build_first_user_message(meta, buggy_source)
+    show_description = bool(config.get("show_description", True))
+    first_user = build_first_user_message(meta, buggy_source, show_description)
     messages = [
         {"role": "system", "content": system},
         {"role": "user", "content": first_user},
