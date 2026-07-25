@@ -1416,3 +1416,160 @@ tasks for metrics must filter on `meta.get("fixture")` (or simply restrict to
 - **Bright line intact.** The `--task-dir` override is containment-checked to
   `fixtures/`; no non-dev phase1 task can be reached through it. The ten dev tasks and
   the fixture are the only task dirs opened this step.
+
+---
+
+## 4.1 — Binding harness: build + mock tests + advisory plumbing episode
+
+**Step ID / date:** 4.1 — 2026-07-25
+
+**What was built:**
+- `phase4_binding/harness.py` — the BINDING loop (`run_episode(task_dir, client,
+  config) -> summary`, `mode: "binding"`). It reuses the advisory arm *verbatim* for
+  everything the two arms must share — it loads `phase3_advisory/harness.py` by
+  absolute path (both files are named `harness.py`) and imports
+  `build_first_user_message` (task presentation), `render_verdict` (verdict text),
+  `extract_last_python_block` / `has_done_line` (reply parsing), the `_EpisodeLog`
+  JSONL writer, the `_stamp` id helper, and `run_checks`. So the feedback *content* is
+  byte-identical to advisory; the arms differ only structurally. **Exactly three
+  structural differences, and no others:**
+  1. **Done is computed, not declared.** `status = "solved"` iff `run_checks` passes.
+     There is no declare-done action; the system prompt (below) tells the model to keep
+     submitting a corrected full replacement until the checker passes and never mentions
+     `DONE`. Any bare `DONE` line is ignored as text and logged as a `done_ignored`
+     event — the precise divergence point (advisory terminates there; binding does not).
+  2. **Identical resubmission is rejected by the harness.** After a failed check, a
+     next submission byte-identical (after code-block extraction) to the previous failed
+     one is NOT run through the checker: a `resubmission_rejected` event is logged and
+     the **same** verdict text as before is re-sent, with no added advice or explanation
+     (the rejection changes harness state, not the advisory content). The
+     consecutive-identical counter increments.
+  3. **Escalation.** Three consecutive identical failed submissions end the episode
+     `status = "escalated"` (a distinctly-logged failure).
+  Other terminal status: `step_cap` (cap 8, from `config.json`, shared with advisory).
+  The binding `SYSTEM_PROMPT` shares advisory's first two sentences verbatim (task
+  framing + "you see only a checker verdict"); only the stop mechanism diverges.
+- `phase4_binding/test_harness.py` — 4 stdlib-unittest cases, MockModel only, no
+  network, dev task `task_003` + fixture policy only. Submitted code is read from the
+  task's own `buggy.py`/`reference.py` at runtime — never authored.
+- `phase4_binding/dev_logs/` (git-ignored, `.gitkeep`) — per-episode JSONL, same event
+  shapes as advisory plus the two binding-only events. `.gitignore` gained
+  `phase4_binding/dev_logs/*.jsonl`.
+- **Advisory plumbing (closes a Phase 3 gap):** `phase3_advisory/run_dev_episode.py`
+  gained `--plumbing-ignore-done`, accepted ONLY together with `--task-dir` under
+  `fixtures/`. It wraps the live client in a `_DoneStrippingClient` that removes bare
+  `DONE` lines (fence-aware — a `DONE` inside a ```python block is left as code) from
+  every response before the advisory loop sees them, so with no DONE to terminate on
+  the loop must run to the step cap. One live run on the fixture is committed to
+  `phase3_advisory/acceptance_episodes/plumbing_multiturn.jsonl`.
+
+**Provenance:** `harness.py`, `test_harness.py`, and the plumbing flag are hand-written
+this step. No task code is authored anywhere: every mock submission is copied from
+`task_003`'s own files at runtime. For case (d) (8 distinct still-failing submissions)
+each variant is `buggy.py` with a unique trailing **comment** appended — only a comment
+differs, so it is byte-distinct (never a rejected identical) yet still fails; it is
+never a hand-written fix. The binding harness shares advisory's templates by import, so
+there is a single source of truth for the feedback text.
+
+**Escalation definition (encoded verbatim in code, tests, and here):** *a failed check
+followed by 2 byte-identical resubmissions = 3 consecutive identical failures ->
+escalated.* Concretely: step 1 buggy fails the checker (`consecutive_identical = 1`);
+step 2 identical resubmission is rejected (`= 2`); step 3 identical resubmission is
+rejected (`= 3`) -> `escalated`. A checked failure sets the counter to 1; each
+byte-identical resubmission increments it; a *different* submission resets it to 1.
+
+**Evidence of correctness — binding mock tests (full `-v`, 4 tests):**
+```
+test_a_done_ignored_then_computed_solve ... ok
+test_b_identical_resubmission_rejected_checker_runs_once ... ok
+test_c_three_consecutive_identical_escalate ... ok
+test_d_never_repeats_never_passes_hits_step_cap ... ok
+Ran 4 tests in 0.41s
+OK        (binding-tests-exit=0)
+```
+Mapping to the required (a)–(d): (a) buggy+`DONE` then reference -> `done_ignored`
+logged at step 1, loop continues, `solved` at step 2 (`final_passed=True`) — the key
+structural test (advisory would have ended at step 1); (b) buggy, buggy, reference ->
+one `resubmission_rejected`, exactly **2** `check_verdict` events (buggy@1 FAILED,
+reference@3 PASSED) i.e. the two identicals invoked the checker **once**, `solved` at
+step 3; (c) three identical buggy -> two `resubmission_rejected` (counters 2, 3), one
+`check_verdict`, `escalated` at step 3; (d) 8 comment-distinct still-failing buggies ->
+8 `check_verdict` events, zero rejections, `step_cap` at 8.
+
+**Evidence of correctness — advisory plumbing episode (live, infrastructure test, NOT
+an experiment episode):** run
+`python3 run_dev_episode.py --task-dir fixtures/task_fx_unpassable --plumbing-ignore-done`
+on the unpassable fixture under unchanged config (gpt-4.1-mini, temp 0, cap 8):
+```
+task_fx_unpassable step_cap False 8 9593 972
+status: step_cap | steps: 8 | final_passed: False
+verdict-fed-back count (user_message w/ FAILED): 8
+model_response turns: 8   check_verdict turns: 8
+plumbing_multiturn.jsonl sha256 d15e86e1f0ba31935f29ec009018a4f03941cd59352477168b1345dcbbb33f9d
+```
+With `DONE` stripped the model could never declare completion, so the loop ran all 8
+turns and the checker verdict re-entered the model's context every turn — the live
+verdict -> context -> next-turn path Phase 5 depends on, proven end-to-end.
+
+**What the model did across turns when feedback gave it nothing usable.** The fixture's
+`FAILED` feedback is only a **digest mismatch** (`test_opaque_alpha: + <sha256> !=
+- <sha256>`), never a value that would pass — unpassable by construction. Over the 8
+turns the model kept submitting **different** `weighted_average` implementations (6
+distinct code bodies across 8 turns; per-turn code lengths 333, 395, 375, 448, 623,
+350, 395, 350 chars), i.e. it *engaged* with the opaque feedback by rewriting the
+function rather than repeating one answer — but no numeric output can ever hash to the
+sentinel, so every turn re-verdicted `FAILED` and it converged to nothing. This is the
+correct advisory behaviour under useless feedback, and it exercises the multi-turn
+plumbing that the dev sweep (D13, all one-shot) never could.
+
+**Worked example — the `done_ignored` divergence (real binding JSONL, `task_003`,
+content trimmed).** Turn 1 submits the buggy `clamp` **and** a `DONE` line together:
+```
+system_prompt   step=0                       | You are fixing a buggy Python function. Reply with a complete replacem…
+user_message    step=0                       | Clamp a value into the inclusive range [low, high]. Function to fix: clamp…
+model_response  step=1                       | ```python … (buggy clamp) … ```\nDONE
+done_ignored    step=1                       | ```python … (buggy clamp) … ```\nDONE
+check_verdict   step=1 passed=False          | FAILED\n\nThe checker reports the following failing tests: - test_deg…
+user_message    step=1                       | FAILED\n\nThe checker reports the following failing tests: - test_deg…
+model_response  step=2                       | ```python … (reference clamp) … ```
+check_verdict   step=2 passed=True           | PASSED\n\nThe checker reports that all tests passed.
+episode_end     step=2 status=solved final_passed=True steps=2
+```
+The `DONE` at step 1 arrives with a **failing** check (`passed=False`). In advisory
+(3.1 case (b)) this exact input ends the episode `model_declared_done` /
+`final_passed=False` — a "done but wrong" acceptance. In binding the `DONE` is logged
+`done_ignored` and **discarded**; the loop continues, the model resubmits a correct
+`clamp` at step 2, the checker passes, and completion is **computed** (`solved`). Same
+model, same feedback text, opposite terminal behaviour — the whole point of the arm.
+
+**Decisions / surprises:**
+- **Single source of truth for shared text.** Rather than copy advisory's task
+  presentation and verdict formatter into phase4, the binding harness imports them from
+  `phase3_advisory/harness.py` by absolute path. This guarantees the arms cannot drift
+  apart in feedback *content* — a later edit to `render_verdict` changes both arms
+  identically — so any measured difference is attributable to structure alone. The
+  cross-file load is by `importlib.util` because both modules are named `harness`; a
+  plain `import harness` would be ambiguous.
+- **The escalation counter counts submissions, not rejections.** The original failed
+  check is failure #1; two identical resubmissions bring it to #3. Defining it off the
+  first failed check (not off the first rejection) means "3 consecutive identical
+  failures" reads literally — the model showed the checker the same wrong answer three
+  times running. This is pinned by test (c) and stated in the code comment verbatim.
+- **`resubmission_rejected` re-sends the prior verdict byte-for-byte.** The rejection
+  is a pure state change (consecutive-counter bump); it adds no advice, so the model's
+  advisory content is unchanged between the failed check and the rejection. Test (b)
+  asserts the rejected event's `content` equals the original failure's `user_message`
+  content exactly.
+- **Case (d) needed byte-distinct still-failing code without authoring a fix.** A bare
+  repeat of `buggy.py` would be rejected and escalate at step 3, never reaching the
+  cap. Appending a unique trailing comment (`# attempt N`) makes each submission
+  byte-distinct (so it is checked, not rejected) while leaving behaviour — and thus the
+  `FAILED` verdict — unchanged. No solution is written; only a comment varies.
+- **Plumbing is an infrastructure test, logged as such.** `plumbing_multiturn.jsonl` is
+  committed under `acceptance_episodes/` (not an experiment metric); it exists to prove
+  the live multi-turn path before Phase 5, and the fixture remains excluded from every
+  experiment metric (standing rule from 3.2). The `--plumbing-ignore-done` flag is
+  double-guarded: it requires `--task-dir`, which is itself containment-checked to
+  `fixtures/`, so it can never touch a phase1 task.
+- **Bright line intact.** Only `task_003` and the fixture were opened this step; no
+  task code was authored; `phase1_tasks/` untouched.
