@@ -51,3 +51,71 @@ exists yet; the format is specified for steps 1.2+ to populate.
 - `difficulty` in `meta.json` is allowed to be `null` until step 1.6, so tasks can be
   authored before difficulty labelling exists.
 - `.gitkeep` used to keep otherwise-empty scaffold directories under version control.
+
+---
+
+## 1.2 — Seed-function corpus
+
+**Step ID / date:** 1.2 — 2026-07-25
+
+**What was built:**
+- 20 seed modules `phase1_tasks/seeds/seed_001.py` … `seed_020.py`, each holding
+  exactly one public, pure, deterministic, stdlib-only function with a docstring
+  contract covering edge cases.
+- `phase1_tasks/seeds/SEEDS.json` — manifest with one entry per seed (`seed_id`,
+  `filename`, `function_name`, `category`, `description`, `candidate_bug_types`).
+- `phase1_tasks/seeds/validate_seeds.py` — AST-based validator enforcing the 11
+  required checks plus a bug-type vocabulary check.
+
+**Provenance:** All seeds hand-written in step 1.2. Functions are common,
+independently understandable algorithms (clamp, gcd, binary search, etc.) chosen so
+each admits at least two plausible bug mutations. No generators or randomness used.
+
+**Seed-category distribution** (matches the required quota exactly):
+- numeric — 4 (clamp, digit_sum, count_divisors, gcd_two)
+- strings — 4 (is_palindrome, count_vowels, reverse_words, caesar_shift)
+- sequences — 4 (second_largest, flatten_one_level, chunk, rotate_left)
+- dictionaries — 3 (word_frequencies, merge_sum, most_common_char)
+- validation — 3 (is_valid_identifier, is_leap_year, all_unique)
+- algorithms — 2 (binary_search, bubble_sort)
+
+**Design criteria:** correct, pure, deterministic, stdlib-only; no file/network/
+console/env/clock/random access; no global mutable state; fast; testable at
+boundaries; ≥2 plausible bug mutations each; understandable in isolation. Avoided:
+identity functions, bare-builtin wrappers, classes, generators, async, unbounded
+recursion, float/approximate-comparison functions, ambiguous specs, and duplicates.
+
+**Bug-type vocabulary (consistent, closed set):** off-by-one, boundary-omission,
+wrong-comparison, wrong-operator, inverted-condition, swapped-operands, missing-case,
+early-return, accumulator-init-error, wrong-default. Every `candidate_bug_types`
+entry is drawn from this set and the validator enforces membership.
+
+**Validation method:** `validate_seeds.py` parses `SEEDS.json`, then for each seed
+uses `ast.parse` + `ast.walk` to confirm: valid JSON; exactly 20 seeds; sequential
+IDs/filenames `seed_001`..`seed_020`; declared file exists; module parses; exactly
+one public top-level function (no classes/async); function name matches manifest; no
+third-party imports (checked against `sys.stdlib_module_names`); no banned impure
+modules or calls (open/input/print/exec/eval/os/random/time/socket/subprocess/…);
+≥2 candidate bug types per seed within the vocabulary; and category counts match the
+quota. Exits 0 on success, non-zero with per-failure `FAIL:` diagnostics otherwise.
+
+**Evidence of correctness:**
+- `python3 phase1_tasks/seeds/validate_seeds.py` →
+  `RESULT: OK — 20 seeds validated, all invariants satisfied` (exit 0).
+- Independent behavioural spot-check: all 20 functions imported and exercised over
+  49 boundary/edge assertions → `spot-check: ALL PASS (49 assertions)`.
+
+**Worked example:** `binary_search([1, 3, 5, 7], 5)` returns `2`; `binary_search(
+[1, 3, 5, 7], 4)` returns `-1`; `binary_search([], 1)` returns `-1`. Its manifest
+entry lists candidate bug types `off-by-one` and `wrong-comparison`, both credible
+mutation sites (the `low <= high` bound and the `sorted_list[mid] < target` branch).
+
+**Decisions / surprises:**
+- The interpreter here is `python3` (Python 3.14.6); there is no `python` on PATH, so
+  the acceptance commands were run with `python3`. Substituting the interpreter name
+  is the only deviation from the literal command text.
+- The validator adds two checks beyond the required 11 (bug-type vocabulary
+  membership; rejection of classes/async) because AST inspection made them cheap and
+  they harden the corpus for later bug-injection.
+- `sys.stdlib_module_names` (Py 3.10+) is used for the third-party-import check; the
+  code degrades gracefully if it is unavailable.

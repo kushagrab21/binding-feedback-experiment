@@ -1,0 +1,162 @@
+[
+  {
+    "seed_id": "seed_001",
+    "filename": "seed_001.py",
+    "function_name": "clamp",
+    "category": "numeric",
+    "description": "Clamp a value into the inclusive range [low, high].",
+    "candidate_bug_types": ["wrong-comparison", "boundary-omission"]
+  },
+  {
+    "seed_id": "seed_002",
+    "filename": "seed_002.py",
+    "function_name": "digit_sum",
+    "category": "numeric",
+    "description": "Sum the base-10 digits of a non-negative integer.",
+    "candidate_bug_types": ["wrong-operator", "off-by-one"]
+  },
+  {
+    "seed_id": "seed_003",
+    "filename": "seed_003.py",
+    "function_name": "count_divisors",
+    "category": "numeric",
+    "description": "Count the positive divisors of a positive integer.",
+    "candidate_bug_types": ["off-by-one", "boundary-omission"]
+  },
+  {
+    "seed_id": "seed_004",
+    "filename": "seed_004.py",
+    "function_name": "gcd_two",
+    "category": "numeric",
+    "description": "Greatest common divisor of two integers via Euclid.",
+    "candidate_bug_types": ["swapped-operands", "inverted-condition"]
+  },
+  {
+    "seed_id": "seed_005",
+    "filename": "seed_005.py",
+    "function_name": "is_palindrome",
+    "category": "strings",
+    "description": "Test whether a string reads the same forwards and backwards.",
+    "candidate_bug_types": ["off-by-one", "boundary-omission"]
+  },
+  {
+    "seed_id": "seed_006",
+    "filename": "seed_006.py",
+    "function_name": "count_vowels",
+    "category": "strings",
+    "description": "Count vowels in a string, case-insensitively.",
+    "candidate_bug_types": ["missing-case", "wrong-comparison"]
+  },
+  {
+    "seed_id": "seed_007",
+    "filename": "seed_007.py",
+    "function_name": "reverse_words",
+    "category": "strings",
+    "description": "Reverse the order of whitespace-separated words.",
+    "candidate_bug_types": ["swapped-operands", "boundary-omission"]
+  },
+  {
+    "seed_id": "seed_008",
+    "filename": "seed_008.py",
+    "function_name": "caesar_shift",
+    "category": "strings",
+    "description": "Apply a Caesar cipher shift to the letters of a string.",
+    "candidate_bug_types": ["wrong-operator", "off-by-one"]
+  },
+  {
+    "seed_id": "seed_009",
+    "filename": "seed_009.py",
+    "function_name": "second_largest",
+    "category": "sequences",
+    "description": "Find the second largest distinct value in a sequence.",
+    "candidate_bug_types": ["wrong-comparison", "off-by-one"]
+  },
+  {
+    "seed_id": "seed_010",
+    "filename": "seed_010.py",
+    "function_name": "flatten_one_level",
+    "category": "sequences",
+    "description": "Flatten a list of sub-lists by exactly one level.",
+    "candidate_bug_types": ["boundary-omission", "wrong-operator"]
+  },
+  {
+    "seed_id": "seed_011",
+    "filename": "seed_011.py",
+    "function_name": "chunk",
+    "category": "sequences",
+    "description": "Split a sequence into consecutive fixed-size chunks.",
+    "candidate_bug_types": ["off-by-one", "boundary-omission"]
+  },
+  {
+    "seed_id": "seed_012",
+    "filename": "seed_012.py",
+    "function_name": "rotate_left",
+    "category": "sequences",
+    "description": "Rotate a sequence to the left by k positions.",
+    "candidate_bug_types": ["off-by-one", "wrong-operator"]
+  },
+  {
+    "seed_id": "seed_013",
+    "filename": "seed_013.py",
+    "function_name": "word_frequencies",
+    "category": "dictionaries",
+    "description": "Count how many times each word appears in a sequence.",
+    "candidate_bug_types": ["accumulator-init-error", "wrong-default"]
+  },
+  {
+    "seed_id": "seed_014",
+    "filename": "seed_014.py",
+    "function_name": "merge_sum",
+    "category": "dictionaries",
+    "description": "Merge two integer-valued dicts, summing on shared keys.",
+    "candidate_bug_types": ["missing-case", "wrong-operator"]
+  },
+  {
+    "seed_id": "seed_015",
+    "filename": "seed_015.py",
+    "function_name": "most_common_char",
+    "category": "dictionaries",
+    "description": "Find the most frequent character in a string.",
+    "candidate_bug_types": ["wrong-comparison", "inverted-condition"]
+  },
+  {
+    "seed_id": "seed_016",
+    "filename": "seed_016.py",
+    "function_name": "is_valid_identifier",
+    "category": "validation",
+    "description": "Validate a Python-like identifier string.",
+    "candidate_bug_types": ["boundary-omission", "wrong-comparison"]
+  },
+  {
+    "seed_id": "seed_017",
+    "filename": "seed_017.py",
+    "function_name": "is_leap_year",
+    "category": "validation",
+    "description": "Determine whether a year is a Gregorian leap year.",
+    "candidate_bug_types": ["inverted-condition", "wrong-operator"]
+  },
+  {
+    "seed_id": "seed_018",
+    "filename": "seed_018.py",
+    "function_name": "all_unique",
+    "category": "validation",
+    "description": "Test whether all elements of a sequence are unique.",
+    "candidate_bug_types": ["inverted-condition", "early-return"]
+  },
+  {
+    "seed_id": "seed_019",
+    "filename": "seed_019.py",
+    "function_name": "binary_search",
+    "category": "algorithms",
+    "description": "Binary search for a target in a sorted list.",
+    "candidate_bug_types": ["off-by-one", "wrong-comparison"]
+  },
+  {
+    "seed_id": "seed_020",
+    "filename": "seed_020.py",
+    "function_name": "bubble_sort",
+    "category": "algorithms",
+    "description": "Sort a list of numbers in ascending order (bubble sort).",
+    "candidate_bug_types": ["off-by-one", "swapped-operands"]
+  }
+]
