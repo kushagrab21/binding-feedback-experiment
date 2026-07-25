@@ -1,0 +1,10 @@
+{
+  "task_id": "task_fx_unpassable",
+  "seed_name": "fixture",
+  "bug_type": "synthetic-unpassable",
+  "difficulty": "fixture",
+  "function_name": "weighted_average",
+  "description": "Compute the weighted average of `values` using the parallel list `weights`. Return 0.0 when `values` is empty. Weights are positive numbers; the result is sum(v*w)/sum(w).",
+  "fixture": true,
+  "note": "synthetic; unpassable by construction; for harness failure-path demos only"
+}
