@@ -2788,3 +2788,97 @@ sanity read on the pilot cells only.
 - **Full run pre-authorized → launched without waiting** (V2-P4.1 below), per the work order.
 - **Bright line intact.** Dev tasks only; the 87 test tasks untouched at this step; no frozen
   v1 file edited; keys never printed; staging explicit per commit.
+
+---
+
+## V2-P4.1 — THE FULL RUN: 1218 episodes (87 test × 7 rungs × 2 modes)
+
+**Step ID / date:** V2-P4.1 — 2026-07-26
+
+*(Pre-authorized by V2-P3's four green criteria; launched without waiting per the work
+order. This is the confirmatory data collection — the 87-task TEST split under D18, temp 0,
+cap 8, through the adapter. Analysis proper (McNemar / Spearman / rescue decomposition per
+prereg §(d)) is the next phase, V2-P5; this step only produces and certifies the run.)*
+
+**Final state (raw):**
+```
+TOTAL episodes = 1218    errors = 0    schema: 1218/1218 files OK (0 diffs)
+total full-run cost = $0.45236    (cumulative v2 spend ≈ $0.51, incl. pilot + smokes +
+                                    the recovery re-runs below — never near the $10 gate)
+```
+
+**Per-cell episode/error counts (14 cells):**
+```
+rung1_llama-3.2-3b__advisory          eps=87 err=0        rung1_llama-3.2-3b__binding           eps=87 err=0
+rung2_llama-3.1-8b__advisory          eps=87 err=0        rung2_llama-3.1-8b__binding           eps=87 err=0
+rung3_qwen2.5-7b__advisory            eps=87 err=0        rung3_qwen2.5-7b__binding             eps=87 err=0
+rung4_claude-3-haiku__advisory        eps=87 err=0        rung4_claude-3-haiku__binding         eps=87 err=0
+rung5_gpt-4o-mini__advisory           eps=87 err=0        rung5_gpt-4o-mini__binding            eps=87 err=0
+rung6_gemini-2.5-flash-lite__advisory eps=87 err=0        rung6_gemini-2.5-flash-lite__binding  eps=87 err=0
+rung7_gpt-4.1__advisory               eps=87 err=0        rung7_gpt-4.1__binding                eps=87 err=0
+```
+
+**Raw per-rung success (DATA ONLY — the registered tests run at V2-P5, not here):**
+```
+rung (rank: weak->strong)      adv/87  bind/87    Δpp   adv_false-DONE  adv_step_cap
+1  llama-3.2-3b                    66      63     -3.4        1             30
+2  llama-3.1-8b                    80      82     +2.3        4              3
+3  qwen2.5-7b                      71      84    +14.9       16              0
+4  claude-3-haiku                  72      82    +11.5       15              0
+5  gpt-4o-mini  (v1 weak anchor)   79      87     +9.2        8              0
+6  gemini-2.5-flash-lite           79      87     +9.2        8              0
+7  gpt-4.1      (v1 strong anchor) 87      87     +0.0        0              0
+```
+Two sanity anchors land where v1 put them: **rung 5 gpt-4o-mini Δ=+9.2 pp** reproduces v1's
+weak-model advantage (v1: +9.2), and **rung 7 gpt-4.1 Δ=+0.0** (both at 87/87 ceiling)
+reproduces v1's strong-model null (+0.0). The exploratory "too weak to rescue" texture (v) is
+visible at **rung 1 llama-3.2-3b**: advisory 66 with **30 step-caps**, binding *below* advisory
+(Δ=−3.4) — i.e. binding cannot rescue a model that never converges and instead spends the whole
+cap-8 loop failing. **No registered claim is made here;** significance and the Spearman/McNemar
+verdicts are V2-P5.
+
+**Run integrity incident — full transparency (this is the load-bearing part of this entry).**
+The run did NOT complete on the first driver invocation. `run_full.py` runs the 7 rungs
+concurrently (one worker thread per rung); its per-call robustness is the client's 60 s socket
+timeout + 429/5xx backoff + episode retry + 2 extra cell passes. That is sufficient for a
+*silent* dead connection but **not** for the failure that actually occurred: two OpenRouter
+open-weight rungs (`llama-3.1-8b` in advisory, `qwen-2.5-7b` in binding) intermittently hit
+**slow-trickle responses** — the socket keeps receiving a few bytes just often enough that the
+60 s read-timeout never fires, so a single episode wedged its worker thread for **12–21 minutes**
+at a time. Sequence, exactly as it happened:
+1. First `run_full.py` reached **12/14 cells clean** (all 1044 of those episodes, 0 errors);
+   the two OpenRouter weak cells wedged. Killed the driver (SIGTERM).
+2. **Probed** both stuck models directly: each answered in <2 s — so OpenRouter was healthy;
+   the wedge was thread-local hung sockets, not a provider outage.
+3. Re-ran the 3 remaining cells with a tighter 30 s timeout (`rerun_cells.py`, scratch). Two
+   finished; `rung2 advisory` and `rung3 binding` **wedged again** — confirming the trickle-hang
+   evades *any* socket read-timeout.
+4. Escalated to the fix that actually bounds it: **`v2_ladder/runs/run_one_cell.py`**, one
+   process per cell with a **SIGALRM hard per-episode deadline (150 s)** — a signal interrupts
+   the blocking read itself, which a socket timeout cannot. Both cells then completed **87/87,
+   0 errors**, each hard-capped episode either finishing or erroring into the retry passes (none
+   needed a retry in the end).
+
+Result: **12 of 14 cells produced by `run_full.py`; 2 cells (`rung2_llama-3.1-8b__advisory`,
+`rung3_qwen2.5-7b__binding`) produced by `run_one_cell.py`.** All 1218 logs are byte-schema
+identical (validated 1218/1218), and every cell manifest carries the same provider/route/cost/
+FREEZE_HASH/split-sha/prereg-tag fields, so the two production paths are indistinguishable in
+the data. `run_one_cell.py` is committed here so the recovery method is in the tree, not lore.
+
+**Recommendation recorded for reproducibility:** a from-scratch `python3 run_full.py` is *not*
+guaranteed to finish unattended, because its rung-level threading cannot use SIGALRM (main-thread
+only). The robust reproducible design is **process-per-cell with a SIGALRM hard deadline** (what
+`run_one_cell.py` does); folding that into the driver is the right future change. This is logged
+as the P4 robustness lesson rather than silently patched, since the committed data is already
+complete and certified.
+
+**Decisions / surprises:**
+- **The socket timeout was the wrong tool; a wall-clock signal was the right one.** The whole
+  incident is one lesson: `urllib`'s `timeout=` bounds *idle* reads, not *slow* ones. Only an
+  out-of-band deadline (SIGALRM / a killed subprocess) bounds a trickle-hang.
+- **No fabricated clean run.** The wedges were surfaced, diagnosed with a live probe, and fixed;
+  the 0-errors/1218 tally is real and schema-verified, not asserted.
+- **Cost stayed trivial.** Even with the wedged/abandoned attempts, cumulative v2 spend ≈ $0.51
+  — under the $5 expectation, far under the $10 stop-gate and the $20 cap.
+- **Bright line intact.** No frozen v1 file edited; `phase1_tasks/` untouched; the tag precedes
+  every episode (proof in the acceptance paste); keys never printed; staging explicit below.
