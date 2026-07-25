@@ -875,3 +875,132 @@ During Phases 3–4 only the 10 dev tasks may be opened. The frozen set is pinne
   committed.
 - **No task content changed in 1.7** — the freeze is a fingerprint over the 1.6
   commit's task files plus one new tool and one `.gitignore` line.
+
+---
+
+## 2.1 — The checker (the judge) + its own test suite
+
+**Step ID / date:** 2.1 — 2026-07-25
+
+**What was built:**
+- `phase2_checker/checker.py` — the judge. Exposes exactly
+  `run_checks(task_dir, candidate_code) -> {"passed", "failures", "raw_output"}`
+  (plus advisory extras `timed_out`, `returncode`, `n_total`, `n_failed`, and an
+  optional `timeout=` kwarg defaulting to the contract's 10s). It writes
+  `candidate_code` to `solution.py` in a fresh temp dir, copies the task's
+  `tests.py` alongside, runs the suite as a subprocess under a 10s timeout, and
+  parses the verbose output into `failures = [{"test", "error"}]`.
+- `phase2_checker/test_checker.py` — the judge's own `unittest` suite (10 tests),
+  using ONLY dev tasks `task_006` and `task_003`.
+
+**The contract (what Phases 3–5 may rely on):** three guaranteed keys —
+`passed: bool` (True iff the *entire* suite passed), `failures: [{"test", "error"}]`
+(one entry per failing/erroring test; non-empty whenever `passed` is False), and
+`raw_output: str` (the subprocess output, verbatim). Same inputs → same `passed`
+and same `failures` (deterministic). Failure `test` names are either a real test
+method, or one of the synthetic sentinels `__timeout__` (non-terminating
+candidate), `__collection__` (suite could not be imported: syntax error, wrong/
+missing function name, empty submission, or any import-time exception), or
+`__error__` (defensive catch-all for a non-zero exit with nothing else parseable).
+
+**Provenance:** Both files hand-written this step. The verbose-line regex
+(`^(\w+) \((.*?)\) \.\.\. (ok|FAIL|ERROR)`) and the "first FAIL/ERROR in run order"
+rule are deliberately copied from `phase1_tasks/generator/validate_tasks.py` so that
+`failures[0]["test"]` equals the `[first_failing]` recorded in
+`phase1_tasks/validation/task_validation.txt`. Output shapes for every branch
+(pass, buggy, syntax error, wrong name, empty, import-time crash, infinite loop)
+were captured empirically on this interpreter (CPython 3.14.6) before the parser was
+written.
+
+**Evidence of correctness (judge's own suite, full `-v` listing):**
+```
+test_first_failing_matches_validation_table (…TestAgreesWithFrozenTable…) ... ok
+test_buggy_task_003_fails (…TestBuggyRejected…) ... ok
+test_buggy_task_006_fails (…TestBuggyRejected…) ... ok
+test_buggy_verdict_is_reproducible (…TestDeterminism…) ... ok
+test_empty_submission_handled (…TestMalformedSubmissions…) ... ok
+test_syntax_error_is_collection_failure (…TestMalformedSubmissions…) ... ok
+test_wrong_function_name_handled (…TestMalformedSubmissions…) ... ok
+test_reference_task_003_passes (…TestReferenceAccepted…) ... ok
+test_reference_task_006_passes (…TestReferenceAccepted…) ... ok
+test_infinite_loop_times_out (…TestTimeout…) ... ok
+Ran 10 tests in 2.30s
+OK        (checker-tests-exit=0)
+```
+The 10 tests map onto the required cases (a)–(h): (a) reference of task_006 &
+task_003 → `passed=True`, `failures==[]`; (b) buggy of both → `passed=False` with
+first-failing `test_large_value` / `test_degenerate_single_point_range`; (c) syntax
+error → `__collection__` (error text contains `SyntaxError`); (d) wrong function
+name → `__collection__` (`cannot import name`); (e) empty submission →
+`__collection__`; (f) `while True: pass` → `__timeout__` in < 9s (2s timeout used to
+keep the suite fast); (g) buggy verdict run twice → byte-identical after normalising
+`raw_output`'s temp path + timing line (the contract fields compare equal outright);
+(h) first-failing for both dev tasks equals the frozen table row.
+
+**Worked example (the demo — the whole of Phase 2 in miniature):**
+```
+$ python3 -c "... run_checks(task_006, reference.py) / run_checks(task_006, buggy.py) ..."
+good.passed: True failures: 0
+bad.passed: False failures: ['test_large_value', 'test_multi_digit',
+                            'test_single_digit', 'test_trailing_zeros',
+                            'test_zero_boundary']            (demo-exit=0)
+```
+One correct submission accepted, one wrong submission rejected — by the exact
+function the harnesses will call. `bad`'s first failure is `test_large_value`, which
+is the `[test_large_value]` recorded for task_006 in `task_validation.txt`. A sample
+scrubbed error entry:
+```
+Traceback (most recent call last):
+  File "<sandbox>/tests.py", line 27, in test_large_value
+    self.assertEqual(digit_sum(999999), 54)
+AssertionError: 55 != 54
+```
+
+**LIMITATION — no OS-level network/filesystem sandbox (recorded as required).** The
+subprocess runs with `-E -s -B` (ignore env vars, skip user site-packages, no
+`.pyc`) — *interpreter* isolation, not *operating-system* isolation. Candidate code
+runs as an ordinary subprocess and could in principle touch the filesystem or
+network. This is acceptable for THIS experiment because every code-under-test is
+graded against the frozen, validated, stdlib-pure Phase-1 corpus (no I/O, no
+network, no clocks); OS sandboxing is explicitly out of scope. If the corpus is ever
+extended beyond stdlib-pure tasks, a real sandbox (seccomp/namespaces/container)
+would be required before trusting this judge on untrusted code.
+
+**Decisions / surprises:**
+- **`-I` cannot be used literally; `-E -s` is the faithful substitute.** The spec
+  said run `python3 -I -m unittest tests -v`, but on CPython 3.11+ `-I` implies `-P`,
+  which drops the run directory from `sys.path`. Under literal `-I` the suite's
+  `from solution import …` / `import tests` cannot resolve at all — every case
+  collapses to `No module named 'tests'` (verified directly). `-I` is exactly
+  `-E -s -P` (plus setting the isolated flag); we keep the two components that apply
+  (`-E -s`) and omit `-P`, since the run directory is freshly created by us and holds
+  only our two trusted files. The `-m unittest tests -v` invocation is otherwise
+  verbatim. This is the one deviation from the literal command text, and it is the
+  only way to satisfy both "isolate the interpreter" and "import the task's files".
+- **Two distinct collection-failure shapes, one sentinel.** An `ImportError`-family
+  failure (wrong/missing function name, empty submission) is caught by unittest and
+  surfaced as a synthetic `unittest.loader._FailedTest … ERROR` with a `Ran 1 test`
+  footer (returncode 1). A `SyntaxError` (or any other exception raised while
+  importing) is NOT caught by the loader — it propagates as a raw traceback with *no*
+  `Ran N tests` line (returncode 1). The checker detects both (the `_FailedTest`
+  marker, or "non-zero exit with no `Ran` line") and maps both to a single
+  `__collection__` failure, preserving the raw output so the cause is legible.
+- **`-B` + fresh-temp-dir defeats a real stale-`.pyc` hazard.** During development a
+  probe that *reused* one temp dir made a buggy submission spuriously "pass":
+  `reference.py` and `buggy.py` are both 385 bytes, and with a same-second mtime the
+  cached `solution.pyc` from the earlier run was treated as still valid. `run_checks`
+  already uses a fresh temp dir per call (so no `.pyc` can pre-exist), and `-B`
+  disables `.pyc` writing outright — belt-and-braces determinism.
+- **Determinism required scrubbing the temp path.** The only run-to-run variation in
+  a traceback is the random temp-dir path; each failure's `error` text has it
+  replaced with `<sandbox>`, so `failures` is deterministic. `raw_output` is kept
+  verbatim (as the contract says "preserved"), so it still carries the temp path and
+  unittest's `in X.XXXs` timing — the determinism test normalises just those two
+  substrings before its byte-for-byte comparison.
+- **`passed` is defined by the subprocess exit code** (`returncode == 0`), because
+  unittest exits 0 iff `result.wasSuccessful()`. This makes `passed` a single,
+  unambiguous source of truth that cannot disagree with the parsed `failures`.
+- **The judge is tested only on dev tasks.** The bright-line whitelist was honoured:
+  the suite touches only `task_006` and `task_003`. Case (h) reads a single row of
+  `task_validation.txt` (a validation summary, not any task's source), which is the
+  intended cross-check.
