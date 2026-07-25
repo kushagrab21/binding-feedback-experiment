@@ -2330,3 +2330,93 @@ escalated/step_cap); (iv) Δweak +9.2pp vs Δstrong +0.0pp.
   from the failing-test names the metric uses, so re-execution is stable.
 - **Bright line intact.** Read-only over committed artifacts; no API calls; no writes
   outside `phase6_analysis/`; `phase1_tasks/` untouched.
+
+---
+
+## 7.1 — Write-up: README + post draft + final freeze
+
+**Step ID / date:** 7.1 — 2026-07-26
+
+**What was built:**
+- `README.md` — replaces the one-line in-progress stub with the full write-up (this was
+  always Phase 7's job). Sections, in order: **Claim & result** (thesis + the real 2×2
+  with +9.2 pp weak / +0.0 pp strong, exact McNemar p=0.0078125 weak / 0 discordant
+  strong, and the one-paragraph mechanism — all 8 weak-advisory failures were false-DONEs,
+  6/8 `missing-edge-case`, binding's advantage entirely from computed completion, the
+  other two binding mechanisms never firing); **Method** (97-task frozen corpus with
+  `FREEZE_HASH dfc14c26…` and the 10/87 split `6f69be75…`, the 8-type closed taxonomy, the
+  checker + static guard, the two harnesses and their *exactly three* structural
+  differences, models cheap/weak `gpt-4o-mini-2024-07-18` vs frontier/strong
+  `gpt-4.1-2025-04-14`, temp 0 / cap 8, and D18 bare-code presentation stated plainly as
+  the only regime in which the effect exists — the P5.1→D17→D18 arc reported, not hidden);
+  **Limitations** (all eight from the ledger: synthetic single-mutation tasks; possible
+  training-data contamination inflating absolute not differential results; two models /
+  one provider / one compressed regime; the effect resting on 8 tasks in one bug class; 2
+  of 8 rescues being temp-0 sampling variance with the honest count 6 forced repairs;
+  resubmission-blocking and escalation never engaging per D15; no OS-level sandbox, static
+  guard only; D17/D18 adopted pre-test-set but post-pilot); **Reproduce it** (exact
+  offline commands for corpus regen+validate, the three test suites, and `analyze.py`,
+  with the note that re-running episodes needs an OpenAI key via env); the **Provenance
+  note** verbatim; and the **Repository map**.
+- `phase7_writeup/post.md` — the plain-language draft: what advisory vs binding means (the
+  model may *say* done vs done is *computed*), the false-DONE phenomenon, the `task_009`
+  (`count_divisors`) advisory-vs-binding trace pair from 5.3 as the narrative example, the
+  headline table, the honest caveats (6 real repairs + 2 sampling passes; two binding
+  mechanisms never fired), and the arc "modern models one-shot mutation bugs until you
+  starve them of the spec" written up as a finding in its own right.
+
+**Provenance:** both documents hand-written this step from `EXPERIMENT_LOG.md` (entries
+4.2, 5.1–5.4, 6.1 and every deviation D13–D18) and the hash-pinned `results.md`
+(`29bcf9e5…`). No experiment artifact, task, log, or number was modified; the write-up
+only *reports* committed results. No API calls; `phase1_tasks/` untouched.
+
+**Evidence of correctness — the stranger-reproduction test (Phase 7 acceptance).** A
+fresh `git clone` of the repo into `/tmp/bfe_clone`, then in the clone: seeds validator,
+task validator, checker suite, both harness mock suites, `analyze.py`, and a `diff` of the
+clone's regenerated `results.md` against the committed one:
+```
+done.
+RESULT: OK — 25 seeds validated, all invariants satisfied
+TASK VALIDATION: OK (97 accepted, both invariants hold for every task, >= 95 required)
+OK          (checker suite)
+OK          (advisory suite)
+OK          (binding suite)
+clone-analyze-ok
+RESULTS-IDENTICAL
+diff-exit=0
+```
+A stranger cloning the repo reproduces `results.md` **byte-for-byte** from the committed
+episode logs, offline, with no key. All 348 Phase-5 JSONL logs and 97 task metas are
+git-tracked, so the clone has everything `analyze.py` needs. Pre-verified before the clone
+that all commands pass and leave the tree clean, and that the working-tree `results.md`
+still hashes to `29bcf9e5b8a0b416c3a4d84eb340ad53c3718a681377c2e1d2765802c0c48599` /
+`results.json` to `27afe558b6f84b9084f69f6ea46925b91aa123f0d99dd92683f8f2ed0a82437f`.
+
+**Worked example — the narrative trace pair (post.md).** `count_divisors` (task_009, dev)
+with its negative-input guard deleted and its docstring stripped by D18: in advisory the
+weak model submits a fix + `DONE`, the checker FAILs (`test_negative_raises`), and advisory
+accepts the declaration → `model_declared_done`, `passed=False`; in binding, same model /
+same first failure, no `DONE` to accept, the FAILED verdict is fed back and the model
+repairs on the next turn → `solved`, `passed=True`. One task, one bug, opposite outcomes,
+differing only in who may call the task finished.
+
+**Decisions / surprises:**
+- **The reproduction bar was met without a single edit to any artifact.** The Phase 7
+  acceptance is entirely about the *clone* reproducing the committed table; nothing in the
+  write-up could change a number, and the byte-identical `diff` confirms the write-up sits
+  on top of a frozen result, not beside a re-run one.
+- **D18 is foregrounded, not buried.** Both documents state up front that the effect exists
+  *only* under bare-code presentation and that both models one-shot everything when the
+  spec is shown — the P5.1→D17→D18 arc is presented as itself a finding, which is the most
+  defensible framing given how narrow the discriminating regime is.
+- **The write-up leads with the interaction, not the headline lift.** +9.2 pp alone reads
+  like a main effect; the honest claim is the *interaction* (weak +9.2, strong +0.0), so
+  both documents make the strong model's Δ=0 as prominent as the weak model's Δ=+9.2.
+- **Bright line intact.** Documentation only; no code, task, or result changed; no API
+  calls; no key printed; `phase1_tasks/` byte-for-byte unchanged; staging is explicit
+  below.
+
+**This closes Phase 7 and the experiment.** End to end: frozen corpus → tested judge → two
+harnesses differing only structurally → pre-registered pilots → a 348-episode held-out run
+→ a deterministic analysis → a write-up whose every number traces to a hash-pinned
+artifact, reproducible by a stranger from a clean clone.
