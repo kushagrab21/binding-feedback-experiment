@@ -1,0 +1,735 @@
+{
+  "_comment": "Hand-authored mutation manifest for step 1.5. Each entry is a single local edit to the named seed, true to its TAXONOMY.md bug_type, that changes observable behaviour on at least one input in the seed's 1.4 suite (so the mutant is killed). 'old' occurs exactly once in the seed source; 'new' is the single-edit replacement. Applied one at a time by generate_tasks.py. Genuinely un-injectable (seed, bug_type) pairs are recorded under dropped_pairs with a reason and are not generated.",
+  "mutations": [
+    {
+      "seed_id": "seed_001",
+      "bug_type": "wrong-comparison",
+      "old": "    if low > high:",
+      "new": "    if low >= high:",
+      "note": "> becomes >=, so a degenerate single-point range low==high now wrongly raises ValueError."
+    },
+    {
+      "seed_id": "seed_001",
+      "bug_type": "missing-edge-case",
+      "old": "    if low > high:\n        raise ValueError(\"low must not exceed high\")\n    if value < low:",
+      "new": "    if value < low:",
+      "note": "The low>high validation guard is dropped, so an inverted range no longer raises."
+    },
+    {
+      "seed_id": "seed_001",
+      "bug_type": "inverted-condition",
+      "old": "    if value < low:",
+      "new": "    if not value < low:",
+      "note": "The below-low test is negated, so in-range values are wrongly clamped up to low."
+    },
+    {
+      "seed_id": "seed_001",
+      "bug_type": "wrong-return",
+      "old": "        return high",
+      "new": "        return low",
+      "note": "The above-high branch returns low instead of high."
+    },
+
+    {
+      "seed_id": "seed_002",
+      "bug_type": "wrong-operator",
+      "old": "        total += n % 10",
+      "new": "        total -= n % 10",
+      "note": "Digits are subtracted instead of added, corrupting the sum."
+    },
+    {
+      "seed_id": "seed_002",
+      "bug_type": "off-by-one",
+      "old": "    total = 0",
+      "new": "    total = 1",
+      "note": "Accumulator seeded to 1 instead of 0, so every result is one too large (and digit_sum(0) is 1)."
+    },
+    {
+      "seed_id": "seed_002",
+      "bug_type": "wrong-comparison",
+      "old": "    if n < 0:",
+      "new": "    if n <= 0:",
+      "note": "< becomes <=, so n==0 wrongly raises instead of returning 0."
+    },
+    {
+      "seed_id": "seed_002",
+      "bug_type": "missing-edge-case",
+      "old": "    if n < 0:\n        raise ValueError(\"n must be non-negative\")\n    total = 0",
+      "new": "    total = 0",
+      "note": "The negative-input guard is dropped, so a negative n silently returns 0 instead of raising."
+    },
+
+    {
+      "seed_id": "seed_003",
+      "bug_type": "off-by-one",
+      "old": "    for d in range(1, n + 1):",
+      "new": "    for d in range(1, n):",
+      "note": "Range upper bound loses +1, so n itself is never counted as a divisor."
+    },
+    {
+      "seed_id": "seed_003",
+      "bug_type": "missing-edge-case",
+      "old": "    if n < 1:\n        raise ValueError(\"n must be a positive integer\")\n    count = 0",
+      "new": "    count = 0",
+      "note": "The n<1 validation guard is dropped, so zero/negative n return 0 instead of raising."
+    },
+    {
+      "seed_id": "seed_003",
+      "bug_type": "wrong-operator",
+      "old": "            count += 1",
+      "new": "            count -= 1",
+      "note": "Counter is decremented instead of incremented, so the divisor count is negated."
+    },
+    {
+      "seed_id": "seed_003",
+      "bug_type": "wrong-comparison",
+      "old": "        if n % d == 0:",
+      "new": "        if n % d != 0:",
+      "note": "== becomes !=, so non-divisors are counted instead of divisors."
+    },
+
+    {
+      "seed_id": "seed_004",
+      "bug_type": "wrong-variable",
+      "old": "    a, b = abs(a), abs(b)",
+      "new": "    a, b = abs(b), abs(b)",
+      "note": "a is initialised from b, so the gcd is computed on the wrong pair."
+    },
+    {
+      "seed_id": "seed_004",
+      "bug_type": "inverted-condition",
+      "old": "    if a == 0 and b == 0:",
+      "new": "    if a == 0 or b == 0:",
+      "note": "and becomes or, so a single zero argument now wrongly raises instead of returning the other value."
+    },
+    {
+      "seed_id": "seed_004",
+      "bug_type": "wrong-operator",
+      "old": "        a, b = b, a % b",
+      "new": "        a, b = b, a // b",
+      "note": "The Euclid step uses // instead of %, so it no longer computes remainders."
+    },
+    {
+      "seed_id": "seed_004",
+      "bug_type": "wrong-return",
+      "old": "    return a",
+      "new": "    return b",
+      "note": "Returns b (always 0 once the loop ends) instead of the gcd in a."
+    },
+
+    {
+      "seed_id": "seed_005",
+      "bug_type": "off-by-one",
+      "old": "    right = len(s) - 1",
+      "new": "    right = len(s)",
+      "note": "Right pointer starts one past the end, causing IndexError on any non-empty string."
+    },
+    {
+      "seed_id": "seed_005",
+      "bug_type": "wrong-comparison",
+      "old": "        if s[left] != s[right]:",
+      "new": "        if s[left] == s[right]:",
+      "note": "!= becomes ==, so mismatches are treated as matches and non-palindromes report True."
+    },
+    {
+      "seed_id": "seed_005",
+      "bug_type": "inverted-condition",
+      "old": "    while left < right:",
+      "new": "    while not left < right:",
+      "note": "The scan guard is negated, so the comparison loop never runs and every string reports True."
+    },
+
+    {
+      "seed_id": "seed_006",
+      "bug_type": "missing-edge-case",
+      "old": "    vowels = \"aeiou\"",
+      "new": "    vowels = \"aeio\"",
+      "note": "The vowel 'u' is left out of the alphabet, so words containing 'u' undercount."
+    },
+    {
+      "seed_id": "seed_006",
+      "bug_type": "inverted-condition",
+      "old": "        if ch in vowels:",
+      "new": "        if ch not in vowels:",
+      "note": "The membership test is negated, so non-vowels are counted instead of vowels."
+    },
+
+    {
+      "seed_id": "seed_007",
+      "bug_type": "wrong-variable",
+      "old": "        reversed_words.append(words[index])",
+      "new": "        words.append(words[index])",
+      "note": "Appends into words instead of reversed_words, so the result stays empty."
+    },
+    {
+      "seed_id": "seed_007",
+      "bug_type": "missing-edge-case",
+      "old": "    words = s.split()",
+      "new": "    words = s.split(\" \")",
+      "note": "split(\" \") no longer collapses whitespace runs, so multi-space input yields empty words."
+    },
+    {
+      "seed_id": "seed_007",
+      "bug_type": "off-by-one",
+      "old": "    for index in range(len(words) - 1, -1, -1):",
+      "new": "    for index in range(len(words) - 2, -1, -1):",
+      "note": "Loop starts one index too low, dropping the first word of the reversed output."
+    },
+    {
+      "seed_id": "seed_007",
+      "bug_type": "wrong-return",
+      "old": "    return \" \".join(reversed_words)",
+      "new": "    return \" \".join(words)",
+      "note": "Returns the original word order instead of the reversed list."
+    },
+
+    {
+      "seed_id": "seed_008",
+      "bug_type": "wrong-operator",
+      "old": "            result.append(chr((ord(ch) - ord(\"a\") + k) % 26 + ord(\"a\")))",
+      "new": "            result.append(chr((ord(ch) - ord(\"a\") - k) % 26 + ord(\"a\")))",
+      "note": "Lowercase letters shift by -k instead of +k."
+    },
+    {
+      "seed_id": "seed_008",
+      "bug_type": "off-by-one",
+      "old": "(ord(ch) - ord(\"a\") + k) % 26 + ord(\"a\")",
+      "new": "(ord(ch) - ord(\"a\") + k) % 25 + ord(\"a\")",
+      "note": "Modulus is 25 instead of 26, so the lowercase alphabet wraps one position early."
+    },
+    {
+      "seed_id": "seed_008",
+      "bug_type": "missing-edge-case",
+      "old": "        elif \"A\" <= ch <= \"Z\":\n            result.append(chr((ord(ch) - ord(\"A\") + k) % 26 + ord(\"A\")))\n        else:",
+      "new": "        else:",
+      "note": "The uppercase branch is dropped, so uppercase letters are left unshifted."
+    },
+    {
+      "seed_id": "seed_008",
+      "bug_type": "wrong-comparison",
+      "old": "        if \"a\" <= ch <= \"z\":",
+      "new": "        if \"a\" < ch <= \"z\":",
+      "note": "<= becomes <, so 'a' is excluded from the lowercase alphabet and left unshifted."
+    },
+
+    {
+      "seed_id": "seed_009",
+      "bug_type": "wrong-comparison",
+      "old": "    if len(distinct) < 2:",
+      "new": "    if len(distinct) <= 2:",
+      "note": "< becomes <=, so exactly two distinct values wrongly raise instead of returning the smaller."
+    },
+    {
+      "seed_id": "seed_009",
+      "bug_type": "off-by-one",
+      "old": "    if len(distinct) < 2:",
+      "new": "    if len(distinct) < 1:",
+      "note": "Guard boundary drops from 2 to 1, so a single distinct value returns None instead of raising."
+    },
+    {
+      "seed_id": "seed_009",
+      "bug_type": "inverted-condition",
+      "old": "        if value != largest:",
+      "new": "        if not value != largest:",
+      "note": "The 'skip the largest' test is negated, so only the largest is considered and it is returned as the second largest."
+    },
+    {
+      "seed_id": "seed_009",
+      "bug_type": "missing-edge-case",
+      "old": "    if len(distinct) < 2:\n        raise ValueError(\"need at least two distinct values\")\n    largest = max(distinct)",
+      "new": "    largest = max(distinct)",
+      "note": "The <2-distinct guard is dropped, so a single distinct value returns None instead of raising."
+    },
+    {
+      "seed_id": "seed_009",
+      "bug_type": "wrong-return",
+      "old": "    return second",
+      "new": "    return largest",
+      "note": "Returns the largest instead of the second largest."
+    },
+
+    {
+      "seed_id": "seed_010",
+      "bug_type": "wrong-variable",
+      "old": "            result.append(item)",
+      "new": "            result.append(sub)",
+      "note": "Appends the sub-list itself instead of its element, so no flattening happens."
+    },
+    {
+      "seed_id": "seed_010",
+      "bug_type": "wrong-return",
+      "old": "    return result",
+      "new": "    return nested",
+      "note": "Returns the original nested list instead of the flattened result."
+    },
+
+    {
+      "seed_id": "seed_011",
+      "bug_type": "off-by-one",
+      "old": "        chunks.append(seq[start:start + size])",
+      "new": "        chunks.append(seq[start:start + size - 1])",
+      "note": "Slice end loses one, so every chunk is one element short."
+    },
+    {
+      "seed_id": "seed_011",
+      "bug_type": "missing-edge-case",
+      "old": "    if size < 1:\n        raise ValueError(\"size must be at least 1\")\n    chunks = []",
+      "new": "    chunks = []",
+      "note": "The size<1 guard is dropped, so a negative size returns [] instead of raising."
+    },
+    {
+      "seed_id": "seed_011",
+      "bug_type": "wrong-operator",
+      "old": "        chunks.append(seq[start:start + size])",
+      "new": "        chunks.append(seq[start:start * size])",
+      "note": "Slice end uses start*size instead of start+size, mis-sizing every chunk."
+    },
+    {
+      "seed_id": "seed_011",
+      "bug_type": "wrong-comparison",
+      "old": "    if size < 1:",
+      "new": "    if size <= 1:",
+      "note": "< becomes <=, so size==1 wrongly raises instead of yielding singleton chunks."
+    },
+
+    {
+      "seed_id": "seed_012",
+      "bug_type": "off-by-one",
+      "old": "        result.append(seq[(index + shift) % n])",
+      "new": "        result.append(seq[(index + shift + 1) % n])",
+      "note": "Rotation offset is one too large, shifting the result by an extra position."
+    },
+    {
+      "seed_id": "seed_012",
+      "bug_type": "wrong-operator",
+      "old": "    shift = k % n",
+      "new": "    shift = k // n",
+      "note": "shift uses // instead of %, so it is 0 for small k and no rotation occurs."
+    },
+    {
+      "seed_id": "seed_012",
+      "bug_type": "input-mutation",
+      "old": "    result = []",
+      "new": "    result = seq",
+      "note": "result aliases seq, so the appends mutate the caller's list (and the return value is wrong too)."
+    },
+    {
+      "seed_id": "seed_012",
+      "bug_type": "missing-edge-case",
+      "old": "    if n == 0:\n        return result\n    shift = k % n",
+      "new": "    shift = k % n",
+      "note": "The empty-sequence guard is dropped, so k % 0 raises ZeroDivisionError on an empty input."
+    },
+
+    {
+      "seed_id": "seed_013",
+      "bug_type": "off-by-one",
+      "old": "            counts[word] = 1",
+      "new": "            counts[word] = 2",
+      "note": "First occurrence seeds the count at 2 instead of 1, inflating every frequency."
+    },
+    {
+      "seed_id": "seed_013",
+      "bug_type": "wrong-return",
+      "old": "    return counts",
+      "new": "    return words",
+      "note": "Returns the input word list instead of the frequency dict."
+    },
+    {
+      "seed_id": "seed_013",
+      "bug_type": "wrong-operator",
+      "old": "            counts[word] = counts[word] + 1",
+      "new": "            counts[word] = counts[word] - 1",
+      "note": "Repeat occurrences decrement instead of increment the count."
+    },
+    {
+      "seed_id": "seed_013",
+      "bug_type": "inverted-condition",
+      "old": "        if word in counts:",
+      "new": "        if word not in counts:",
+      "note": "The seen-before test is negated, so a first-seen word hits the increment branch and raises KeyError."
+    },
+
+    {
+      "seed_id": "seed_014",
+      "bug_type": "missing-edge-case",
+      "old": "        if key in result:\n            result[key] = result[key] + b[key]\n        else:\n            result[key] = b[key]",
+      "new": "        if key in result:\n            result[key] = result[key] + b[key]",
+      "note": "The else branch is dropped, so keys present only in b are silently omitted."
+    },
+    {
+      "seed_id": "seed_014",
+      "bug_type": "wrong-operator",
+      "old": "            result[key] = result[key] + b[key]",
+      "new": "            result[key] = result[key] - b[key]",
+      "note": "Shared keys subtract instead of sum."
+    },
+    {
+      "seed_id": "seed_014",
+      "bug_type": "input-mutation",
+      "old": "    result = {}",
+      "new": "    result = a",
+      "note": "result aliases a, so the merge writes through into the caller's dict a."
+    },
+    {
+      "seed_id": "seed_014",
+      "bug_type": "inverted-condition",
+      "old": "        if key in result:",
+      "new": "        if key not in result:",
+      "note": "The membership test is negated, swapping the sum/copy branches and raising KeyError on b-only keys."
+    },
+    {
+      "seed_id": "seed_014",
+      "bug_type": "wrong-variable",
+      "old": "            result[key] = result[key] + b[key]",
+      "new": "            result[key] = result[key] + a[key]",
+      "note": "The added value is drawn from a instead of b."
+    },
+
+    {
+      "seed_id": "seed_015",
+      "bug_type": "wrong-comparison",
+      "old": "        if counts[ch] > best_count:",
+      "new": "        if counts[ch] >= best_count:",
+      "note": "> becomes >=, so ties overwrite and the latest, not earliest, tied char wins."
+    },
+    {
+      "seed_id": "seed_015",
+      "bug_type": "inverted-condition",
+      "old": "        if counts[ch] > best_count:",
+      "new": "        if not counts[ch] > best_count:",
+      "note": "The 'beats the best' test is negated, so the running best is never really improved."
+    },
+    {
+      "seed_id": "seed_015",
+      "bug_type": "missing-edge-case",
+      "old": "    if not s:\n        raise ValueError(\"string must be non-empty\")\n    counts = {}",
+      "new": "    counts = {}",
+      "note": "The empty-string guard is dropped, so s[0] raises IndexError instead of ValueError."
+    },
+    {
+      "seed_id": "seed_015",
+      "bug_type": "wrong-return",
+      "old": "    return best_char",
+      "new": "    return best_count",
+      "note": "Returns the count instead of the most common character."
+    },
+
+    {
+      "seed_id": "seed_016",
+      "bug_type": "missing-edge-case",
+      "old": "    if not s:\n        return False\n    first = s[0]",
+      "new": "    first = s[0]",
+      "note": "The empty-string guard is dropped, so s[0] raises IndexError instead of returning False."
+    },
+    {
+      "seed_id": "seed_016",
+      "bug_type": "wrong-comparison",
+      "old": "first == \"_\"",
+      "new": "first != \"_\"",
+      "note": "The first-char underscore test flips == to !=, so a bare '_' is rejected."
+    },
+    {
+      "seed_id": "seed_016",
+      "bug_type": "inverted-condition",
+      "old": "    if not (first.isalpha() or first == \"_\"):",
+      "new": "    if (first.isalpha() or first == \"_\"):",
+      "note": "The first-char validity guard loses its not, so a leading digit is accepted."
+    },
+    {
+      "seed_id": "seed_016",
+      "bug_type": "off-by-one",
+      "old": "    for ch in s[1:]:",
+      "new": "    for ch in s[2:]:",
+      "note": "The body scan starts one char too late, so an invalid char at index 1 is not rejected."
+    },
+    {
+      "seed_id": "seed_016",
+      "bug_type": "wrong-operator",
+      "old": "    if not (first.isalpha() or first == \"_\"):",
+      "new": "    if not (first.isalpha() and first == \"_\"):",
+      "note": "or becomes and, so a leading underscore (not alpha) is wrongly rejected."
+    },
+
+    {
+      "seed_id": "seed_017",
+      "bug_type": "inverted-condition",
+      "old": "    if year % 400 == 0:",
+      "new": "    if not year % 400 == 0:",
+      "note": "The divisible-by-400 test is negated, so 2000 is misclassified as non-leap."
+    },
+    {
+      "seed_id": "seed_017",
+      "bug_type": "wrong-operator",
+      "old": "    return year % 4 == 0",
+      "new": "    return year // 4 == 0",
+      "note": "% becomes //, so the divisible-by-4 test is wrong for ordinary years."
+    },
+    {
+      "seed_id": "seed_017",
+      "bug_type": "wrong-comparison",
+      "old": "    if year % 100 == 0:",
+      "new": "    if year % 100 != 0:",
+      "note": "== becomes !=, so the century rule fires for the wrong years (1900 reports leap)."
+    },
+    {
+      "seed_id": "seed_017",
+      "bug_type": "missing-edge-case",
+      "old": "    if year % 100 == 0:\n        return False\n    return year % 4 == 0",
+      "new": "    return year % 4 == 0",
+      "note": "The century-year rule is dropped, so 1900 wrongly reports as a leap year."
+    },
+
+    {
+      "seed_id": "seed_018",
+      "bug_type": "inverted-condition",
+      "old": "        if item in seen:",
+      "new": "        if item not in seen:",
+      "note": "The already-seen test is negated, so the first element triggers an immediate False."
+    },
+    {
+      "seed_id": "seed_018",
+      "bug_type": "wrong-return",
+      "old": "            return False",
+      "new": "            return True",
+      "note": "A detected duplicate returns True instead of False."
+    },
+    {
+      "seed_id": "seed_018",
+      "bug_type": "wrong-variable",
+      "old": "    for item in items:",
+      "new": "    for item in seen:",
+      "note": "Iterates the empty seen set instead of items, so duplicates are never detected."
+    },
+
+    {
+      "seed_id": "seed_019",
+      "bug_type": "off-by-one",
+      "old": "    high = len(sorted_list) - 1",
+      "new": "    high = len(sorted_list) - 2",
+      "note": "high starts one too low, so the last element is never searched."
+    },
+    {
+      "seed_id": "seed_019",
+      "bug_type": "wrong-comparison",
+      "old": "    while low <= high:",
+      "new": "    while low < high:",
+      "note": "<= becomes <, so a one-element search window is skipped and single elements are missed."
+    },
+    {
+      "seed_id": "seed_019",
+      "bug_type": "wrong-operator",
+      "old": "        mid = (low + high) // 2",
+      "new": "        mid = (low + high) * 2",
+      "note": "Midpoint uses * instead of //, driving mid out of range so the lookup raises IndexError. (A low-high subtraction was rejected: it produces a fixed-point infinite loop rather than a killable mutant.)"
+    },
+    {
+      "seed_id": "seed_019",
+      "bug_type": "inverted-condition",
+      "old": "        if sorted_list[mid] < target:",
+      "new": "        if not sorted_list[mid] < target:",
+      "note": "The half-selection test is negated, so the search moves the wrong direction and misses targets."
+    },
+    {
+      "seed_id": "seed_019",
+      "bug_type": "wrong-return",
+      "old": "            return mid",
+      "new": "            return -1",
+      "note": "A found target returns -1 (the not-found sentinel) instead of its index."
+    },
+
+    {
+      "seed_id": "seed_020",
+      "bug_type": "off-by-one",
+      "old": "        for j in range(0, n - i - 1):",
+      "new": "        for j in range(0, n - i - 2):",
+      "note": "Inner bound is one too small, so the last adjacent pair is never compared and the list is left unsorted."
+    },
+    {
+      "seed_id": "seed_020",
+      "bug_type": "wrong-variable",
+      "old": "                result[j], result[j + 1] = result[j + 1], result[j]",
+      "new": "                result[j], result[j + 1] = result[j], result[j + 1]",
+      "note": "The swap assigns each element to itself, so no swapping happens and the list stays unsorted."
+    },
+    {
+      "seed_id": "seed_020",
+      "bug_type": "input-mutation",
+      "old": "    result = list(nums)",
+      "new": "    result = nums",
+      "note": "result aliases nums, so the in-place swaps mutate the caller's list."
+    },
+    {
+      "seed_id": "seed_020",
+      "bug_type": "wrong-comparison",
+      "old": "            if result[j] > result[j + 1]:",
+      "new": "            if result[j] < result[j + 1]:",
+      "note": "> becomes <, so the list is sorted in descending order."
+    },
+
+    {
+      "seed_id": "seed_021",
+      "bug_type": "off-by-one",
+      "old": "        index = 1",
+      "new": "        index = 2",
+      "note": "After a sign, the digit start index is one too high, dropping the first digit (and raising on single-digit signed input)."
+    },
+    {
+      "seed_id": "seed_021",
+      "bug_type": "wrong-comparison",
+      "old": "        if ch < \"0\" or ch > \"9\":",
+      "new": "        if ch <= \"0\" or ch > \"9\":",
+      "note": "< becomes <=, so the digit '0' is rejected as invalid."
+    },
+    {
+      "seed_id": "seed_021",
+      "bug_type": "wrong-operator",
+      "old": "        value = value * 10 + (ord(ch) - ord(\"0\"))",
+      "new": "        value = value * 10 - (ord(ch) - ord(\"0\"))",
+      "note": "Digit accumulation subtracts instead of adds, negating the magnitude."
+    },
+    {
+      "seed_id": "seed_021",
+      "bug_type": "missing-edge-case",
+      "old": "    if index == len(s):\n        raise ValueError(\"no digits after sign\")\n    value = 0",
+      "new": "    value = 0",
+      "note": "The no-digits-after-sign guard is dropped, so a lone '+'/'-' returns 0 instead of raising."
+    },
+
+    {
+      "seed_id": "seed_022",
+      "bug_type": "wrong-comparison",
+      "old": "    if hours > 23 or minutes > 59:",
+      "new": "    if hours >= 23 or minutes > 59:",
+      "note": "> becomes >=, so a valid 23:xx time wrongly raises out-of-range."
+    },
+    {
+      "seed_id": "seed_022",
+      "bug_type": "missing-edge-case",
+      "old": "    if hours > 23 or minutes > 59:\n        raise ValueError(\"value out of range\")\n    return hours * 60 + minutes",
+      "new": "    return hours * 60 + minutes",
+      "note": "The range-check guard is dropped, so 24:00 is accepted instead of raising."
+    },
+    {
+      "seed_id": "seed_022",
+      "bug_type": "off-by-one",
+      "old": "    if hours > 23 or minutes > 59:",
+      "new": "    if hours > 24 or minutes > 59:",
+      "note": "Hour bound displaced from 23 to 24, so hour 24 is wrongly accepted."
+    },
+    {
+      "seed_id": "seed_022",
+      "bug_type": "wrong-operator",
+      "old": "    return hours * 60 + minutes",
+      "new": "    return hours * 60 - minutes",
+      "note": "Minutes are subtracted instead of added to the hour total."
+    },
+
+    {
+      "seed_id": "seed_023",
+      "bug_type": "wrong-comparison",
+      "old": "        if current < previous:",
+      "new": "        if current <= previous:",
+      "note": "< becomes <=, so equal adjacent symbols are wrongly subtracted (III becomes -1)."
+    },
+    {
+      "seed_id": "seed_023",
+      "bug_type": "inverted-condition",
+      "old": "        if current < previous:",
+      "new": "        if not current < previous:",
+      "note": "The subtract/add decision is negated, flipping every symbol's sign."
+    },
+    {
+      "seed_id": "seed_023",
+      "bug_type": "wrong-operator",
+      "old": "            total = total + current",
+      "new": "            total = total - current",
+      "note": "The additive branch subtracts, so ordinary additive numerals go negative."
+    },
+    {
+      "seed_id": "seed_023",
+      "bug_type": "missing-edge-case",
+      "old": "    if not s:\n        raise ValueError(\"empty string\")\n    total = 0",
+      "new": "    total = 0",
+      "note": "The empty-string guard is dropped, so \"\" returns 0 instead of raising."
+    },
+
+    {
+      "seed_id": "seed_024",
+      "bug_type": "off-by-one",
+      "old": "    while index < len(line):",
+      "new": "    while index < len(line) - 1:",
+      "note": "Loop bound is one short, so the final character of the line is dropped."
+    },
+    {
+      "seed_id": "seed_024",
+      "bug_type": "missing-edge-case",
+      "old": "            if ch == '\"' and index + 1 < len(line) and line[index + 1] == '\"':\n                current.append('\"')\n                index += 1\n            elif ch == '\"':\n                in_quotes = False",
+      "new": "            if ch == '\"':\n                in_quotes = False",
+      "note": "The doubled-quote escape case is dropped, so \"\" inside a quoted field is misread as a close+reopen."
+    },
+    {
+      "seed_id": "seed_024",
+      "bug_type": "inverted-condition",
+      "old": "        if in_quotes:",
+      "new": "        if not in_quotes:",
+      "note": "The in-quotes mode test is negated, so quote/comma handling is applied in the wrong mode."
+    },
+    {
+      "seed_id": "seed_024",
+      "bug_type": "wrong-comparison",
+      "old": "    while index < len(line):",
+      "new": "    while index <= len(line):",
+      "note": "< becomes <=, so index reaches len(line) and line[index] raises IndexError."
+    },
+
+    {
+      "seed_id": "seed_025",
+      "bug_type": "inverted-condition",
+      "old": "        if not part.isdigit():",
+      "new": "        if part.isdigit():",
+      "note": "The non-numeric guard loses its not, so a valid numeric component wrongly raises."
+    },
+    {
+      "seed_id": "seed_025",
+      "bug_type": "wrong-return",
+      "old": "    return tuple(result)",
+      "new": "    return result",
+      "note": "Returns a list instead of a tuple, so the type of the result is wrong."
+    },
+    {
+      "seed_id": "seed_025",
+      "bug_type": "wrong-variable",
+      "old": "        result.append(int(part))",
+      "new": "        result.append(int(s))",
+      "note": "Parses the whole string s instead of the current component part, raising on any multi-component input."
+    }
+  ],
+  "dropped_pairs": [
+    {
+      "seed_id": "seed_005",
+      "bug_type": "missing-edge-case",
+      "reason": "is_palindrome has no special-case guard to omit: empty and single-char inputs are handled implicitly by the two-pointer loop (left<right is simply false), so there is no branch whose removal changes behaviour. Off-by-one/wrong-comparison/inverted-condition cover this seed."
+    },
+    {
+      "seed_id": "seed_006",
+      "bug_type": "wrong-comparison",
+      "reason": "count_vowels contains no relational comparison operator (<,<=,>,>=,==,!=) to swap; its only test is 'ch in vowels' membership, which belongs to inverted-condition (in->not in), not wrong-comparison. No single-edit relational swap exists."
+    },
+    {
+      "seed_id": "seed_010",
+      "bug_type": "input-mutation",
+      "reason": "flatten_one_level never copies its input (there is no 'result = list(nested)' to alias), and aliasing 'result = nested' would append into the very list being iterated, raising mid-iteration rather than producing a faithful silent side-effect. No clean single-edit input-mutation is available."
+    },
+    {
+      "seed_id": "seed_010",
+      "bug_type": "missing-edge-case",
+      "reason": "flatten_one_level has no guard/branch/case to omit: empty outer and empty inner lists are handled implicitly by the two for-loops. There is no special-case whose removal a boundary test could catch."
+    },
+    {
+      "seed_id": "seed_025",
+      "bug_type": "missing-edge-case",
+      "reason": "Every validation guard in parse_version is backed by a downstream ValueError: removing the empty-string or empty-component guard still raises via part.isdigit()/int(part), and removing the isdigit guard still raises via int(part). The existing suite only supplies inputs that raise ValueError either way, so no guard removal changes an observable result."
+    }
+  ]
+}

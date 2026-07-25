@@ -1,0 +1,8 @@
+{
+  "task_id": "task_018",
+  "seed_name": "seed_005",
+  "bug_type": "off-by-one",
+  "difficulty": null,
+  "function_name": "is_palindrome",
+  "description": "Test whether a string reads the same forwards and backwards."
+}

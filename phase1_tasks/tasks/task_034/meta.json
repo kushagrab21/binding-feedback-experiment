@@ -1,0 +1,8 @@
+{
+  "task_id": "task_034",
+  "seed_name": "seed_009",
+  "bug_type": "wrong-return",
+  "difficulty": null,
+  "function_name": "second_largest",
+  "description": "Find the second largest distinct value in a sequence."
+}

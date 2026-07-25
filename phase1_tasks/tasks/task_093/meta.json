@@ -1,0 +1,8 @@
+{
+  "task_id": "task_093",
+  "seed_name": "seed_024",
+  "bug_type": "off-by-one",
+  "difficulty": null,
+  "function_name": "parse_csv_line",
+  "description": "Split a simple CSV line into fields, honoring quoted fields."
+}

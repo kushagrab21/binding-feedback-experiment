@@ -1,0 +1,8 @@
+{
+  "task_id": "task_095",
+  "seed_name": "seed_025",
+  "bug_type": "inverted-condition",
+  "difficulty": null,
+  "function_name": "parse_version",
+  "description": "Parse a dotted version string into a tuple of integers."
+}

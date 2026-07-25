@@ -1,0 +1,8 @@
+{
+  "task_id": "task_020",
+  "seed_name": "seed_006",
+  "bug_type": "inverted-condition",
+  "difficulty": null,
+  "function_name": "count_vowels",
+  "description": "Count vowels in a string, case-insensitively."
+}

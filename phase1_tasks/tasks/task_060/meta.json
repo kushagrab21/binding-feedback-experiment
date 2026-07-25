@@ -1,0 +1,8 @@
+{
+  "task_id": "task_060",
+  "seed_name": "seed_016",
+  "bug_type": "off-by-one",
+  "difficulty": null,
+  "function_name": "is_valid_identifier",
+  "description": "Validate a Python-like identifier string."
+}

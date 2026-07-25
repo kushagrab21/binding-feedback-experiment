@@ -1,0 +1,8 @@
+{
+  "task_id": "task_001",
+  "seed_name": "seed_001",
+  "bug_type": "inverted-condition",
+  "difficulty": null,
+  "function_name": "clamp",
+  "description": "Clamp a value into the inclusive range [low, high]."
+}

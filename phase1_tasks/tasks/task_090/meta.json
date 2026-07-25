@@ -1,0 +1,8 @@
+{
+  "task_id": "task_090",
+  "seed_name": "seed_023",
+  "bug_type": "wrong-operator",
+  "difficulty": null,
+  "function_name": "parse_roman",
+  "description": "Parse a Roman numeral string into its integer value."
+}

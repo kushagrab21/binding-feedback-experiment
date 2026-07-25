@@ -1,0 +1,8 @@
+{
+  "task_id": "task_049",
+  "seed_name": "seed_014",
+  "bug_type": "input-mutation",
+  "difficulty": null,
+  "function_name": "merge_sum",
+  "description": "Merge two integer-valued dicts, summing on shared keys."
+}

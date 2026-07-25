@@ -1,0 +1,8 @@
+{
+  "task_id": "task_078",
+  "seed_name": "seed_020",
+  "bug_type": "wrong-variable",
+  "difficulty": null,
+  "function_name": "bubble_sort",
+  "description": "Sort a list of numbers in ascending order (bubble sort)."
+}

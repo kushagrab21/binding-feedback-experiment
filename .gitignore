@@ -1,3 +1,11 @@
 __pycache__/
 *.pyc
 .DS_Store
+
+# macOS iCloud Drive sync conflict copies (Desktop is synced); e.g. "buggy 2.py".
+# generate_tasks.py wipes+rewrites tasks/ rapidly, which can make the sync daemon
+# snapshot a mid-write conflict copy. These are never real artifacts.
+* [0-9].py
+* [0-9].json
+* [0-9].txt
+* [0-9].md

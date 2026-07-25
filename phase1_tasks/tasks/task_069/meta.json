@@ -1,0 +1,8 @@
+{
+  "task_id": "task_069",
+  "seed_name": "seed_018",
+  "bug_type": "wrong-variable",
+  "difficulty": null,
+  "function_name": "all_unique",
+  "description": "Test whether all elements of a sequence are unique."
+}

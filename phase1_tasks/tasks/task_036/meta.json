@@ -1,0 +1,8 @@
+{
+  "task_id": "task_036",
+  "seed_name": "seed_010",
+  "bug_type": "wrong-variable",
+  "difficulty": null,
+  "function_name": "flatten_one_level",
+  "description": "Flatten a list of sub-lists by exactly one level."
+}

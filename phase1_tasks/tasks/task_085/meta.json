@@ -1,0 +1,8 @@
+{
+  "task_id": "task_085",
+  "seed_name": "seed_022",
+  "bug_type": "wrong-comparison",
+  "difficulty": null,
+  "function_name": "parse_hhmm",
+  "description": "Parse a \"HH:MM\" clock string into minutes since midnight."
+}

@@ -419,3 +419,136 @@ directory. Rationale and alternatives:
   exceptions or boundaries, e.g. parse_signed_int at 8); all are ≥6 as required.
 - Negative-control edits were applied to in-memory copies only; the seed corpus is
   byte-for-byte unchanged, re-confirmed by re-running `validate_seeds.py`.
+
+---
+
+## 1.5 — Mutation manifest + task generator + task validator
+
+**Step ID / date:** 1.5 — 2026-07-25
+
+**What was built:**
+- `phase1_tasks/generator/mutations.json` — the hand-authored mutation manifest.
+  A `mutations` array of **97** entries (one per injectable (seed, bug_type) pair)
+  and a `dropped_pairs` array of **5** entries (un-injectable pairs, with reasons).
+  Each mutation is `{seed_id, bug_type, old, new, note}`: a single local edit whose
+  `old` snippet occurs exactly once in the seed source, true to its `TAXONOMY.md`
+  bug class, and killable by that seed's 1.4 suite.
+- `phase1_tasks/generator/generate_tasks.py` — deterministic generator (no
+  randomness, no timestamps). Sorts pairs by `(seed_id, bug_type)`, numbers them
+  `task_001…`, wipes and regenerates `phase1_tasks/tasks/` on every run, and for each
+  pair writes `reference.py` (seed verbatim), `buggy.py` (seed with the one edit; it
+  aborts loudly if `old` does not occur exactly once), `tests.py` (the seed's suite
+  verbatim), and `meta.json` per `TASK_FORMAT.md` (`difficulty: null`, `description`
+  from `SEEDS.json`).
+- `phase1_tasks/generator/validate_tasks.py` — validator. For every task, using the
+  `solution.py` copy contract in a fresh temp dir, it runs `tests.py` against
+  `reference.py` (must fully pass) and against `buggy.py` (must fail ≥1 test). It
+  prints one line per task, then totals (accepted/rejected, per-bug-type counts) and
+  any rejection reasons, writes the same report to
+  `phase1_tasks/validation/task_validation.txt`, and exits non-zero if any task
+  violates either invariant or if fewer than 95 tasks are accepted. A 20s per-suite
+  timeout guards against a pathological mutant hanging the run (a hang is a rejection,
+  not a silent kill).
+
+**Provenance:** Every mutation in `mutations.json` was hand-authored by reading the
+seed function and its 1.4 suite and choosing a single edit from the pair's bug class
+that (a) changes observable behaviour on ≥1 input the suite exercises and (b) leaves
+valid, terminating Python. The 1.3 log's `seed_014` worked example set the style. The
+two generator/validator scripts are hand-written. Tasks are 100% generated — never
+hand-edited — and are reproducible by rerunning the generator.
+
+**Yield:** 102 candidate pairs → **97 tasks** (5 dropped). Accepted count 97 ≥ 95.
+Per-bug-type: off-by-one 15, wrong-comparison 16, wrong-operator 14,
+inverted-condition 15, wrong-variable 7, missing-edge-case 17, wrong-return 10,
+input-mutation 3.
+
+**Evidence of correctness (validator totals; full table in the acceptance block and
+in `phase1_tasks/validation/task_validation.txt`):**
+```
+tasks: 97  accepted: 97  rejected: 0
+per-bug-type accepted counts:
+    input-mutation: 3
+    inverted-condition: 15
+    missing-edge-case: 17
+    off-by-one: 15
+    wrong-comparison: 16
+    wrong-operator: 14
+    wrong-return: 10
+    wrong-variable: 7
+TASK VALIDATION: OK (97 accepted, both invariants hold for every task, >= 95 required)
+```
+`generate_tasks.py` exit 0 (97 tasks written); `validate_tasks.py` exit 0. Every
+line reads `ref=PASS buggy=FAIL(n/n) [test]`; no task is `REJECTED`. `git status`
+shows `phase1_tasks/seeds/` untouched.
+
+**Worked example 1 — task_056, seed_015 `most_common_char`, `wrong-comparison`.**
+The tie-break comparison `>` is relaxed to `>=`, so a later tied character overwrites
+the earlier one (the exact `TAXONOMY.md` wrong-comparison illustration):
+```diff
+-        if counts[ch] > best_count:
++        if counts[ch] >= best_count:
+```
+Failing test `test_tie_breaks_to_earliest`; raw output:
+```
+    self.assertEqual(most_common_char("abcabc"), "a")
+AssertionError: 'c' != 'a'
+Ran 6 tests in 0.000s
+FAILED (failures=1)
+```
+
+**Worked example 2 — task_075, seed_020 `bubble_sort`, `input-mutation`.**
+`result = list(nums)` becomes `result = nums`, aliasing the caller's list so the
+in-place swaps mutate it (the `TAXONOMY.md` input-mutation illustration). The return
+value is still correctly sorted, so only the mutation-detecting test fails:
+```diff
+-    result = list(nums)
++    result = nums
+```
+Failing test `test_input_not_mutated`; raw output:
+```
+FAIL: test_input_not_mutated (tests.TestBubbleSort.test_input_not_mutated)
+    self.assertEqual(arg, [3, 1, 2])
+AssertionError: Lists differ: [1, 2, 3] != [3, 1, 2]
+Ran 6 tests in 0.000s
+FAILED (failures=1)
+```
+
+**Decisions / surprises:**
+- **One mutation was reworked, not shipped as authored.** The first `seed_019`
+  `binary_search` `wrong-operator` edit (`mid = (low + high) // 2` →
+  `(low - high) // 2`) produced an **infinite loop** on `test_last_element`
+  (`target=7`): `low`, `high`, `mid` reach a fixed point where the search window never
+  closes. A hanging mutant is not a clean, killable task, so it was replaced with a
+  terminating swap `(low + high) // 2` → `(low + high) * 2`, which drives `mid` out of
+  range and is killed by an `IndexError` (a `*`↔`//` swap, still `wrong-operator`).
+  The validator was hardened in the same pass: each suite now runs under a 20s
+  subprocess timeout and a timeout is reported as a rejection, so a future
+  non-terminating mutant is surfaced as `buggy HANGS` rather than stalling validation.
+- **5 pairs dropped as genuinely un-injectable** (recorded in `dropped_pairs` with
+  reasons; final count 97 ≥ 95):
+  - `seed_005 × missing-edge-case` and `seed_010 × missing-edge-case` — neither
+    `is_palindrome` nor `flatten_one_level` has any special-case *guard* to omit;
+    their empty/single-element inputs are handled implicitly by the loop structure, so
+    no removable branch changes behaviour.
+  - `seed_006 × wrong-comparison` — `count_vowels` contains no relational comparison
+    operator to swap; its only test is `ch in vowels` membership, which is
+    `inverted-condition` territory (`in`→`not in`), not `wrong-comparison`.
+  - `seed_010 × input-mutation` — `flatten_one_level` never copies its input, so the
+    only aliasing edit (`result = nested`) would append into the list being iterated
+    and raise mid-iteration rather than produce a faithful silent side-effect.
+  - `seed_025 × missing-edge-case` — every validation guard in `parse_version` is
+    backed by a downstream `ValueError` (`isdigit`/`int(part)`), so removing any one
+    guard still raises on exactly the inputs the suite supplies; no guard removal
+    changes an observable result.
+- **Overlapping `old` targets are fine.** Several seeds host multiple mutations that
+  edit the same source line differently (e.g. `seed_009`'s `if len(distinct) < 2:` is
+  the site for both a `wrong-comparison` `<=` and an `off-by-one` `< 1`). Each
+  mutation is applied alone to a fresh copy of the seed, and each `old` still occurs
+  exactly once in the seed source, so the "exactly once" contract holds per mutation.
+- **`input-mutation` is the sparsest type (3 tasks)**, one below its 1.3 candidate
+  count of 4 because `seed_010`'s pair was dropped; the remaining three come from the
+  seeds that genuinely copy a mutable argument (`seed_012`, `seed_014`, `seed_020`),
+  where aliasing the copy is a faithful, return-value-preserving side effect.
+- **Reminder honoured:** the seed corpus in `phase1_tasks/seeds/` was not modified in
+  this step; all task content is generated, and tasks remain regenerate-only (they
+  become immutable after the 1.7 freeze).
