@@ -320,3 +320,102 @@ Per-type injection site (one line each):
   label survives outside `EXPERIMENT_LOG.md`.
 - **Yield headroom for 1.5.** 102 (seed, type) pairs across 25 seeds (~4.08 each)
   comfortably clears the ~100-task target, so generator yield is not seed-starved.
+
+---
+
+## 1.4 — Per-seed test suites + runner + `solution` import contract
+
+**Step ID / date:** 1.4 — 2026-07-25
+
+**What was built:**
+- `phase1_tasks/seeds/tests/test_seed_001.py` … `test_seed_025.py` — one
+  deterministic `unittest` suite per seed (stdlib only), 6–8 test methods each,
+  161 test methods total. Every suite imports the function under test with
+  `from solution import <function_name>`.
+- `phase1_tasks/seeds/run_seed_tests.py` — the isolated runner. For each seed in
+  `SEEDS.json` it copies the seed module to `solution.py` in a fresh temp dir,
+  copies the suite alongside, runs it in a subprocess, and prints
+  `seed_NNN function_name: PASS (k tests, X.XXs)` plus a total line (suite count,
+  test count, wall time). Exits non-zero on any failing suite or any single suite
+  exceeding the 2.00s per-suite budget from `TASK_FORMAT.md`.
+
+**Provenance:** All 25 suites and the runner are hand-written in step 1.4. Each
+suite's cases were authored by reading the seed's docstring contract and enumerating
+(a) normal cases, (b) boundary cases — empty input, single element, range extremes,
+and (c) one `assertRaises` per exception the docstring documents. The concrete
+input→output pairs are consistent with the independent `spotcheck_seeds.py` oracle
+(1.2-R) but were derived separately from the contracts, not copied from it. The four
+input-mutation-eligible seeds named in `SEEDS.json`/`TAXONOMY.md` (seed_010, 012,
+014, 020 — those taking a mutable argument their contract promises not to mutate)
+each carry a `test_input_not_mutated` / `test_inputs_not_mutated` method that calls
+the function and asserts the argument dict/list is unchanged.
+
+**Coverage of documented exceptions (assertRaises):** ValueError is asserted for
+clamp low>high (001), digit_sum negative (002), count_divisors n<1 (003), gcd_two
+both-zero (004), second_largest <2 distinct (009), chunk size<1 (011),
+most_common_char empty (015), parse_signed_int empty/sign-only/non-digit/whitespace
+(021), parse_hhmm shape/non-digit/range (022), parse_roman empty/unknown-symbol
+(023), parse_version empty/empty-component/non-numeric (025). The remaining seeds
+document no exceptions (they return sentinels such as `-1` / `False` / `[""]`), so
+their suites assert those return values instead.
+
+**Evidence of correctness:**
+- `python3 phase1_tasks/seeds/run_seed_tests.py` → all 25 suites PASS,
+  `SEED TESTS: OK (25 suites, 161 tests, 0.71s wall)`, exit 0. Slowest single suite
+  0.05s — two orders of magnitude under the 2.00s budget. (Full per-seed output is
+  in the step's acceptance block.)
+- `python3 phase1_tasks/seeds/validate_seeds.py` re-run to confirm this step left the
+  seed corpus untouched → `RESULT: OK — 25 seeds validated, all invariants satisfied`
+  (exit 0).
+
+**Worked example (negative control — the suites actually catch bugs):** an in-memory,
+single-edit break of one classic seed and one parsing seed was run against its own
+suite (the seed files on disk were never modified; `git status` confirms). Each break
+is a single relational-token edit and each is caught:
+
+- seed_019 `binary_search`, `while low <= high:` → `while low < high:` (drops the
+  final one-element window). 3 of 7 tests fail; representative failure:
+  ```
+  FAIL: test_last_element (test_seed_019.TestBinarySearch.test_last_element)
+      self.assertEqual(binary_search([1, 3, 5, 7], 7), 3)
+  AssertionError: -1 != 3
+  ```
+- seed_022 `parse_hhmm`, `if hours > 23 or minutes > 59:` → `if hours > 24 ...`
+  (admits hour 24). 1 of 7 tests fails:
+  ```
+  FAIL: test_hour_out_of_range_raises (test_seed_022.TestParseHhmm.test_hour_out_of_range_raises)
+      with self.assertRaises(ValueError):
+  AssertionError: ValueError not raised
+  ```
+
+**Decision record — the `solution` import contract:** suites import the function under
+test from a module named `solution` (`from solution import <function_name>`), and
+whoever runs a suite first copies the code-under-test to `solution.py` in the working
+directory. Rationale and alternatives:
+- It decouples the suite from the *filename* of the code under test. In Phase 2 the
+  checker must run the same suite against both `buggy.py` and `reference.py` to check
+  the two task invariants in `TASK_FORMAT.md` (reference passes, buggy fails); a fixed
+  import target that both are copied onto makes that a drop-in swap with no suite edit.
+- Alternatives rejected: (i) importing directly from `buggy`/`reference` would force
+  the suite to know which artifact it is testing, breaking the swap; (ii) injecting the
+  function via a conftest/env indirection is heavier than a one-line file copy and adds
+  a non-stdlib-shaped dependency. A plain copy-to-`solution.py` keeps each task
+  self-contained and stdlib-only.
+- Consistency: this satisfies `TASK_FORMAT.md`'s requirement that swapping `buggy.py`
+  for `reference.py` "only affects correctness, not the interface the tests call" —
+  the interface is now literally the `solution` module name. The step-1.5 generator
+  will emit each suite verbatim as the task's `tests.py`.
+
+**Decisions / surprises:**
+- The runner uses `python3 -m unittest test_seed_NNN -v` in a subprocess per seed
+  rather than importing the suites in-process. A subprocess gives each seed a clean
+  interpreter, so the 25 suites' identical `from solution import …` lines cannot
+  collide in `sys.modules`, and it yields honest per-suite isolation and timing. Cost
+  is ~0.03s/suite of process startup, trivially within budget.
+- The runner enforces the 2.00s ceiling as a *failure* even when a suite passes, so a
+  future slow suite is caught by CI-style exit codes rather than only by eyeballing
+  the printed time.
+- Test count varies 6–8 per seed (more where a seed documents several distinct
+  exceptions or boundaries, e.g. parse_signed_int at 8); all are ≥6 as required.
+- Negative-control edits were applied to in-memory copies only; the seed corpus is
+  byte-for-byte unchanged, re-confirmed by re-running `validate_seeds.py`.
