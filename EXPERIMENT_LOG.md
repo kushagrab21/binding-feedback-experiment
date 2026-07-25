@@ -2098,3 +2098,111 @@ experiment remains well under **$0.15**.
   (`show_description:false`) were run; the API key was never printed; `phase1_tasks/` is
   byte-for-byte unchanged (asserted); the 87 test tasks remain unopened.
 
+---
+
+## 5.4 — THE FULL RUN: 348 episodes under D18
+
+**Step ID / date:** 5.4 — 2026-07-26
+
+**What was run:** the full experiment — 2 models × 2 modes × **87 test tasks = 348 live
+episodes** — under D18 bare-code presentation (`show_description:false`), temp 0, cap 8.
+The 87 ids come from `phase1_tasks/validation/split.json` (`_load_test_tasks` asserts
+`len==87` and disjoint from the 10 dev ids); dev tasks and fixtures are not in this run.
+Only the harness ever opened a test task (programmatic reads of `meta.json`/`buggy.py`);
+no test file was read, edited, or solved by the builder, and `phase1_tasks/` is unchanged.
+
+**What was built:**
+- `phase5_runs/run_full.py` — runs all 4 cells (87 episodes each, sorted task order),
+  commits every transcript under `logs/full/<model>__<mode>/task_NNN.jsonl`, writes one
+  manifest per cell (`manifests/full_<model>__<mode>.json`: model id + resolved snapshot,
+  mode, presentation, config, FREEZE_HASH, `split.json` sha256, date, per-episode rows)
+  and a master manifest. Per-episode retry + **up to 2 extra whole-cell passes** over any
+  `status="error"` episode (the P5.1 transient-403 tolerance); it exits non-zero for a
+  stop-and-report if any error survives.
+- `phase5_runs/full_report.py` — per-cell aggregates + the headline 2×2 and the mode-
+  effect interaction.
+
+**Errors / retries:** **zero errors across all 348 episodes** — no 403 flakiness this
+run, so the 2 extra retry passes were available but never needed. `split.json` sha256
+`6f69be75d4c1b1ea…`; FREEZE_HASH `dfc14c26…2f2017` recorded in every cell manifest.
+
+**Full per-cell table:**
+
+| model (arm) | mode | eps | success | eps w/ FAILED | false-DONE | done/rej/esc | step_cap | mean steps | tok in/out | cost |
+|---|---|---|---|---|---|---|---|---|---|---|
+| gpt-4o-mini-2024-07-18 (cheap/weak) | advisory | 87 | **79/87 = 90.8%** | 8 | **8** | — | 0 | 1.20 | 21421/7415 | $0.0077 |
+| gpt-4o-mini-2024-07-18 (cheap/weak) | binding  | 87 | **87/87 = 100.0%** | 6 | — | 0/0/0 | 0 | 1.07 | 20047/7882 | $0.0077 |
+| gpt-4.1 (frontier/strong)           | advisory | 87 | 87/87 = 100.0% | 6 | 0 | — | 0 | 2.02 | 44697/8172 | $0.1548 |
+| gpt-4.1 (frontier/strong)           | binding  | 87 | 87/87 = 100.0% | 7 | — | 0/0/0 | 0 | 1.08 | 20434/8241 | $0.1068 |
+
+**THE HEADLINE 2×2 (success rate):**
+
+| model | advisory | binding | Δ (binding − advisory) |
+|---|---|---|---|
+| gpt-4o-mini-2024-07-18 (weak) | **90.8%** | **100.0%** | **+9.2 pp** |
+| gpt-4.1 (strong) | 100.0% | 100.0% | +0.0 pp |
+
+**INTERACTION (the thesis): Δmode(weak) − Δmode(strong) = +9.2 − 0.0 = +9.2 pp.**
+Binding helps the weak model and does nothing for the strong one — a positive
+interaction in the pre-registered direction.
+
+**All four 5.3 pre-registrations confirmed at scale:**
+- **(i) MODEL_A fails more than MODEL_B** — advisory 90.8% vs 100%; 8 failing tasks vs 0.
+- **(ii) advisory failures surface as false-DONEs** — all 8 of gpt-4o-mini's advisory
+  failures are `model_declared_done` with `final_passed=False` (D14); **zero** ended in
+  step_cap. The weak model, denied the spec, confidently declares a wrong answer done.
+- **(iii) binding converts those to solved** — the *same 8 tasks* are all `solved` in the
+  gpt-4o-mini binding cell (6 via a genuine 2-step repair after a FAILED verdict; 2 —
+  `task_002`, `task_091` — passed on the first binding submission, i.e. temp-0 sampling
+  variance rather than iteration; see surprises). No escalations, rejections, or
+  step_caps were needed.
+- **(iv) the mode difference is larger for MODEL_A than MODEL_B** — +9.2 pp vs 0.0 pp.
+
+**Where the weak model failed (the 8 advisory false-DONEs), with bug types:**
+```
+task_002 clamp           missing-edge-case  hard    -> binding solved (1 step)
+task_005 digit_sum       missing-edge-case  hard    -> binding solved (2 steps)
+task_031 second_largest  missing-edge-case  medium  -> binding solved (2 steps)
+task_055 most_common_char missing-edge-case hard    -> binding solved (2 steps)
+task_079 parse_signed_int missing-edge-case hard    -> binding solved (2 steps)
+task_088 parse_roman     missing-edge-case  hard    -> binding solved (2 steps)
+task_091 parse_csv_line  inverted-condition easy    -> binding solved (1 step)
+task_096 parse_version   wrong-return       easy    -> binding solved (2 steps)
+```
+**6 of the 8 are `missing-edge-case` bugs** — exactly the class whose required behavior
+(usually a guard that raises on a boundary input) was documented *only* in the
+description/docstring that D18 withholds, so the weak model cannot recover it without the
+checker. This is the D18 mechanism at scale: strip the spec, and the failures concentrate
+in the bugs the spec was carrying; advisory lets the model quit wrong, binding does not.
+
+**Costs.** Total live spend for the full run = **$0.2770** (348 episodes, 0 errors):
+gpt-4o-mini both cells ~$0.0077 each; gpt-4.1 advisory $0.1548 (its 2-step
+submit→confirm→DONE pattern doubles input tokens), gpt-4.1 binding $0.1068. Cumulative
+experiment spend across every live step remains well under **$0.45**, far inside the $20
+ceiling.
+
+**Decisions / surprises:**
+- **The strong model never false-DONEs.** gpt-4.1 also hit FAILED verdicts on 6–7 tasks
+  per arm, but in advisory it *iterated to a correct answer before declaring DONE* (mean
+  2.02 steps) rather than quitting wrong — so binding's forced iteration is redundant for
+  it (Δ=0) and load-bearing for the weak model (Δ=+9.2). The thesis is an *interaction*,
+  not a main effect, and that is exactly what the 2×2 shows.
+- **Two of the eight binding "rescues" are sampling, not iteration.** `task_002` and
+  `task_091` were solved on gpt-4.1... no — on gpt-4o-mini's *first* binding submission
+  (1 step), while the advisory arm false-DONE'd the same task. At temp 0 the OpenAI API is
+  near-deterministic but not exactly, so the two arms drew slightly different first
+  submissions. The honest count is **6 tasks genuinely repaired via forced iteration**
+  plus 2 where binding's first sample happened to pass; both still count as advisory-
+  failed / binding-solved, and Phase 6 should treat the +9.2 pp as including this small
+  stochastic component (a paired re-run or seed control is a Phase 6 consideration).
+- **No escalations, resubmission_rejected, done_ignored, or step_cap anywhere.** Consistent
+  with D15 (this model never byte-repeats) and D13 (near-ceiling): every binding failure
+  was fixed within 1–2 steps, so the harder binding machinery never engaged. The binding
+  advantage came entirely from *removing the false-DONE exit*, not from rejection/escalation.
+- **Cost asymmetry is all gpt-4.1 advisory.** Its confirmation-seeking second turn (submit
+  → PASSED → DONE) roughly doubles its input tokens vs binding; binding is both cheaper and
+  higher-success for the frontier model here.
+- **Bright line intact.** The 87 test tasks were run by the harness only; no test file was
+  opened for reading or edited; nothing was solved by the builder; `phase1_tasks/` is
+  byte-for-byte unchanged (asserted below); the API key was never printed.
+
