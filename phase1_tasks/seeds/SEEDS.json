@@ -5,7 +5,7 @@
     "function_name": "clamp",
     "category": "numeric",
     "description": "Clamp a value into the inclusive range [low, high].",
-    "candidate_bug_types": ["wrong-comparison", "boundary-omission"]
+    "candidate_bug_types": ["wrong-comparison", "missing-edge-case", "inverted-condition", "wrong-return"]
   },
   {
     "seed_id": "seed_002",
@@ -13,7 +13,7 @@
     "function_name": "digit_sum",
     "category": "numeric",
     "description": "Sum the base-10 digits of a non-negative integer.",
-    "candidate_bug_types": ["wrong-operator", "off-by-one"]
+    "candidate_bug_types": ["wrong-operator", "off-by-one", "wrong-comparison", "missing-edge-case"]
   },
   {
     "seed_id": "seed_003",
@@ -21,7 +21,7 @@
     "function_name": "count_divisors",
     "category": "numeric",
     "description": "Count the positive divisors of a positive integer.",
-    "candidate_bug_types": ["off-by-one", "boundary-omission"]
+    "candidate_bug_types": ["off-by-one", "missing-edge-case", "wrong-operator", "wrong-comparison"]
   },
   {
     "seed_id": "seed_004",
@@ -29,7 +29,7 @@
     "function_name": "gcd_two",
     "category": "numeric",
     "description": "Greatest common divisor of two integers via Euclid.",
-    "candidate_bug_types": ["swapped-operands", "inverted-condition"]
+    "candidate_bug_types": ["wrong-variable", "inverted-condition", "wrong-operator", "wrong-return"]
   },
   {
     "seed_id": "seed_005",
@@ -37,7 +37,7 @@
     "function_name": "is_palindrome",
     "category": "strings",
     "description": "Test whether a string reads the same forwards and backwards.",
-    "candidate_bug_types": ["off-by-one", "boundary-omission"]
+    "candidate_bug_types": ["off-by-one", "missing-edge-case", "inverted-condition", "wrong-comparison"]
   },
   {
     "seed_id": "seed_006",
@@ -45,7 +45,7 @@
     "function_name": "count_vowels",
     "category": "strings",
     "description": "Count vowels in a string, case-insensitively.",
-    "candidate_bug_types": ["missing-case", "wrong-comparison"]
+    "candidate_bug_types": ["missing-edge-case", "inverted-condition", "wrong-comparison"]
   },
   {
     "seed_id": "seed_007",
@@ -53,7 +53,7 @@
     "function_name": "reverse_words",
     "category": "strings",
     "description": "Reverse the order of whitespace-separated words.",
-    "candidate_bug_types": ["swapped-operands", "boundary-omission"]
+    "candidate_bug_types": ["wrong-variable", "missing-edge-case", "off-by-one", "wrong-return"]
   },
   {
     "seed_id": "seed_008",
@@ -61,7 +61,7 @@
     "function_name": "caesar_shift",
     "category": "strings",
     "description": "Apply a Caesar cipher shift to the letters of a string.",
-    "candidate_bug_types": ["wrong-operator", "off-by-one"]
+    "candidate_bug_types": ["wrong-operator", "off-by-one", "missing-edge-case", "wrong-comparison"]
   },
   {
     "seed_id": "seed_009",
@@ -69,7 +69,7 @@
     "function_name": "second_largest",
     "category": "sequences",
     "description": "Find the second largest distinct value in a sequence.",
-    "candidate_bug_types": ["wrong-comparison", "off-by-one"]
+    "candidate_bug_types": ["wrong-comparison", "off-by-one", "inverted-condition", "missing-edge-case", "wrong-return"]
   },
   {
     "seed_id": "seed_010",
@@ -77,7 +77,7 @@
     "function_name": "flatten_one_level",
     "category": "sequences",
     "description": "Flatten a list of sub-lists by exactly one level.",
-    "candidate_bug_types": ["boundary-omission", "wrong-operator"]
+    "candidate_bug_types": ["wrong-variable", "input-mutation", "missing-edge-case", "wrong-return"]
   },
   {
     "seed_id": "seed_011",
@@ -85,7 +85,7 @@
     "function_name": "chunk",
     "category": "sequences",
     "description": "Split a sequence into consecutive fixed-size chunks.",
-    "candidate_bug_types": ["off-by-one", "boundary-omission"]
+    "candidate_bug_types": ["off-by-one", "missing-edge-case", "wrong-operator", "wrong-comparison"]
   },
   {
     "seed_id": "seed_012",
@@ -93,7 +93,7 @@
     "function_name": "rotate_left",
     "category": "sequences",
     "description": "Rotate a sequence to the left by k positions.",
-    "candidate_bug_types": ["off-by-one", "wrong-operator"]
+    "candidate_bug_types": ["off-by-one", "wrong-operator", "input-mutation", "missing-edge-case"]
   },
   {
     "seed_id": "seed_013",
@@ -101,7 +101,7 @@
     "function_name": "word_frequencies",
     "category": "dictionaries",
     "description": "Count how many times each word appears in a sequence.",
-    "candidate_bug_types": ["accumulator-init-error", "wrong-default"]
+    "candidate_bug_types": ["off-by-one", "wrong-return", "wrong-operator", "inverted-condition"]
   },
   {
     "seed_id": "seed_014",
@@ -109,7 +109,7 @@
     "function_name": "merge_sum",
     "category": "dictionaries",
     "description": "Merge two integer-valued dicts, summing on shared keys.",
-    "candidate_bug_types": ["missing-case", "wrong-operator"]
+    "candidate_bug_types": ["missing-edge-case", "wrong-operator", "input-mutation", "inverted-condition", "wrong-variable"]
   },
   {
     "seed_id": "seed_015",
@@ -117,7 +117,7 @@
     "function_name": "most_common_char",
     "category": "dictionaries",
     "description": "Find the most frequent character in a string.",
-    "candidate_bug_types": ["wrong-comparison", "inverted-condition"]
+    "candidate_bug_types": ["wrong-comparison", "inverted-condition", "missing-edge-case", "wrong-return"]
   },
   {
     "seed_id": "seed_016",
@@ -125,7 +125,7 @@
     "function_name": "is_valid_identifier",
     "category": "validation",
     "description": "Validate a Python-like identifier string.",
-    "candidate_bug_types": ["boundary-omission", "wrong-comparison"]
+    "candidate_bug_types": ["missing-edge-case", "wrong-comparison", "inverted-condition", "off-by-one", "wrong-operator"]
   },
   {
     "seed_id": "seed_017",
@@ -133,7 +133,7 @@
     "function_name": "is_leap_year",
     "category": "validation",
     "description": "Determine whether a year is a Gregorian leap year.",
-    "candidate_bug_types": ["inverted-condition", "wrong-operator"]
+    "candidate_bug_types": ["inverted-condition", "wrong-operator", "wrong-comparison", "missing-edge-case"]
   },
   {
     "seed_id": "seed_018",
@@ -141,7 +141,7 @@
     "function_name": "all_unique",
     "category": "validation",
     "description": "Test whether all elements of a sequence are unique.",
-    "candidate_bug_types": ["inverted-condition", "early-return"]
+    "candidate_bug_types": ["inverted-condition", "wrong-return", "wrong-variable"]
   },
   {
     "seed_id": "seed_019",
@@ -149,7 +149,7 @@
     "function_name": "binary_search",
     "category": "algorithms",
     "description": "Binary search for a target in a sorted list.",
-    "candidate_bug_types": ["off-by-one", "wrong-comparison"]
+    "candidate_bug_types": ["off-by-one", "wrong-comparison", "wrong-operator", "inverted-condition", "wrong-return"]
   },
   {
     "seed_id": "seed_020",
@@ -157,7 +157,7 @@
     "function_name": "bubble_sort",
     "category": "algorithms",
     "description": "Sort a list of numbers in ascending order (bubble sort).",
-    "candidate_bug_types": ["off-by-one", "swapped-operands"]
+    "candidate_bug_types": ["off-by-one", "wrong-variable", "input-mutation", "wrong-comparison"]
   },
   {
     "seed_id": "seed_021",
@@ -165,7 +165,7 @@
     "function_name": "parse_signed_int",
     "category": "parsing",
     "description": "Parse a signed integer string without int() on the whole string.",
-    "candidate_bug_types": ["off-by-one", "wrong-comparison"]
+    "candidate_bug_types": ["off-by-one", "wrong-comparison", "wrong-operator", "missing-edge-case"]
   },
   {
     "seed_id": "seed_022",
@@ -173,7 +173,7 @@
     "function_name": "parse_hhmm",
     "category": "parsing",
     "description": "Parse a \"HH:MM\" clock string into minutes since midnight.",
-    "candidate_bug_types": ["wrong-comparison", "boundary-omission"]
+    "candidate_bug_types": ["wrong-comparison", "missing-edge-case", "off-by-one", "wrong-operator"]
   },
   {
     "seed_id": "seed_023",
@@ -181,7 +181,7 @@
     "function_name": "parse_roman",
     "category": "parsing",
     "description": "Parse a Roman numeral string into its integer value.",
-    "candidate_bug_types": ["wrong-comparison", "inverted-condition"]
+    "candidate_bug_types": ["wrong-comparison", "inverted-condition", "wrong-operator", "missing-edge-case"]
   },
   {
     "seed_id": "seed_024",
@@ -189,7 +189,7 @@
     "function_name": "parse_csv_line",
     "category": "parsing",
     "description": "Split a simple CSV line into fields, honoring quoted fields.",
-    "candidate_bug_types": ["off-by-one", "boundary-omission"]
+    "candidate_bug_types": ["off-by-one", "missing-edge-case", "inverted-condition", "wrong-comparison"]
   },
   {
     "seed_id": "seed_025",
@@ -197,6 +197,6 @@
     "function_name": "parse_version",
     "category": "parsing",
     "description": "Parse a dotted version string into a tuple of integers.",
-    "candidate_bug_types": ["boundary-omission", "missing-case"]
+    "candidate_bug_types": ["missing-edge-case", "inverted-condition", "wrong-return", "wrong-variable"]
   }
 ]

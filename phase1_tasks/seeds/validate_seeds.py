@@ -39,19 +39,19 @@ CATEGORY_COUNTS = {
     "parsing": 5,
 }
 
-# Consistent bug-type vocabulary. Every candidate_bug_type must be drawn
-# from this set so downstream generation has a stable label space.
+# Consistent bug-type vocabulary. Every candidate_bug_type must be drawn from
+# this closed set so downstream generation has a stable label space. This is the
+# final 8-type taxonomy fixed in phase1_tasks/generator/TAXONOMY.md (P1.3); the
+# provisional 10-type vocabulary was retired and mapped onto these eight.
 ALLOWED_BUG_TYPES = {
     "off-by-one",
-    "boundary-omission",
     "wrong-comparison",
     "wrong-operator",
     "inverted-condition",
-    "swapped-operands",
-    "missing-case",
-    "early-return",
-    "accumulator-init-error",
-    "wrong-default",
+    "wrong-variable",
+    "missing-edge-case",
+    "wrong-return",
+    "input-mutation",
 }
 
 # Standard-library modules that are nonetheless banned in seeds because they

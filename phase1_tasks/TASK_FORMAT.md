@@ -50,7 +50,9 @@ Field notes:
 - `task_id` — MUST equal the containing directory name (`task_NNN`).
 - `seed_name` — identifier of the source seed the task was generated from.
 - `bug_type` — the class of bug injected into `buggy.py` (e.g. off-by-one,
-  wrong-operator, boundary-omission). Vocabulary is defined by the generator.
+  wrong-operator, missing-edge-case). The vocabulary is the closed 8-type set
+  fixed in `phase1_tasks/generator/TAXONOMY.md`; `bug_type` MUST be one of those
+  eight.
 - `difficulty` — one of `"easy"`, `"medium"`, `"hard"`, or `null`. It MAY be `null`
   until step 1.6 assigns difficulty labels; it MUST NOT be any other value.
 - `function_name` — the name of the single pure function the task is about.

@@ -214,3 +214,109 @@ targets.
   be satisfied by padding; the "no padding" constraint is enforced by construction.
 - `parse_csv_line` (24 body lines) is the longest seed and the closest to the upper
   bound; still comfortably within 30.
+
+---
+
+## 1.3 — Final 8-type bug taxonomy + coverage report + repo hygiene
+
+**Step ID / date:** 1.3 — 2026-07-25
+
+**What was built:**
+- `phase1_tasks/generator/TAXONOMY.md` — the authoritative, closed bug-type
+  vocabulary. Fixes the final **eight** types (`off-by-one`, `wrong-comparison`,
+  `wrong-operator`, `inverted-condition`, `wrong-variable`, `missing-edge-case`,
+  `wrong-return`, `input-mutation`), each with a one-paragraph definition, a minimal
+  before/after example, and why tests can detect it, plus an explicit mapping table
+  retiring the provisional 10-type vocabulary onto these eight.
+- `phase1_tasks/seeds/SEEDS.json` — every seed's `candidate_bug_types` translated
+  through the mapping and then extended to all types plausibly injectable into that
+  seed (102 (seed, type) pairs, ~4.08 per seed).
+- `phase1_tasks/seeds/validate_seeds.py` — `ALLOWED_BUG_TYPES` reduced to exactly the
+  final eight; the ≥2-candidate-types-per-seed check is retained unchanged.
+- `phase1_tasks/generator/coverage_report.py` — prints one line per bug type
+  (`type: N seeds [ids]`) plus the total pair count, and exits non-zero if any type is
+  covered by fewer than 3 seeds or any seed lists fewer than 2 types.
+- `phase1_tasks/TASK_FORMAT.md` — the `bug_type` field note now points at
+  `TAXONOMY.md` as the closed 8-type vocabulary (its example no longer names a retired
+  type).
+- Repo hygiene: `.DS_Store` added to `.gitignore` and removed from tracking with
+  `git rm --cached .DS_Store`, mirroring the earlier `*.pyc` treatment.
+
+**Provenance:** `TAXONOMY.md`, `coverage_report.py`, and the mapping table are
+hand-written in 1.3. Each seed's final `candidate_bug_types` list was derived by
+reading the seed function and enumerating the single-edit mutations from the eight
+classes that would (a) change observable behaviour and (b) be caught by a boundary
+test — a superset of the mechanically translated originals. No generator or randomness
+was used; the corpus itself is unchanged (only its manifest labels changed).
+
+**Bug taxonomy (final, closed 8):** off-by-one, wrong-comparison, wrong-operator,
+inverted-condition, wrong-variable, missing-edge-case, wrong-return, input-mutation.
+The provisional 10-type set is retired. Mapping (see `TAXONOMY.md` for the full table):
+four names carry over unchanged (off-by-one, wrong-comparison, wrong-operator,
+inverted-condition); `boundary-omission` and `missing-case` → `missing-edge-case`;
+`swapped-operands` → `wrong-variable`; `early-return` → `wrong-return`; and two
+best-fit folds — `accumulator-init-error` → `off-by-one` (seeding a counter to 1 vs 0
+is an off-by-one in the initial value) and `wrong-default` → `wrong-return` (a wrong
+default is the wrong value emitted on the fallback path). `input-mutation` is new (no
+retired equivalent) and is a candidate only for the four seeds that take a mutable
+argument their contract promises not to mutate (seed_010, seed_012, seed_014,
+seed_020).
+
+**Evidence of correctness:**
+- `python3 phase1_tasks/seeds/validate_seeds.py` →
+  `RESULT: OK — 25 seeds validated, all invariants satisfied` (exit 0).
+- `python3 phase1_tasks/generator/coverage_report.py` → exit 0, per-type coverage
+  off-by-one 15, wrong-comparison 17, wrong-operator 14, inverted-condition 15,
+  wrong-variable 7, missing-edge-case 20, wrong-return 10, input-mutation 4;
+  `total (seed, type) pairs: 102`;
+  `RESULT: OK — all 8 types >= 3 seeds, all seeds >= 2 types`.
+- Histogram over `SEEDS.json` (grep+uniq for both final and retired names) shows only
+  the eight final types present and zero retired names.
+- `git ls-files | grep -E '(DS_Store|pyc)'` prints nothing and exits 1 — the cruft is
+  untracked.
+
+**Worked example (seed_014 `merge_sum`, full old→new candidate list):**
+Old: `["missing-case", "wrong-operator"]`. Translate: `missing-case → missing-edge-case`;
+`wrong-operator` unchanged. Extend to all injectable types →
+`["missing-edge-case", "wrong-operator", "input-mutation", "inverted-condition", "wrong-variable"]`.
+Per-type injection site (one line each):
+- `missing-edge-case` — delete the `else: result[key] = b[key]` branch, so keys present
+  only in `b` are silently dropped.
+- `wrong-operator` — change `result[key] + b[key]` to `result[key] - b[key]`, so shared
+  keys subtract instead of sum.
+- `input-mutation` — change `result = {}` to `result = a`, so the merge writes through
+  into the caller's dict `a`, violating the documented "neither input is mutated".
+- `inverted-condition` — change `if key in result` to `if key not in result`, swapping
+  which keys are summed vs overwritten (and raising KeyError on `+` for b-only keys).
+- `wrong-variable` — change `result[key] = result[key] + b[key]` to `... + a[key]`, so
+  the added value is drawn from the wrong dict.
+
+**Decisions / surprises:**
+- **Deviation D4 resolved.** The provisional 10-type vocabulary vs the spec's 7 types
+  is reconciled to a final closed set of **eight**: the spec's seven plus
+  `wrong-operator`, kept distinct because arithmetic/logical operator errors are a
+  different failure class from relational (`wrong-comparison`) errors, and the corpus
+  already targets them. Eight is within the agreed 6–8 budget. The 10-type vocabulary
+  is retired, not kept alongside — every retired label is folded into exactly one of
+  the eight (table in `TAXONOMY.md`).
+- **Deviation D6 resolved.** `.DS_Store` had been tracked since P1.1 (staged by an
+  earlier `git add -A`). It is now `git rm --cached`-ed and `.gitignore`-ed, mirroring
+  the `*.pyc` cleanup. Staging is explicit from here on — `git add -A` is retired.
+- **Mechanical translation alone was insufficient for seed_025.** Its two original
+  types (`boundary-omission`, `missing-case`) both map to `missing-edge-case`,
+  collapsing to a single type and violating the ≥2-per-seed invariant; the required
+  extension step restored it to four (`missing-edge-case`, `inverted-condition`,
+  `wrong-return`, `wrong-variable`). This is exactly why the spec pairs "translate"
+  with "then extend".
+- **`input-mutation` is deliberately the sparsest type** (4 seeds, just above the
+  floor of 3). It was gated seed-by-seed to functions that both take a mutable
+  argument and document that the argument is not mutated, so the mutation is a genuine
+  contract violation rather than a contrived edit; seeds that only read their mutable
+  argument (e.g. seed_009, seed_018) were excluded.
+- **Historical log left intact.** The 1.2 / 1.2-R entries above still name the retired
+  vocabulary; that is a record in an append-only log, not an operative label. Only the
+  operative uses — `SEEDS.json`, the validator's `ALLOWED_BUG_TYPES`, and the
+  `TASK_FORMAT.md` example — were migrated. A repo-wide `git grep` confirms no retired
+  label survives outside `EXPERIMENT_LOG.md`.
+- **Yield headroom for 1.5.** 102 (seed, type) pairs across 25 seeds (~4.08 each)
+  comfortably clears the ~100-task target, so generator yield is not seed-starved.
