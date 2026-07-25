@@ -2576,3 +2576,83 @@ with no changes made. Both matched, so the skeleton was created and this entry a
 - **Bright line intact.** No frozen v1 file was read for solving, edited, moved, or renamed;
   `phase1_tasks/` byte-for-byte unchanged (hash re-verified above); no API calls; no key
   printed; staging for this commit is explicit (the five new `.gitkeep`s + this log only).
+
+---
+
+## V2-P1.1 — Pre-registration finalized, committed, tagged
+
+**Step ID / date:** V2-P1.1 — 2026-07-26
+
+*(Continuation of V2-P1a. This step applies the Runner's six rulings + the Spearman
+direction convention to the reviewed draft, strips the DRAFT/open-items scaffolding, and
+commits + tags the registration `v2-prereg`. The V2-P1a draft's full text is preserved in
+the session transcript; the tagged file is the registration, not a worksheet.)*
+
+**What was built:** `v2_ladder/PREREGISTRATION.md` finalized (was the V2-P1a draft) and
+`v2_ladder/adapter/keys.py` (the OpenRouter key resolver from V2-P1a, unchanged) committed
+under tag `v2-prereg`.
+
+**Rulings applied (all six + the convention), exactly as couriered:**
+1. **Five predictions — replaced §(c) wholesale** with the addendum's verbatim text. The
+   draft's placeholder predictions were **deleted, not annotated** — critically, the
+   placeholders *contradicted* the canonical registration (the draft predicted no positive
+   Spearman and led with non-monotonicity; the addendum registers Δ-decreasing-with-
+   capability as **confirmatory** (ii) and non-monotonicity as **exploratory only** (v)).
+   §(c) was verified **character-for-character** equal to the canonical string before commit
+   (Python byte-compare, `EXACT MATCH: True`).
+2. **Hashes** — cited in the prereg as re-verified at V2-P0 (commit `4cf73f4`).
+3. **† MMLU fetch-verification pass** — each Source-B figure fetch-checked 2026-07-26 and
+   marked. Outcomes: `qwen2.5-7b 74.2` → **✓ verified by fetch 2026-07-26** (qwenlm.github.io
+   HTML table, machine-readable). The other six → **† unverifiable at registration** and
+   retained as transcribed: OpenAI pages (`gpt-4.1 90.2`, `gpt-4o-mini 82.0`) returned HTTP
+   403 to automated fetch; the Anthropic (`claude-3-haiku 75.2`), Meta (`llama-3.1-8b 69.4`,
+   `llama-3.2-3b 63.4`), and Google (`gemini-2.5-flash-lite 84.5`) cards render benchmark
+   tables as images (the DeepMind page now shows a newer 3.5 model). No figure changes after
+   tagging; ladder positions are fixed by the fully-retrieved Source-A Elo, so no `†` value
+   can move a rung.
+4. **8th rung declined** — recorded in the Decisions section: `anthropic/claude-haiku-4.5`
+   considered for a second strong provider at the top, declined to stay within the addendum's
+   5–7-model envelope; single-provider top (gpt-4.1) noted as a limitation.
+5. **Rung-6 fallback rule** — added verbatim to §(a): if the V2-P2 smoke shows
+   `google/gemini-2.5-flash-lite` emitting reasoning tokens or refusing temp 0 under a
+   `{model, temperature, messages}`-only call, it is replaced by the strongest available
+   Google flash-class model that passes the same check, as a logged deviation, before any
+   test-set episode; rank re-derived from the same sources and rule.
+6. **Source-A provenance caveat** — one sentence added to §(b): Elo read from the metatext.io
+   republication of lmarena.ai (URL + numbers embedded, snapshot auditable).
+- **Spearman convention** — added to §(d): "capability rank 1 = strongest. Prediction (ii)
+  is tested as a one-sided Spearman with expected *positive* correlation between Δ and the
+  numeric rank value (larger rank = weaker = larger Δ)."
+
+**Provenance:** the addendum's five predictions, the rung-6 fallback rule, and the Spearman
+convention were supplied verbatim by the Runner in the V2-P1b courier; the ladder, ranking,
+sources, and ranking rule are the V2-P1a draft as reviewed. † fetch outcomes are from
+best-effort `WebFetch` of each cited card on 2026-07-26. No episode was run; no API
+completion was made; keys never printed.
+
+**Evidence of correctness (raw):**
+```
+§(c) vs canonical addendum text — Python byte-compare:  EXACT MATCH: True
+† fetch pass: qwen 74.2 ✓ verified; 6 others unverifiable (403 / image-rendered cards)
+```
+(The tag/grep/status acceptance block output is captured in the V2-P1b acceptance paste.)
+
+**Worked example — the placeholder-vs-canonical swap.** The V2-P1a draft (c) opened with
+"Non-monotone Δ (the core prediction) … the one-sided Spearman … is **not** significantly
+positive." The addendum registers the opposite as the confirmatory claim: (ii) "Δ decreases
+with pre-registered capability rank (Spearman, one-sided)", which under the added convention
+is a **positive** Δ-vs-numeric-rank correlation, with non-monotonicity demoted to exploratory
+(v). Keeping the draft text as an annotation would have left two contradictory registrations
+in one file; the ruling to replace wholesale is why §(c) now contains only the canonical five.
+
+**Decisions / surprises:**
+- **Verbatim transcription was load-bearing, not ceremonial.** The placeholder predictions
+  were not a paraphrase of the canonical ones — they were the reverse — so paraphrasing at
+  V2-P1a would have registered the wrong hypothesis. Flagging the missing addendum as BLOCKING
+  rather than inventing text is what preserved the registration's integrity.
+- **The ranking survives the † gap by construction.** Six of seven MMLU figures are
+  unverifiable at registration, but the rank-based rule takes ladder positions from Source-A
+  Elo (fully retrieved), so the unverifiable figures are inert to the ordering.
+- **Bright line intact.** No frozen v1 file read-for-solving, edited, moved, or renamed;
+  `phase1_tasks/` unchanged; no test-set episode precedes the tag (`runs/logs/` = `.gitkeep`
+  only); no key printed; staging explicit below (prereg + resolver + this log).
