@@ -2656,3 +2656,135 @@ in one file; the ruling to replace wholesale is why §(c) now contains only the 
 - **Bright line intact.** No frozen v1 file read-for-solving, edited, moved, or renamed;
   `phase1_tasks/` unchanged; no test-set episode precedes the tag (`runs/logs/` = `.gitkeep`
   only); no key printed; staging explicit below (prereg + resolver + this log).
+
+---
+
+## V2-P2.1 — Adapter, schema validator, and per-rung smokes
+
+**Step ID / date:** V2-P2.1 — 2026-07-26
+
+*(First code + first paid calls of Experiment 2. Item 0's gate was cleared before any
+network call: `git tag | grep v2-prereg` → present; the P1b evidence is reproduced in the
+V2-P2/P3 acceptance paste. The registration is locked; this step only builds the transport
+and confirms each rung answers.)*
+
+**What was built (all new; no frozen v1 file edited):**
+- `v2_ladder/adapter/client.py` — `LadderClient`, one `complete(messages)` interface with
+  two routes. The **OpenAI-direct** anchors (rungs 5, 7) delegate to v1's `OpenAIChatClient`
+  **verbatim** (its TLS context, 429/5xx retry/backoff, key resolution, and token parsing are
+  literally the v1 code path). The **OpenRouter** rungs (1–4, 6) run their own `urllib` POST
+  loop that *imports* v1's `_ssl_context`, `_scrub`, the same backoff shape, and calls
+  `OpenAIChatClient._parse` for token parsing; the key comes from `keys.resolve_openrouter_key`.
+  Request body is exactly `{model, temperature:0, messages}` on both routes — no reasoning
+  parameter is ever sent. Per-episode cost is computed at the registered §(a)/§(e) prices;
+  `provider` and `route` are recorded per episode (in the manifests, per cell).
+- `v2_ladder/adapter/validate_schema.py` — validates episode JSONL against the v1 event
+  schema (7 event types; required fields/types per type; structural invariants), calibrated by
+  a census of all 348 committed v1 full-run logs.
+- `v2_ladder/adapter/smokes.py` — one trivial call per rung + the rung-6 reasoning-free gate
+  and the registered rung-6 fallback wiring.
+
+**Schema calibration (raw):**
+```
+schema calibration on v1: 20/20 sampled committed v1 logs OK   (calibrate-exit=0)
+schema validation: 348/348 files OK (0 with diffs)             [stronger: ALL v1 full logs]
+```
+
+**The 7 smoke lines (raw; one paid call per rung, temp 0):**
+```
+rung1 rung1_llama-3.2-3b: resolved=meta-llama/llama-3.2-3b-instruct tokens=43/3 temp0=accepted route=openrouter
+rung2 rung2_llama-3.1-8b: resolved=meta-llama/llama-3.1-8b-instruct tokens=19/3 temp0=accepted route=openrouter
+rung3 rung3_qwen2.5-7b: resolved=qwen/qwen-2.5-7b-instruct tokens=37/3 temp0=accepted route=openrouter
+rung4 rung4_claude-3-haiku: resolved=anthropic/claude-3-haiku tokens=17/5 temp0=accepted route=openrouter
+rung5 rung5_gpt-4o-mini: resolved=gpt-4o-mini-2024-07-18 tokens=15/1 temp0=accepted route=openai
+rung6 rung6_gemini-2.5-flash-lite: resolved=google/gemini-2.5-flash-lite tokens=8/1 temp0=accepted route=openrouter reasoning-free=YES (reasoning_tokens=0)
+rung7 rung7_gpt-4.1: resolved=gpt-4.1-2025-04-14 tokens=15/1 temp0=accepted route=openai
+SMOKES: 7/7 ok
+```
+
+**Rung 6 — reasoning-free confirmed, no fallback triggered.** Under the
+`{model, temperature, messages}`-only call, `google/gemini-2.5-flash-lite` returned an empty
+`reasoning` field and `reasoning_tokens=0` with sane usage — exactly the default-off behavior
+the prereg asserts. The registered fallback rule was therefore not exercised.
+
+**Rung 7 — access-path finding (surfaced by the smoke; NOT a model substitution).** The raw
+snapshot-ID string `gpt-4.1-2025-04-14` returns HTTP 403 for this project ("does not have
+access to model"). The project reaches that snapshot only via the **alias `gpt-4.1`**, which
+resolves to exactly `gpt-4.1-2025-04-14` — **precisely how v1 ran the strong anchor** (every
+v1 `gpt-4.1` cell used `config.model='gpt-4.1'` and every v1 log/manifest resolved to
+`gpt-4.1-2025-04-14`). So rung 7 is requested via the alias and the **registered snapshot is
+what executes**; the request-id string is a transport detail, byte-identical to v1. `client.py`
+records both (`request_id='gpt-4.1'`, registered `model='gpt-4.1-2025-04-14'`). This is the one
+smoke deviation-from-nominal and it changes nothing about the registered rung-7 model.
+
+**Decisions / surprises:**
+- **Maximal reuse of frozen v1 code.** Anchors run the exact v1 client object; OpenRouter rungs
+  reuse v1's TLS/scrub/parse by import. Nothing under `phase1_tasks/`…`phase7_writeup/` edited.
+- **Reasoning-free is a real gate, not a formality.** The smoke inspects both `message.reasoning`
+  and `usage.completion_tokens_details.reasoning_tokens`; had either been non-zero the fallback
+  would have replaced rung 6 before any test episode.
+- **Keys never printed.** Both resolvers return booleans-only in checks; error text is scrubbed.
+
+---
+
+## V2-P3.1 — Dev pilot (140 episodes) + four pre-authorization criteria
+
+**Step ID / date:** V2-P3.1 — 2026-07-26
+
+**What was run:** the frozen 10-task DEV split × 7 rungs × 2 modes = **140 episodes** through
+the adapter, via the frozen Phase-3 advisory / Phase-4 binding harnesses under the D18 config
+(`show_description=False`, `step_cap=8`, `temperature=0`). Transcripts committed under
+`v2_ladder/runs/logs/pilot/<rung-slug>__<mode>/task_NNN.jsonl`; one manifest per cell (14) +
+a master (`v2_ladder/runs/manifests/pilot_*.json`), each carrying provider/route/cost fields,
+`FREEZE_HASH`, the split sha256, and the `v2-prereg` tag commit hash. New driver code:
+`v2_ladder/runs/runner.py` (shared sweep), `run_pilot.py`, `run_full.py`.
+
+**Pilot table (raw):**
+```
+cell                           mode      succ fail fDONE    cap  steps   tok_in  tok_out     cost$   x87proj$
+-------------------------------------------------------------------------------------------------------------
+rung1_llama-3.2-3b             advisory   7/10    3     0      3    4.9    17356     2381   0.00165     0.0144
+rung1_llama-3.2-3b             binding    9/10    1     0      1    2.6     4733     1009   0.00057     0.0050
+rung2_llama-3.1-8b             advisory   9/10    1     1      0    1.8     4189     1100   0.00030     0.0026
+rung2_llama-3.1-8b             binding   10/10    0     0      0    1.3     2849      812   0.00021     0.0018
+rung3_qwen2.5-7b               advisory   8/10    2     2      0    1.3     2761      714   0.00018     0.0016
+rung3_qwen2.5-7b               binding    9/10    1     0      0    1.5     3533     1357   0.00028     0.0024
+rung4_claude-3-haiku           advisory   7/10    3     3      0    1.0     1832      910   0.00160     0.0139
+rung4_claude-3-haiku           binding    9/10    1     0      0    1.3     2979     1023   0.00202     0.0176
+rung5_gpt-4o-mini              advisory   9/10    1     1      0    1.5     2876      620   0.00080     0.0070
+rung5_gpt-4o-mini              binding   10/10    0     0      0    1.1     2103      693   0.00073     0.0064
+rung6_gemini-2.5-flash-lite    advisory   9/10    1     1      0    1.0     1719     1983   0.00097     0.0084
+rung6_gemini-2.5-flash-lite    binding   10/10    0     0      0    1.1     2113      860   0.00056     0.0048
+rung7_gpt-4.1                  advisory  10/10    0     0      0    2.1     4686      737   0.01527     0.1328
+rung7_gpt-4.1                  binding   10/10    0     0      0    1.1     2090      701   0.00979     0.0852
+
+total episodes: 140   total errors: 0   total pilot cost: $0.03492
+pilot logs schema-validated: 140/140
+```
+
+**Four pre-authorization criteria (raw; all PASS):**
+```
+(1) pilot errors after retries == 0            : PASS  (errors=0)
+(2) schema: zero diffs on all 140 pilot logs   : PASS  (140/140 ok)
+(3) pilot cost ≤ 3× prorated projection        : PASS  ($0.03492 ≤ $0.43138 = 3×$0.14379)
+(4) rung 6 confirmed reasoning-free            : PASS  (reasoning_tokens=0 reasoning_text='')
+
+ALL FOUR CRITERIA: PASS -> full run authorized
+```
+
+**Reading the pilot (dev set, not confirmatory — the test set decides).** The directional
+shape the ladder was built to find is already visible on dev: binding ≥ advisory in every
+rung (e.g. rung1 7→9, rung3 8→9, rung4 7→9), and the gap closes at the top (rungs 5–7 at or
+near ceiling in both arms). Advisory false-DONEs concentrate in the weak/mid rungs (rung4
+claude-3-haiku 3/10, rung3 2/10) and vanish at the top (rungs 7 = 0) — consistent with
+prediction (iii). rung1's advisory `step_cap=3` with only-7/10 success is the "too weak to
+rescue" texture (v) to watch on the test set. **No claim is registered from dev;** this is a
+sanity read on the pilot cells only.
+
+**Decisions / surprises:**
+- **All four criteria mechanical and green.** Cost came in ~8× under even the pro-rated
+  projection ($0.035 vs a $0.144 pro-rated expectation), so criterion (3) passed with wide
+  margin; the padded prereg projection was conservative as intended.
+- **Full run pre-authorized → launched without waiting** (V2-P4.1 below), per the work order.
+- **Bright line intact.** Dev tasks only; the 87 test tasks untouched at this step; no frozen
+  v1 file edited; keys never printed; staging explicit per commit.
