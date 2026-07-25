@@ -85,12 +85,29 @@ def _resolve_task_dir(argv):
     return None
 
 
+def _extract_model(argv):
+    """Pull an optional ``--model <id>`` out of argv. Returns ``(model_or_None, argv)``.
+
+    ``config.json`` stays the default; this only overrides ``config["model"]`` for the
+    one run. The flag is order-independent and composes with the other options.
+    """
+    if "--model" in argv:
+        i = argv.index("--model")
+        if i + 1 < len(argv):
+            return argv[i + 1], argv[:i] + argv[i + 2:]
+    return None, argv
+
+
 def main(argv):
+    model_override, argv = _extract_model(argv)
     task_dir = _resolve_task_dir(argv)
     if task_dir is None:
         return 2
 
     config = load_config()  # shared phase3_advisory/config.json
+    if model_override:
+        config = dict(config)
+        config["model"] = model_override
     client = OpenAIChatClient(config)
     summary = harness.run_episode(task_dir, client, config)
 

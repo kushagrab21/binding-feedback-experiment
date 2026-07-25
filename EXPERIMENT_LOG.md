@@ -1712,3 +1712,131 @@ tests and cost nothing.)
 - **Bright line intact.** Only `task_006` (dev) and the two fixtures were opened; the
   only task code authored was the fixture's deliberately-correct `median_of_three`
   (harness infrastructure, not a fix to any experiment task); `phase1_tasks/` untouched.
+
+---
+
+## 5.1 — Phase 5 opening: model wiring + the 40-episode dev pilot
+
+**Step ID / date:** 5.1 — 2026-07-25
+
+**What was built / run:**
+- `--model <id>` overrides added to **both** `run_dev_episode.py` scripts (advisory +
+  binding). `config.json` stays the default (gpt-4.1-mini); the flag only overrides
+  `config["model"]` for the one run, is order-independent, and composes with the
+  advisory `--plumbing-ignore-done` flag (offline-verified).
+- `phase5_runs/run_pilot.py` — the pilot driver. Loops (model × mode × dev task) = 40
+  live episodes, loading both harnesses by absolute path in one process (both are
+  `harness.py`), copies each episode's JSONL under `phase5_runs/logs/pilot/` (committed),
+  and writes `phase5_runs/manifests/pilot_manifest.json` (models, modes, task ids,
+  FREEZE_HASH, config, date, one summary row per episode). Polite 1s sleep between
+  calls; one driver-level retry on top of the client's 429/5xx backoff; a still-failing
+  episode is recorded `status="error"` (scrubbed) — never silently skipped.
+- `phase5_runs/pilot_report.py` — per-cell (model × mode) aggregates: episodes, success
+  (advisory = final verdict passed; binding = status solved), false-DONE count,
+  done_ignored / resubmission_rejected / escalated counts, mean steps, tokens, cost at
+  published rates, and a projected full-run cost (per-episode avg × 87 test tasks/cell).
+
+**Allowlist evolution across three probe rounds (why the model choice looks the way it
+does).** The project's model access changed *during* this step; recorded so the final
+pair is reproducible:
+- **Round 1 (initial P5.1 smoke + `/v1/models`).** 6 models listed. The originally-planned
+  `gpt-4.1-nano` (MODEL_A) and `gpt-4.1` (MODEL_B) were **both absent and 403'd** on
+  chat-completions. Accessible plain-chat models honouring `temperature:0`:
+  `gpt-4.1-mini` and `gpt-4o-mini-2024-07-18` (the latter newly usable — it 403'd back
+  in P3.1). `gpt-5` / `gpt-5-nano-2025-08-07` were present but **reject temp 0**
+  (HTTP 400, "only the default temperature is supported") — reasoning models.
+- **Round 2 (after the courier updated the allowlist, P5.1-R).** `/v1/models` grew to 9
+  (added `gpt-4.1`, `gpt-4o`, `gpt-4o-mini`, `o3`), but `gpt-4.1` chat-completions
+  **still 403'd** — the models-list and the completions gate propagate independently,
+  the exact server-side split P3.1 documented.
+- **Round 3 (after a 5-minute propagation wait).** `gpt-4.1` chat-completions went live,
+  resolving to snapshot `gpt-4.1-2025-04-14`.
+
+**Final model pair (Runner ruling) + smoke evidence.**
+```
+MODEL_A  gpt-4o-mini-2024-07-18  (cheap / weak)      -> resolved gpt-4o-mini-2024-07-18   tin=21 tout=1 reply='OK'
+MODEL_B  gpt-4.1                 (frontier / strong)  -> resolved gpt-4.1-2025-04-14       tin=21 tout=1 reply='OK'
+```
+Excluded for cause: `gpt-5` / `gpt-5-nano` / `o3` (reject temp 0, reasoning-token cost);
+`gpt-4o-mini-search-preview` (not a plain chat model); `gpt-4o` (dominated by `gpt-4.1`
+as the frontier pick). Both chosen models honour `temperature:0`, so the deterministic,
+reproducible design is preserved across both arms.
+
+**Deviation D16 — model pair changed.** Original Runner plan `gpt-4.1-nano` (A) /
+`gpt-4.1` (B) → final `gpt-4o-mini-2024-07-18` (A, **cheap/weak**) / `gpt-4.1` (B,
+**frontier/strong**), forced by `gpt-4.1-nano` being un-provisioned on this project and
+resolved by the Runner. The arms are labelled **cheap/weak vs frontier/strong**
+throughout Phase 5+. Both models remain the *same* across advisory and binding (the
+comparison only requires same-model-across-arms), which holds.
+
+**The pilot table (40 live episodes; full `pilot_report.py` output):**
+
+| model (arm) | mode | eps | success | false-DONE | done_ign | rej | esc | mean steps | tok in / out | pilot cost | proj full-run (×87) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| gpt-4o-mini-2024-07-18 (cheap/weak) | advisory | 10 | **10/10** | 0 | — | — | — | 1.10 | 2603 / 1273 | $0.0012 | $0.0100 |
+| gpt-4o-mini-2024-07-18 (cheap/weak) | binding  | 10 | **10/10** | — | 0 | 0 | 0 | 1.00 | 2361 / 1308 | $0.0011 | $0.0099 |
+| gpt-4.1 (frontier/strong)           | advisory | 10 | **10/10** | 0 | — | — | — | 1.40 | 3635 / 1201 | $0.0169 | $0.1468 |
+| gpt-4.1 (frontier/strong)           | binding  | 10 | **10/10** | — | 0 | 0 | 0 | 1.00 | 2361 / 1246 | $0.0147 | $0.1278 |
+
+**Cost actuals + projection.** Published rates: gpt-4o-mini $0.15/$0.60 per 1M in/out;
+gpt-4.1 $2.00/$8.00 per 1M in/out. **Pilot total = $0.0339** (40 episodes). **Projected
+full run = $0.2946** (348 episodes = 2 models × 2 modes × 87 test tasks), scaling each
+cell's per-episode average × 87. Even the frontier arm projects to ~$0.15/cell — the
+entire full run is well under a dollar, far inside the $20 ceiling. (The 5 transient
+`gpt-4.1` 403s during the first sweep returned no tokens, cost $0, and were re-run to
+success; 0 errors remain in the manifest.)
+
+**Explicit D13 assessment — the signal question.** Per model, dev tasks failed at least
+once in either arm:
+```
+gpt-4o-mini-2024-07-18  (cheap/weak)     : 0 / 10 dev tasks failed >=1x   (all one-shot)
+gpt-4.1                 (frontier/strong) : 0 / 10 dev tasks failed >=1x   (all one-shot)
+```
+Verified two ways, both giving 0/10: (i) final-outcome success, and (ii) the stronger
+"did any `check_verdict` in the episode return `passed=False`" — **not a single FAILED
+verdict occurred in any of the 40 episodes.** The four gpt-4.1 advisory episodes and one
+gpt-4o-mini advisory episode that ran 2 steps did so because the model submitted
+*correct* code in step 1 **without** a `DONE` line (verdict `PASSED`), then re-submitted
+with `DONE` in step 2 — a late declaration, not an iteration on failure. Binding never
+exceeded 1 step. There were **zero** false-DONEs, done_ignored, resubmission_rejected,
+or escalated events anywhere.
+
+**Decision-gate outcome (halt).** The pre-registered gate (4.2 expectations; restated by
+the Runner this step) was: *if MODEL_A fails at least a few dev tasks, authorize the full
+348-episode run; if MODEL_A one-shots all ten, halt and reassess before touching the test
+set — no spend without signal.* **MODEL_A (the weakest deterministic model available)
+one-shot all ten, as did MODEL_B.** So the pilot produces **no advisory-vs-binding
+signal on the dev set**, and per the gate the full run is **NOT** authorised here — this
+paste goes to the Runner for reassessment. D13 now extends from gpt-4.1-mini (P3.2) to
+*both* a weaker (gpt-4o-mini) and a stronger (gpt-4.1) model: the single-mutation dev
+bugs, handed to the model with the buggy source + a description, are below every
+available model's one-shot threshold. The comparison, if it exists, lives in *harder*
+tasks or failures the current corpus does not contain on the dev split.
+
+**phase4_binding acceptance episodes — sha256 (re-pinned full-width; width-truncated in
+the 4.2 paste):**
+```
+9e7cbd908b4fee47a47f322ac9e38373bce4472834f1902bd518790e34325efd  episode_task_006_solved.jsonl
+b95e06ca603b275dc3a4519ec8a2518519d87790bffaafb54fcf84359ebcdd3a  episode_fx_unpassable_stepcap.jsonl
+5abd01c80fec99a4adae02d43ae7b0b5217bf1e5a2d25d0deb2ee60d98bf470f  episode_fx_nothing_wrong_stepcap.jsonl
+```
+
+**Decisions / surprises:**
+- **The pilot's job was to find signal, and it cleanly found none — that is a
+  successful gate, not a failure.** Spending ~3.4 cents to learn the corpus is at
+  ceiling for both arms is exactly the cheap check the gate was designed to be. No test
+  task was opened; the 87-task set stays frozen and unrun.
+- **`gpt-4o-mini` was chosen as MODEL_A precisely to *break* the ceiling** (weakest
+  deterministic model) and still didn't — strong evidence the dev bugs are trivially
+  one-shot, independent of model tier. If Phase 5 is to proceed, the lever is task
+  difficulty (or a genuinely weaker/handicapped setup), not model choice among the
+  temp-0 models on offer.
+- **Transient 403 during propagation is real and must be tolerated by any full runner.**
+  5 of 28 gpt-4.1 calls 403'd mid-sweep even after `/v1/models` listed the model; the
+  driver recorded them as errors (never skipped) and a targeted re-run cleared all 5.
+  A full run should budget for this (retry-and-record, not fail-fast).
+- **Projections are honest per-cell averages.** The frontier arm's higher cost is
+  entirely token-price, not more turns (mean steps ≈ 1 everywhere); if future harder
+  tasks push mean steps up, the projection scales with observed tokens, not a guess.
+- **Bright line intact.** Only the ten dev tasks and the frozen config were run; the API
+  key was never printed; `phase1_tasks/` untouched; the 87 test tasks remain unopened.
