@@ -1,0 +1,468 @@
+{
+  "breakdown_bug_type": {
+    "input-mutation": {
+      "gpt-4.1__advisory": {
+        "n": 3,
+        "solved": 3
+      },
+      "gpt-4.1__binding": {
+        "n": 3,
+        "solved": 3
+      },
+      "gpt-4o-mini-2024-07-18__advisory": {
+        "n": 3,
+        "solved": 3
+      },
+      "gpt-4o-mini-2024-07-18__binding": {
+        "n": 3,
+        "solved": 3
+      }
+    },
+    "inverted-condition": {
+      "gpt-4.1__advisory": {
+        "n": 12,
+        "solved": 12
+      },
+      "gpt-4.1__binding": {
+        "n": 12,
+        "solved": 12
+      },
+      "gpt-4o-mini-2024-07-18__advisory": {
+        "n": 12,
+        "solved": 11
+      },
+      "gpt-4o-mini-2024-07-18__binding": {
+        "n": 12,
+        "solved": 12
+      }
+    },
+    "missing-edge-case": {
+      "gpt-4.1__advisory": {
+        "n": 15,
+        "solved": 15
+      },
+      "gpt-4.1__binding": {
+        "n": 15,
+        "solved": 15
+      },
+      "gpt-4o-mini-2024-07-18__advisory": {
+        "n": 15,
+        "solved": 9
+      },
+      "gpt-4o-mini-2024-07-18__binding": {
+        "n": 15,
+        "solved": 15
+      }
+    },
+    "off-by-one": {
+      "gpt-4.1__advisory": {
+        "n": 14,
+        "solved": 14
+      },
+      "gpt-4.1__binding": {
+        "n": 14,
+        "solved": 14
+      },
+      "gpt-4o-mini-2024-07-18__advisory": {
+        "n": 14,
+        "solved": 14
+      },
+      "gpt-4o-mini-2024-07-18__binding": {
+        "n": 14,
+        "solved": 14
+      }
+    },
+    "wrong-comparison": {
+      "gpt-4.1__advisory": {
+        "n": 15,
+        "solved": 15
+      },
+      "gpt-4.1__binding": {
+        "n": 15,
+        "solved": 15
+      },
+      "gpt-4o-mini-2024-07-18__advisory": {
+        "n": 15,
+        "solved": 15
+      },
+      "gpt-4o-mini-2024-07-18__binding": {
+        "n": 15,
+        "solved": 15
+      }
+    },
+    "wrong-operator": {
+      "gpt-4.1__advisory": {
+        "n": 13,
+        "solved": 13
+      },
+      "gpt-4.1__binding": {
+        "n": 13,
+        "solved": 13
+      },
+      "gpt-4o-mini-2024-07-18__advisory": {
+        "n": 13,
+        "solved": 13
+      },
+      "gpt-4o-mini-2024-07-18__binding": {
+        "n": 13,
+        "solved": 13
+      }
+    },
+    "wrong-return": {
+      "gpt-4.1__advisory": {
+        "n": 9,
+        "solved": 9
+      },
+      "gpt-4.1__binding": {
+        "n": 9,
+        "solved": 9
+      },
+      "gpt-4o-mini-2024-07-18__advisory": {
+        "n": 9,
+        "solved": 8
+      },
+      "gpt-4o-mini-2024-07-18__binding": {
+        "n": 9,
+        "solved": 9
+      }
+    },
+    "wrong-variable": {
+      "gpt-4.1__advisory": {
+        "n": 6,
+        "solved": 6
+      },
+      "gpt-4.1__binding": {
+        "n": 6,
+        "solved": 6
+      },
+      "gpt-4o-mini-2024-07-18__advisory": {
+        "n": 6,
+        "solved": 6
+      },
+      "gpt-4o-mini-2024-07-18__binding": {
+        "n": 6,
+        "solved": 6
+      }
+    }
+  },
+  "breakdown_difficulty": {
+    "easy": {
+      "gpt-4.1__advisory": {
+        "n": 44,
+        "solved": 44
+      },
+      "gpt-4.1__binding": {
+        "n": 44,
+        "solved": 44
+      },
+      "gpt-4o-mini-2024-07-18__advisory": {
+        "n": 44,
+        "solved": 42
+      },
+      "gpt-4o-mini-2024-07-18__binding": {
+        "n": 44,
+        "solved": 44
+      }
+    },
+    "hard": {
+      "gpt-4.1__advisory": {
+        "n": 20,
+        "solved": 20
+      },
+      "gpt-4.1__binding": {
+        "n": 20,
+        "solved": 20
+      },
+      "gpt-4o-mini-2024-07-18__advisory": {
+        "n": 20,
+        "solved": 15
+      },
+      "gpt-4o-mini-2024-07-18__binding": {
+        "n": 20,
+        "solved": 20
+      }
+    },
+    "medium": {
+      "gpt-4.1__advisory": {
+        "n": 23,
+        "solved": 23
+      },
+      "gpt-4.1__binding": {
+        "n": 23,
+        "solved": 23
+      },
+      "gpt-4o-mini-2024-07-18__advisory": {
+        "n": 23,
+        "solved": 22
+      },
+      "gpt-4o-mini-2024-07-18__binding": {
+        "n": 23,
+        "solved": 23
+      }
+    }
+  },
+  "cells": {
+    "gpt-4.1__advisory": {
+      "compliance_den": 6,
+      "compliance_num": 6,
+      "cost_per_solved_usd": 0.0017789655172413795,
+      "cost_usd": 0.15477000000000002,
+      "done_ignored": 0,
+      "escalated": 0,
+      "false_done": 0,
+      "identical_resub_den": 6,
+      "identical_resub_num": 0,
+      "mean_steps": 2.0229885057471266,
+      "mode": "advisory",
+      "model": "gpt-4.1",
+      "model_resolved": "gpt-4.1-2025-04-14",
+      "n_episodes": 87,
+      "n_episodes_with_failed_verdict": 6,
+      "n_solved": 87,
+      "resubmission_rejected": 0,
+      "role": "frontier/strong",
+      "step_cap": 0,
+      "success_rate": 1.0,
+      "tokens_in": 44697,
+      "tokens_out": 8172
+    },
+    "gpt-4.1__binding": {
+      "compliance_den": 7,
+      "compliance_num": 7,
+      "cost_per_solved_usd": 0.0012275402298850574,
+      "cost_usd": 0.106796,
+      "done_ignored": 0,
+      "escalated": 0,
+      "false_done": null,
+      "identical_resub_den": 7,
+      "identical_resub_num": 0,
+      "mean_steps": 1.0804597701149425,
+      "mode": "binding",
+      "model": "gpt-4.1",
+      "model_resolved": "gpt-4.1-2025-04-14",
+      "n_episodes": 87,
+      "n_episodes_with_failed_verdict": 7,
+      "n_solved": 87,
+      "resubmission_rejected": 0,
+      "role": "frontier/strong",
+      "step_cap": 0,
+      "success_rate": 1.0,
+      "tokens_in": 20434,
+      "tokens_out": 8241
+    },
+    "gpt-4o-mini-2024-07-18__advisory": {
+      "compliance_den": 0,
+      "compliance_num": 0,
+      "cost_per_solved_usd": 9.69892405063291e-05,
+      "cost_usd": 0.0076621499999999995,
+      "done_ignored": 0,
+      "escalated": 0,
+      "false_done": 8,
+      "identical_resub_den": 0,
+      "identical_resub_num": 0,
+      "mean_steps": 1.1954022988505748,
+      "mode": "advisory",
+      "model": "gpt-4o-mini-2024-07-18",
+      "model_resolved": "gpt-4o-mini-2024-07-18",
+      "n_episodes": 87,
+      "n_episodes_with_failed_verdict": 8,
+      "n_solved": 79,
+      "resubmission_rejected": 0,
+      "role": "cheap/weak",
+      "step_cap": 0,
+      "success_rate": 0.9080459770114943,
+      "tokens_in": 21421,
+      "tokens_out": 7415
+    },
+    "gpt-4o-mini-2024-07-18__binding": {
+      "compliance_den": 6,
+      "compliance_num": 6,
+      "cost_per_solved_usd": 8.892241379310345e-05,
+      "cost_usd": 0.00773625,
+      "done_ignored": 0,
+      "escalated": 0,
+      "false_done": null,
+      "identical_resub_den": 6,
+      "identical_resub_num": 0,
+      "mean_steps": 1.0689655172413792,
+      "mode": "binding",
+      "model": "gpt-4o-mini-2024-07-18",
+      "model_resolved": "gpt-4o-mini-2024-07-18",
+      "n_episodes": 87,
+      "n_episodes_with_failed_verdict": 6,
+      "n_solved": 87,
+      "resubmission_rejected": 0,
+      "role": "cheap/weak",
+      "step_cap": 0,
+      "success_rate": 1.0,
+      "tokens_in": 20047,
+      "tokens_out": 7882
+    }
+  },
+  "compliance_definition": "A post-failure step is compliant iff the next submission is (a) non-byte-identical to the failed one AND (b) changes the checker outcome signature -- the set of failing test names -- when run_checks is re-executed on both submissions against the frozen task. Denominator: all post-failure model turns that submitted code.",
+  "header": {
+    "config": {
+      "gpt-4.1__advisory": {
+        "model": "gpt-4.1",
+        "show_description": false,
+        "step_cap": 8,
+        "temperature": 0
+      },
+      "gpt-4.1__binding": {
+        "model": "gpt-4.1",
+        "show_description": false,
+        "step_cap": 8,
+        "temperature": 0
+      },
+      "gpt-4o-mini-2024-07-18__advisory": {
+        "model": "gpt-4o-mini-2024-07-18",
+        "show_description": false,
+        "step_cap": 8,
+        "temperature": 0
+      },
+      "gpt-4o-mini-2024-07-18__binding": {
+        "model": "gpt-4o-mini-2024-07-18",
+        "show_description": false,
+        "step_cap": 8,
+        "temperature": 0
+      }
+    },
+    "freeze_hash": "dfc14c26ec267b03c2789752cf7e63c34a06fd3b94dc6cebe14f9f70b62f2017",
+    "model_snapshots": {
+      "gpt-4.1": "gpt-4.1-2025-04-14",
+      "gpt-4o-mini-2024-07-18": "gpt-4o-mini-2024-07-18"
+    },
+    "n_test_tasks": 87,
+    "presentation": "bare-code",
+    "split_sha256": "6f69be75d4c1b1ea0348e7b0217ac83e7cfc8c19732a6d6d71e2ec5be9e75015"
+  },
+  "line_coverage_note": "Line-coverage tracing was NOT implemented; this is the design doc's fallback outcome-signature operationalization.",
+  "prereg": {
+    "marks": [
+      [
+        "(i) MODEL_A fails more than MODEL_B under bare-code",
+        true,
+        "weak advisory fails 8 vs strong 0"
+      ],
+      [
+        "(ii) advisory post-failure episodes end as false-DONEs (D14)",
+        true,
+        "all 8 weak-advisory failures are false-DONEs"
+      ],
+      [
+        "(iii) binding converts would-be false-DONEs into solved",
+        true,
+        "8/8 advisory-failed tasks solved in binding (6 forced repairs, 2 first-sample); 0 escalated/step_cap"
+      ],
+      [
+        "(iv) mode difference larger for MODEL_A than MODEL_B (interaction)",
+        true,
+        "delta_weak=+9.2pp vs delta_strong=+0.0pp"
+      ]
+    ],
+    "text": "Recorded before any D18 episode: (i) under bare-code presentation, MODEL_A (gpt-4o-mini) is expected to fail more dev tasks than MODEL_B (gpt-4.1); (ii) in advisory mode, some post-failure episodes are expected to end as false-DONEs (D14); (iii) binding is expected to convert some would-be false-DONEs into solved (via forced iteration) or escalated/step_cap; (iv) the mode difference is expected to be larger for MODEL_A than MODEL_B (the thesis interaction)."
+  },
+  "rescue_decomposition": {
+    "advisory_failed_tasks": [
+      "task_002",
+      "task_005",
+      "task_031",
+      "task_055",
+      "task_079",
+      "task_088",
+      "task_091",
+      "task_096"
+    ],
+    "first_sample_passes": [
+      {
+        "bug_type": "missing-edge-case",
+        "difficulty": "hard",
+        "n_check_verdicts": 1,
+        "status": "solved",
+        "steps": 1,
+        "task_id": "task_002"
+      },
+      {
+        "bug_type": "inverted-condition",
+        "difficulty": "easy",
+        "n_check_verdicts": 1,
+        "status": "solved",
+        "steps": 1,
+        "task_id": "task_091"
+      }
+    ],
+    "forced_repairs": [
+      {
+        "bug_type": "missing-edge-case",
+        "difficulty": "hard",
+        "n_check_verdicts": 2,
+        "status": "solved",
+        "steps": 2,
+        "task_id": "task_005"
+      },
+      {
+        "bug_type": "missing-edge-case",
+        "difficulty": "medium",
+        "n_check_verdicts": 2,
+        "status": "solved",
+        "steps": 2,
+        "task_id": "task_031"
+      },
+      {
+        "bug_type": "missing-edge-case",
+        "difficulty": "hard",
+        "n_check_verdicts": 2,
+        "status": "solved",
+        "steps": 2,
+        "task_id": "task_055"
+      },
+      {
+        "bug_type": "missing-edge-case",
+        "difficulty": "hard",
+        "n_check_verdicts": 2,
+        "status": "solved",
+        "steps": 2,
+        "task_id": "task_079"
+      },
+      {
+        "bug_type": "missing-edge-case",
+        "difficulty": "hard",
+        "n_check_verdicts": 2,
+        "status": "solved",
+        "steps": 2,
+        "task_id": "task_088"
+      },
+      {
+        "bug_type": "wrong-return",
+        "difficulty": "easy",
+        "n_check_verdicts": 2,
+        "status": "solved",
+        "steps": 2,
+        "task_id": "task_096"
+      }
+    ],
+    "n_first_sample_passes": 2,
+    "n_forced_repairs": 6
+  },
+  "statistics": {
+    "delta_binding_minus_advisory": {
+      "gpt-4.1": 0.0,
+      "gpt-4o-mini-2024-07-18": 0.09195402298850575
+    },
+    "interaction_pp": 0.09195402298850575,
+    "mcnemar": {
+      "gpt-4.1": {
+        "adv_fail_bind_pass_c": 0,
+        "adv_pass_bind_fail_b": 0,
+        "discordant_n": 0,
+        "exact_two_sided_p": 1.0
+      },
+      "gpt-4o-mini-2024-07-18": {
+        "adv_fail_bind_pass_c": 8,
+        "adv_pass_bind_fail_b": 0,
+        "discordant_n": 8,
+        "exact_two_sided_p": 0.0078125
+      }
+    }
+  }
+}

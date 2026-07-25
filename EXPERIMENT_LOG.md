@@ -2206,3 +2206,127 @@ ceiling.
   opened for reading or edited; nothing was solved by the builder; `phase1_tasks/` is
   byte-for-byte unchanged (asserted below); the API key was never printed.
 
+
+## 6.1 — Reproducible analysis: the results table
+
+**Step ID / date:** 6.1 — 2026-07-26
+
+**What was built:** `phase6_analysis/analyze.py` — ONE deterministic command that
+regenerates `phase6_analysis/results.md` + `phase6_analysis/results.json` from the
+committed Phase-5 artifacts ONLY (per-cell JSONL logs under `phase5_runs/logs/full/`,
+the four cell manifests, each task's frozen `meta.json`, and the frozen Phase-2
+`run_checks`). It makes **no** API calls, writes **nothing** outside `phase6_analysis/`,
+and treats `phase1_tasks/` as immutable. Two runs produce byte-identical output; there
+is no timestamp inside the results (the run date lives in this log entry, per the
+determinism requirement).
+
+**Provenance.** Every number is recomputed from the raw logs (the `episode_end` line is
+the per-episode record; `model_response` blocks are re-parsed with the harness's own
+`extract_last_python_block`). Header metadata (FREEZE_HASH, per-cell `model_resolved`,
+run config, presentation) is read from the committed manifests; `split.json`'s sha256 is
+recomputed here with `hashlib` and asserted equal to the value every manifest recorded.
+The compliance metric re-executes the frozen `run_checks` on the committed submissions —
+analysis over committed artifacts, not a new experiment. Statistics use stdlib
+`math.comb` only (no SciPy).
+
+**Feedback-compliance operationalization (verbatim, as emitted in results.md):**
+> A post-failure step is compliant iff the next submission is (a) non-byte-identical to
+> the failed one AND (b) changes the checker outcome signature -- the set of failing test
+> names -- when run_checks is re-executed on both submissions against the frozen task.
+> Denominator: all post-failure model turns that submitted code.
+
+Line-coverage tracing was **not** implemented; this is the design doc's fallback
+outcome-signature operationalization, and results.md says so. Numerator/denominator are
+reported per cell, never a bare rate.
+
+**Evidence of correctness — determinism (run twice, byte-identical):**
+```
+run1-exit=0
+9f31279c…  results.md   (pre-precision-tweak)
+27afe558b6f84b9084f69f6ea46925b91aa123f0d99dd92683f8f2ed0a82437f  results.json
+run2-exit=0  (identical hashes)
+```
+After a cosmetic $/solved precision bump the stable pair is:
+```
+29bcf9e5b8a0b416c3a4d84eb340ad53c3718a681377c2e1d2765802c0c48599  phase6_analysis/results.md
+27afe558b6f84b9084f69f6ea46925b91aa123f0d99dd92683f8f2ed0a82437f  phase6_analysis/results.json
+```
+
+**The per-cell table (from results.md):**
+
+| model (role) | mode | success | mean steps | tok in/out | cost | $/solved | false-DONE | step_cap | done_ign/rej/esc |
+|---|---|---|---|---|---|---|---|---|---|
+| gpt-4o-mini-2024-07-18 (cheap/weak) | advisory | **79/87 = 90.8%** | 1.20 | 21421/7415 | $0.0077 | $0.00010 | 8 | 0 | — |
+| gpt-4o-mini-2024-07-18 (cheap/weak) | binding | **87/87 = 100.0%** | 1.07 | 20047/7882 | $0.0077 | $0.00009 | — | 0 | 0/0/0 |
+| gpt-4.1 (frontier/strong) | advisory | **87/87 = 100.0%** | 2.02 | 44697/8172 | $0.1548 | $0.00178 | 0 | 0 | — |
+| gpt-4.1 (frontier/strong) | binding | **87/87 = 100.0%** | 1.08 | 20434/8241 | $0.1068 | $0.00123 | — | 0 | 0/0/0 |
+
+**Feedback-compliance / identical-resubmission (numerator/denominator per cell):**
+```
+gpt-4o-mini-2024-07-18__advisory   compliance 0/0    identical-resub 0/0
+gpt-4o-mini-2024-07-18__binding    compliance 6/6    identical-resub 0/6
+gpt-4.1__advisory                  compliance 6/6    identical-resub 0/6
+gpt-4.1__binding                   compliance 7/7    identical-resub 0/7
+```
+Every post-failure submission across the whole run is compliant (byte-changed AND a
+changed failing-test signature); zero identical resubmissions anywhere (consistent with
+D15). The weak-advisory `0/0` is itself the finding: advisory never granted the weak
+model a post-failure turn, because every one of its 8 failures was a terminal false-DONE.
+
+**Statistics — exact McNemar (task-paired, 87 pairs/model):**
+```
+gpt-4o-mini-2024-07-18 : b(adv✓ bind✗)=0  c(adv✗ bind✓)=8  n=8  exact two-sided p=0.0078125
+gpt-4.1                : b=0             c=0             n=0  p=1
+```
+Interaction: weak model has 8 discordant pairs, all advisory-fail/binding-pass
+(p=0.0078125); strong model has 0 discordant pairs — a positive interaction in the
+pre-registered direction, Δmode(weak) − Δmode(strong) = +9.2 − 0.0 = +9.2 pp.
+
+**Rescue decomposition (weak binding, the 8 advisory-failed tasks) — verified from logs,
+not assumed:** 6 genuine forced repairs (FAILED verdict → byte-changed submission →
+PASSED, ≥2 checked verdicts: task_005, task_031, task_055, task_079, task_088, task_096)
++ 2 first-sample passes (solved on binding's first submission at temp-0 while advisory
+false-DONE'd the same task: task_002, task_091). 6 + 2 = 8.
+
+**Worked example — the compliance metric on `task_005` (weak binding).** The episode has
+two submissions. `run_checks` re-run on submission 1 → FAILED, failing-test set
+`{test_zero_returns_zero}` (the missing negative/zero guard); submission 2 is
+byte-different and `run_checks` → PASSED, failing-test set `{}`. Sets differ and bytes
+differ ⇒ the post-failure step is **compliant**, contributing 1/1 to that episode and to
+the cell's 6/6. The advisory arm on the same task never reaches a second submission — it
+false-DONE's after submission 1 — so it contributes 0 to the denominator.
+
+**Independent re-derivations (read-only, all agree with results.md):**
+```
+false-DONEs: 8 ['task_002','task_005','task_031','task_055','task_079','task_088','task_091','task_096']
+4.1-adv tokens_in: 44697
+multi-verdict binding eps: 6 ['task_005','task_031','task_055','task_079','task_088','task_096']
+```
+The 8 false-DONE ids match 5.4; 44697 matches the per-cell table; the 6 multi-verdict
+binding episodes match the forced-repair set exactly.
+
+**Pre-registration (5.3) re-scored by analyze.py — all four CONFIRMED at scale:**
+(i) weak advisory fails 8 vs strong 0; (ii) all 8 weak-advisory failures are false-DONEs;
+(iii) 8/8 advisory-failed tasks solved in binding (6 forced repairs + 2 first-sample; 0
+escalated/step_cap); (iv) Δweak +9.2pp vs Δstrong +0.0pp.
+
+**Decisions / surprises:**
+- **Logs, not manifests, are the source of truth.** analyze.py recomputes every aggregate
+  from the committed JSONL `episode_end` lines and re-parses submissions with the harness's
+  own extractor, so the table can't silently drift from a stale manifest; the manifest is
+  used only for header metadata, and its `split_sha256` is cross-checked against a fresh
+  `hashlib` hash of `split.json` (assert passes).
+- **The compliance denominators expose an asymmetry the success rate hides.** Weak-advisory
+  is `0/0`: the false-DONE exit means the model is never *asked* to comply post-failure.
+  Binding's `6/6` (weak) and the strong model's `6/6`/`7/7` show that whenever a
+  post-failure turn exists, it is always used to make a genuinely different, signature-
+  changing submission — no spinning, no byte-repeats.
+- **`$/solved` precision.** At 4 decimals the weak cells both read `$0.0001`; bumped that
+  one column to 5 decimals so weak advisory ($0.00010) and binding ($0.00009) are
+  distinguishable. Cosmetic only; it changed the results.md hash once and has been stable
+  since (json unaffected).
+- **Determinism came free from avoiding wall-clock.** No timestamps are emitted into the
+  results; `run_checks`'s only volatile output (the temp-dir path) is already scrubbed
+  from the failing-test names the metric uses, so re-execution is stable.
+- **Bright line intact.** Read-only over committed artifacts; no API calls; no writes
+  outside `phase6_analysis/`; `phase1_tasks/` untouched.
