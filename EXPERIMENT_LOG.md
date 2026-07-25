@@ -2420,3 +2420,71 @@ differing only in who may call the task finished.
 harnesses differing only structurally → pre-registered pilots → a 348-episode held-out run
 → a deterministic analysis → a write-up whose every number traces to a hash-pinned
 artifact, reproducible by a stranger from a clean clone.
+
+---
+
+## 7.2 — Final compilation: FINAL_RESULTS.md (verbatim assembly)
+
+**Step ID / date:** 7.2 — 2026-07-26
+
+**What was built:** one new file, `phase7_writeup/FINAL_RESULTS.md` — the complete
+results-and-inferences compilation, assembled as a single self-contained read. Nothing was
+recomputed and no existing artifact was touched; this step ADDS the file plus this log
+entry, nothing else.
+
+**Governing rule of the file (stated at its top).** Every table, number, trace,
+pre-registration, and inference in `FINAL_RESULTS.md` is reproduced **VERBATIM** from a
+committed, hash-pinned artifact, and each block names its source (file + log entry). The
+**only** newly-written prose permitted is: the one-line connective sentence above each of
+the three signal-arc pilot tables, the italic source lead-ins in the findings ledger, and a
+single closing inference paragraph (≤5 sentences) that introduces **no number** not already
+present in a quoted block above it. Everything else is copied byte-for-byte.
+
+**Assembly order and sources cited (all verbatim unless noted):**
+- **§0 Provenance header** — `results.md` "Header / provenance" + "Presentation note
+  (D17/D18)"; `results.md`/`results.json` sha256s (`29bcf9e5…` / `27afe558…`) from
+  `README.md`; final commit `45d09f1` and tags `experiment-complete` / `phase1-freeze` from
+  `git`.
+- **§1 Headline** — `results.md` "Headline 2x2" (2×2 + interaction line) and "Statistics —
+  exact McNemar" (McNemar table).
+- **§2 Pre-registrations (both generations)** — the 4.2 pre-registration (`EXPERIMENT_LOG`
+  4.2 "(c) Pre-registered expectations") with its predates-D17/D18 annotation
+  (`EXPERIMENT_LOG` 5.2 "Pre-registration annotation"); the 5.3 pre-registration
+  (`EXPERIMENT_LOG` 5.3 "PRE-REGISTRATION") with the four **CONFIRMED** marks from
+  `results.md`.
+- **§3 Full per-cell results** — `results.md` per-cell table, compliance table (with the
+  operationalization paragraph and the line-coverage-not-implemented note), bug-type × cell,
+  difficulty × cell, and the rescue-decomposition table.
+- **§4 Narrative trace pair** — the `task_009` FAILED→false-DONE and FAILED→repair traces
+  from `EXPERIMENT_LOG` 5.3.
+- **§5 Signal arc** — the three pilot tables (P5.1 spec-shown, P5.2 D17, P5.3 D18) from
+  their log entries, one connective sentence each, documenting that the effect exists only
+  under bare-code presentation.
+- **§6 Findings ledger** — D13, D14, D15, D16, D17, D18, each quoted from where it was
+  recorded (D14 is the "computed completion" property from the 4.2 mechanism→evidence map;
+  its table row is reflowed to prose but the wording is verbatim).
+- **§7 Limitations** — the eight-item list from `README.md`.
+- **§8 Costs** — the per-phase live-spend lines (P3.2 ≈ $0.0031, P4.2 ≈ $0.0162, P5.1
+  $0.0339, P5.2 $0.0382, P5.3 $0.0268) and the full-run total **$0.2770** (cumulative well
+  under **$0.45**) from their log entries.
+- **§9 Closing inference** — the single newly-written paragraph, introducing no new number.
+
+**Provenance:** hand-assembled this step from `EXPERIMENT_LOG.md` and the hash-pinned
+`results.md` (`29bcf9e5b8a0b416c3a4d84eb340ad53c3718a681377c2e1d2765802c0c48599`). No
+experiment artifact, task, log line, or number was modified; `results.md` is byte-identical
+to its committed form (verified by `diff` in the acceptance below). No API calls;
+`phase1_tasks/` untouched.
+
+**Decisions / surprises:**
+- **Verbatim-only, by construction.** The file assembles; it never restates. Numbers appear
+  only inside quoted blocks whose source is named on the line above them, so the compilation
+  cannot drift from the artifacts even in principle.
+- **The one new paragraph is number-free of anything new.** §9 reuses only figures already
+  quoted above it (the +9.2 pp interaction, the 8 discordant tasks, 6 forced repairs, 2
+  sampling passes); it adds no fresh quantity.
+- **Tag policy.** `experiment-complete` stays where it is (`45d09f1`); this step adds a
+  separate `final-results` tag on the compilation commit so the one-document summary is
+  addressable without moving the completion marker.
+- **Bright line intact.** One file added; documentation only; no code, task, or result
+  changed; no API calls; no key printed; `phase1_tasks/` byte-for-byte unchanged; staging is
+  explicit below (this file + this log only).
