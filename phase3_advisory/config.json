@@ -1,0 +1,5 @@
+{
+  "model": "gpt-4.1-mini",
+  "temperature": 0,
+  "step_cap": 8
+}
