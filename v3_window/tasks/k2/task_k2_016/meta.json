@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_016",
+  "seed_name": "seed_019",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "inverted-condition",
+    "off-by-one",
+    "wrong-comparison"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "off-by-one",
+      "note": "high starts one too low, so the last element is never searched."
+    },
+    {
+      "bug_type": "wrong-comparison",
+      "note": "<= becomes <, so a one-element search window is skipped and single elements are missed."
+    },
+    {
+      "bug_type": "inverted-condition",
+      "note": "The half-selection test is negated, so the search moves the wrong direction and misses targets."
+    }
+  ],
+  "function_name": "binary_search",
+  "description": "Binary search for a target in a sorted list.",
+  "difficulty": null
+}

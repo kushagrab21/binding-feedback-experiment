@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_011",
+  "seed_name": "seed_014",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "input-mutation",
+    "inverted-condition",
+    "wrong-operator"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-operator",
+      "note": "Shared keys subtract instead of sum."
+    },
+    {
+      "bug_type": "input-mutation",
+      "note": "result aliases a, so the merge writes through into the caller's dict a."
+    },
+    {
+      "bug_type": "inverted-condition",
+      "note": "The membership test is negated, swapping the sum/copy branches and raising KeyError on b-only keys."
+    }
+  ],
+  "function_name": "merge_sum",
+  "description": "Merge two integer-valued dicts, summing on shared keys.",
+  "difficulty": null
+}

@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_051",
+  "seed_name": "seed_020",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "off-by-one",
+    "wrong-comparison",
+    "wrong-variable"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "off-by-one",
+      "note": "Inner bound is one too small, so the last adjacent pair is never compared and the list is left unsorted."
+    },
+    {
+      "bug_type": "wrong-variable",
+      "note": "The swap assigns each element to itself, so no swapping happens and the list stays unsorted."
+    },
+    {
+      "bug_type": "wrong-comparison",
+      "note": "> becomes <, so the list is sorted in descending order."
+    }
+  ],
+  "function_name": "bubble_sort",
+  "description": "Sort a list of numbers in ascending order (bubble sort).",
+  "difficulty": null
+}

@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_054",
+  "seed_name": "seed_019",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "inverted-condition",
+    "wrong-operator",
+    "wrong-return"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-operator",
+      "note": "Midpoint uses * instead of //, driving mid out of range so the lookup raises IndexError. (A low-high subtraction was rejected: it produces a fixed-point infinite loop rather than a killable mutant.)"
+    },
+    {
+      "bug_type": "inverted-condition",
+      "note": "The half-selection test is negated, so the search moves the wrong direction and misses targets."
+    },
+    {
+      "bug_type": "wrong-return",
+      "note": "A found target returns -1 (the not-found sentinel) instead of its index."
+    }
+  ],
+  "function_name": "binary_search",
+  "description": "Binary search for a target in a sorted list.",
+  "difficulty": null
+}

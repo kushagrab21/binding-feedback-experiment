@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_002",
+  "seed_name": "seed_002",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "missing-edge-case",
+    "wrong-operator"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-operator",
+      "note": "Digits are subtracted instead of added, corrupting the sum."
+    },
+    {
+      "bug_type": "missing-edge-case",
+      "note": "The negative-input guard is dropped, so a negative n silently returns 0 instead of raising."
+    }
+  ],
+  "function_name": "digit_sum",
+  "description": "Sum the base-10 digits of a non-negative integer.",
+  "difficulty": null
+}

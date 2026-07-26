@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_030",
+  "seed_name": "seed_005",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "inverted-condition",
+    "wrong-comparison"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-comparison",
+      "note": "!= becomes ==, so mismatches are treated as matches and non-palindromes report True."
+    },
+    {
+      "bug_type": "inverted-condition",
+      "note": "The scan guard is negated, so the comparison loop never runs and every string reports True."
+    }
+  ],
+  "function_name": "is_palindrome",
+  "description": "Test whether a string reads the same forwards and backwards.",
+  "difficulty": null
+}

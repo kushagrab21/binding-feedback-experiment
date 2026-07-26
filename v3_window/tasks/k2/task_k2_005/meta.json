@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_005",
+  "seed_name": "seed_005",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "inverted-condition",
+    "off-by-one",
+    "wrong-comparison"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "off-by-one",
+      "note": "Right pointer starts one past the end, causing IndexError on any non-empty string."
+    },
+    {
+      "bug_type": "wrong-comparison",
+      "note": "!= becomes ==, so mismatches are treated as matches and non-palindromes report True."
+    },
+    {
+      "bug_type": "inverted-condition",
+      "note": "The scan guard is negated, so the comparison loop never runs and every string reports True."
+    }
+  ],
+  "function_name": "is_palindrome",
+  "description": "Test whether a string reads the same forwards and backwards.",
+  "difficulty": null
+}

@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_027",
+  "seed_name": "seed_012",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "input-mutation",
+    "off-by-one",
+    "wrong-operator"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "off-by-one",
+      "note": "Rotation offset is one too large, shifting the result by an extra position."
+    },
+    {
+      "bug_type": "wrong-operator",
+      "note": "shift uses // instead of %, so it is 0 for small k and no rotation occurs."
+    },
+    {
+      "bug_type": "input-mutation",
+      "note": "result aliases seq, so the appends mutate the caller's list (and the return value is wrong too)."
+    }
+  ],
+  "function_name": "rotate_left",
+  "description": "Rotate a sequence to the left by k positions.",
+  "difficulty": null
+}

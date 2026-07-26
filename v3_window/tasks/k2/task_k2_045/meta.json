@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_045",
+  "seed_name": "seed_021",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "missing-edge-case",
+    "wrong-comparison",
+    "wrong-operator"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-comparison",
+      "note": "< becomes <=, so the digit '0' is rejected as invalid."
+    },
+    {
+      "bug_type": "wrong-operator",
+      "note": "Digit accumulation subtracts instead of adds, negating the magnitude."
+    },
+    {
+      "bug_type": "missing-edge-case",
+      "note": "The no-digits-after-sign guard is dropped, so a lone '+'/'-' returns 0 instead of raising."
+    }
+  ],
+  "function_name": "parse_signed_int",
+  "description": "Parse a signed integer string without int() on the whole string.",
+  "difficulty": null
+}

@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_056",
+  "seed_name": "seed_009",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "inverted-condition",
+    "wrong-comparison"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-comparison",
+      "note": "< becomes <=, so exactly two distinct values wrongly raise instead of returning the smaller."
+    },
+    {
+      "bug_type": "inverted-condition",
+      "note": "The 'skip the largest' test is negated, so only the largest is considered and it is returned as the second largest."
+    }
+  ],
+  "function_name": "second_largest",
+  "description": "Find the second largest distinct value in a sequence.",
+  "difficulty": null
+}

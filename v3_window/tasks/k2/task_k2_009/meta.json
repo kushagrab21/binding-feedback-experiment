@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_009",
+  "seed_name": "seed_012",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "input-mutation",
+    "missing-edge-case",
+    "off-by-one"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "off-by-one",
+      "note": "Rotation offset is one too large, shifting the result by an extra position."
+    },
+    {
+      "bug_type": "input-mutation",
+      "note": "result aliases seq, so the appends mutate the caller's list (and the return value is wrong too)."
+    },
+    {
+      "bug_type": "missing-edge-case",
+      "note": "The empty-sequence guard is dropped, so k % 0 raises ZeroDivisionError on an empty input."
+    }
+  ],
+  "function_name": "rotate_left",
+  "description": "Rotate a sequence to the left by k positions.",
+  "difficulty": null
+}

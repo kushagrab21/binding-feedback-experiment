@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_003",
+  "seed_name": "seed_003",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "missing-edge-case",
+    "off-by-one"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "off-by-one",
+      "note": "Range upper bound loses +1, so n itself is never counted as a divisor."
+    },
+    {
+      "bug_type": "missing-edge-case",
+      "note": "The n<1 validation guard is dropped, so zero/negative n return 0 instead of raising."
+    }
+  ],
+  "function_name": "count_divisors",
+  "description": "Count the positive divisors of a positive integer.",
+  "difficulty": null
+}

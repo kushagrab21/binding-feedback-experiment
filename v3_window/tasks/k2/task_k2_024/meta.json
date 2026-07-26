@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_024",
+  "seed_name": "seed_007",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "missing-edge-case",
+    "off-by-one",
+    "wrong-variable"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-variable",
+      "note": "Appends into words instead of reversed_words, so the result stays empty."
+    },
+    {
+      "bug_type": "missing-edge-case",
+      "note": "split(\" \") no longer collapses whitespace runs, so multi-space input yields empty words."
+    },
+    {
+      "bug_type": "off-by-one",
+      "note": "Loop starts one index too low, dropping the first word of the reversed output."
+    }
+  ],
+  "function_name": "reverse_words",
+  "description": "Reverse the order of whitespace-separated words.",
+  "difficulty": null
+}

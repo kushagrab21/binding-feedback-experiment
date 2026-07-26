@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_001",
+  "seed_name": "seed_001",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "inverted-condition",
+    "wrong-comparison"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-comparison",
+      "note": "> becomes >=, so a degenerate single-point range low==high now wrongly raises ValueError."
+    },
+    {
+      "bug_type": "inverted-condition",
+      "note": "The below-low test is negated, so in-range values are wrongly clamped up to low."
+    }
+  ],
+  "function_name": "clamp",
+  "description": "Clamp a value into the inclusive range [low, high].",
+  "difficulty": null
+}

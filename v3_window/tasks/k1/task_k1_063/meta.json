@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_063",
+  "seed_name": "seed_017",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "inverted-condition",
+    "wrong-operator"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "inverted-condition",
+      "note": "The divisible-by-400 test is negated, so 2000 is misclassified as non-leap."
+    },
+    {
+      "bug_type": "wrong-operator",
+      "note": "% becomes //, so the divisible-by-4 test is wrong for ordinary years."
+    }
+  ],
+  "function_name": "is_leap_year",
+  "description": "Determine whether a year is a Gregorian leap year.",
+  "difficulty": null
+}

@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_012",
+  "seed_name": "seed_015",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "inverted-condition",
+    "missing-edge-case",
+    "wrong-return"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "inverted-condition",
+      "note": "The 'beats the best' test is negated, so the running best is never really improved."
+    },
+    {
+      "bug_type": "missing-edge-case",
+      "note": "The empty-string guard is dropped, so s[0] raises IndexError instead of ValueError."
+    },
+    {
+      "bug_type": "wrong-return",
+      "note": "Returns the count instead of the most common character."
+    }
+  ],
+  "function_name": "most_common_char",
+  "description": "Find the most frequent character in a string.",
+  "difficulty": null
+}

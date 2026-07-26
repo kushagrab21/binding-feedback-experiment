@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_048",
+  "seed_name": "seed_025",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "inverted-condition",
+    "wrong-variable"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "inverted-condition",
+      "note": "The non-numeric guard loses its not, so a valid numeric component wrongly raises."
+    },
+    {
+      "bug_type": "wrong-variable",
+      "note": "Parses the whole string s instead of the current component part, raising on any multi-component input."
+    }
+  ],
+  "function_name": "parse_version",
+  "description": "Parse a dotted version string into a tuple of integers.",
+  "difficulty": null
+}

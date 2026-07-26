@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_038",
+  "seed_name": "seed_004",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "inverted-condition",
+    "wrong-return",
+    "wrong-variable"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-variable",
+      "note": "a is initialised from b, so the gcd is computed on the wrong pair."
+    },
+    {
+      "bug_type": "inverted-condition",
+      "note": "and becomes or, so a single zero argument now wrongly raises instead of returning the other value."
+    },
+    {
+      "bug_type": "wrong-return",
+      "note": "Returns b (always 0 once the loop ends) instead of the gcd in a."
+    }
+  ],
+  "function_name": "gcd_two",
+  "description": "Greatest common divisor of two integers via Euclid.",
+  "difficulty": null
+}

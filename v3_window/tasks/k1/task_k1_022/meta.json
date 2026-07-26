@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_022",
+  "seed_name": "seed_022",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "off-by-one",
+    "wrong-operator"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "off-by-one",
+      "note": "Hour bound displaced from 23 to 24, so hour 24 is wrongly accepted."
+    },
+    {
+      "bug_type": "wrong-operator",
+      "note": "Minutes are subtracted instead of added to the hour total."
+    }
+  ],
+  "function_name": "parse_hhmm",
+  "description": "Parse a \"HH:MM\" clock string into minutes since midnight.",
+  "difficulty": null
+}

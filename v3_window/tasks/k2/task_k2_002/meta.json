@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_002",
+  "seed_name": "seed_002",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "off-by-one",
+    "wrong-comparison",
+    "wrong-operator"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-operator",
+      "note": "Digits are subtracted instead of added, corrupting the sum."
+    },
+    {
+      "bug_type": "off-by-one",
+      "note": "Accumulator seeded to 1 instead of 0, so every result is one too large (and digit_sum(0) is 1)."
+    },
+    {
+      "bug_type": "wrong-comparison",
+      "note": "< becomes <=, so n==0 wrongly raises instead of returning 0."
+    }
+  ],
+  "function_name": "digit_sum",
+  "description": "Sum the base-10 digits of a non-negative integer.",
+  "difficulty": null
+}

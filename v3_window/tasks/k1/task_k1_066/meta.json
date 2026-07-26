@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_066",
+  "seed_name": "seed_020",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "input-mutation",
+    "wrong-variable"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-variable",
+      "note": "The swap assigns each element to itself, so no swapping happens and the list stays unsorted."
+    },
+    {
+      "bug_type": "input-mutation",
+      "note": "result aliases nums, so the in-place swaps mutate the caller's list."
+    }
+  ],
+  "function_name": "bubble_sort",
+  "description": "Sort a list of numbers in ascending order (bubble sort).",
+  "difficulty": null
+}

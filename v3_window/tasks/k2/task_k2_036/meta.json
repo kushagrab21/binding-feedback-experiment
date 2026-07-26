@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_036",
+  "seed_name": "seed_024",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "inverted-condition",
+    "missing-edge-case",
+    "wrong-comparison"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "missing-edge-case",
+      "note": "The doubled-quote escape case is dropped, so \"\" inside a quoted field is misread as a close+reopen."
+    },
+    {
+      "bug_type": "inverted-condition",
+      "note": "The in-quotes mode test is negated, so quote/comma handling is applied in the wrong mode."
+    },
+    {
+      "bug_type": "wrong-comparison",
+      "note": "< becomes <=, so index reaches len(line) and line[index] raises IndexError."
+    }
+  ],
+  "function_name": "parse_csv_line",
+  "description": "Split a simple CSV line into fields, honoring quoted fields.",
+  "difficulty": null
+}

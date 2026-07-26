@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_047",
+  "seed_name": "seed_024",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "inverted-condition",
+    "off-by-one"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "off-by-one",
+      "note": "Loop bound is one short, so the final character of the line is dropped."
+    },
+    {
+      "bug_type": "inverted-condition",
+      "note": "The in-quotes mode test is negated, so quote/comma handling is applied in the wrong mode."
+    }
+  ],
+  "function_name": "parse_csv_line",
+  "description": "Split a simple CSV line into fields, honoring quoted fields.",
+  "difficulty": null
+}

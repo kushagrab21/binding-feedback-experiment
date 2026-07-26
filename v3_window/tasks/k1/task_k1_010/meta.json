@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_010",
+  "seed_name": "seed_010",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "wrong-return",
+    "wrong-variable"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-variable",
+      "note": "Appends the sub-list itself instead of its element, so no flattening happens."
+    },
+    {
+      "bug_type": "wrong-return",
+      "note": "Returns the original nested list instead of the flattened result."
+    }
+  ],
+  "function_name": "flatten_one_level",
+  "description": "Flatten a list of sub-lists by exactly one level.",
+  "difficulty": null
+}

@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_013",
+  "seed_name": "seed_013",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "inverted-condition",
+    "off-by-one"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "off-by-one",
+      "note": "First occurrence seeds the count at 2 instead of 1, inflating every frequency."
+    },
+    {
+      "bug_type": "inverted-condition",
+      "note": "The seen-before test is negated, so a first-seen word hits the increment branch and raises KeyError."
+    }
+  ],
+  "function_name": "word_frequencies",
+  "description": "Count how many times each word appears in a sequence.",
+  "difficulty": null
+}

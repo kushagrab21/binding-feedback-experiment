@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_035",
+  "seed_name": "seed_023",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "missing-edge-case",
+    "wrong-comparison",
+    "wrong-operator"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-comparison",
+      "note": "< becomes <=, so equal adjacent symbols are wrongly subtracted (III becomes -1)."
+    },
+    {
+      "bug_type": "wrong-operator",
+      "note": "The additive branch subtracts, so ordinary additive numerals go negative."
+    },
+    {
+      "bug_type": "missing-edge-case",
+      "note": "The empty-string guard is dropped, so \"\" returns 0 instead of raising."
+    }
+  ],
+  "function_name": "parse_roman",
+  "description": "Parse a Roman numeral string into its integer value.",
+  "difficulty": null
+}

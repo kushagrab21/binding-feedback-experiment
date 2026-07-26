@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_032",
+  "seed_name": "seed_008",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "missing-edge-case",
+    "wrong-comparison"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "missing-edge-case",
+      "note": "The uppercase branch is dropped, so uppercase letters are left unshifted."
+    },
+    {
+      "bug_type": "wrong-comparison",
+      "note": "<= becomes <, so 'a' is excluded from the lowercase alphabet and left unshifted."
+    }
+  ],
+  "function_name": "caesar_shift",
+  "description": "Apply a Caesar cipher shift to the letters of a string.",
+  "difficulty": null
+}

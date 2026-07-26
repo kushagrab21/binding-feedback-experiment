@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_056",
+  "seed_name": "seed_019",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "off-by-one",
+    "wrong-comparison",
+    "wrong-return"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "off-by-one",
+      "note": "high starts one too low, so the last element is never searched."
+    },
+    {
+      "bug_type": "wrong-comparison",
+      "note": "<= becomes <, so a one-element search window is skipped and single elements are missed."
+    },
+    {
+      "bug_type": "wrong-return",
+      "note": "A found target returns -1 (the not-found sentinel) instead of its index."
+    }
+  ],
+  "function_name": "binary_search",
+  "description": "Binary search for a target in a sorted list.",
+  "difficulty": null
+}

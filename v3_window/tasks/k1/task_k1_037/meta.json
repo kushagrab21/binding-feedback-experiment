@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_037",
+  "seed_name": "seed_014",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "input-mutation",
+    "missing-edge-case"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "missing-edge-case",
+      "note": "The else branch is dropped, so keys present only in b are silently omitted."
+    },
+    {
+      "bug_type": "input-mutation",
+      "note": "result aliases a, so the merge writes through into the caller's dict a."
+    }
+  ],
+  "function_name": "merge_sum",
+  "description": "Merge two integer-valued dicts, summing on shared keys.",
+  "difficulty": null
+}

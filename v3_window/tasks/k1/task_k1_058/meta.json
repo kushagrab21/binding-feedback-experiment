@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_058",
+  "seed_name": "seed_012",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "input-mutation",
+    "wrong-operator"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-operator",
+      "note": "shift uses // instead of %, so it is 0 for small k and no rotation occurs."
+    },
+    {
+      "bug_type": "input-mutation",
+      "note": "result aliases seq, so the appends mutate the caller's list (and the return value is wrong too)."
+    }
+  ],
+  "function_name": "rotate_left",
+  "description": "Rotate a sequence to the left by k positions.",
+  "difficulty": null
+}

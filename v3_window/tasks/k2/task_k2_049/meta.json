@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_049",
+  "seed_name": "seed_013",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "off-by-one",
+    "wrong-operator",
+    "wrong-return"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "off-by-one",
+      "note": "First occurrence seeds the count at 2 instead of 1, inflating every frequency."
+    },
+    {
+      "bug_type": "wrong-return",
+      "note": "Returns the input word list instead of the frequency dict."
+    },
+    {
+      "bug_type": "wrong-operator",
+      "note": "Repeat occurrences decrement instead of increment the count."
+    }
+  ],
+  "function_name": "word_frequencies",
+  "description": "Count how many times each word appears in a sequence.",
+  "difficulty": null
+}

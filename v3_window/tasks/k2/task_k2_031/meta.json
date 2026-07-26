@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_031",
+  "seed_name": "seed_016",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "missing-edge-case",
+    "off-by-one",
+    "wrong-comparison"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "missing-edge-case",
+      "note": "The empty-string guard is dropped, so s[0] raises IndexError instead of returning False."
+    },
+    {
+      "bug_type": "wrong-comparison",
+      "note": "The first-char underscore test flips == to !=, so a bare '_' is rejected."
+    },
+    {
+      "bug_type": "off-by-one",
+      "note": "The body scan starts one char too late, so an invalid char at index 1 is not rejected."
+    }
+  ],
+  "function_name": "is_valid_identifier",
+  "description": "Validate a Python-like identifier string.",
+  "difficulty": null
+}

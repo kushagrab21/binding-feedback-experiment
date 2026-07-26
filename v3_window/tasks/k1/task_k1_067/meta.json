@@ -1,0 +1,23 @@
+{
+  "task_id": "task_k1_067",
+  "seed_name": "seed_021",
+  "tier": 1,
+  "n_bugs": 2,
+  "bug_types": [
+    "missing-edge-case",
+    "wrong-operator"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "wrong-operator",
+      "note": "Digit accumulation subtracts instead of adds, negating the magnitude."
+    },
+    {
+      "bug_type": "missing-edge-case",
+      "note": "The no-digits-after-sign guard is dropped, so a lone '+'/'-' returns 0 instead of raising."
+    }
+  ],
+  "function_name": "parse_signed_int",
+  "description": "Parse a signed integer string without int() on the whole string.",
+  "difficulty": null
+}

@@ -1,0 +1,28 @@
+{
+  "task_id": "task_k2_018",
+  "seed_name": "seed_021",
+  "tier": 2,
+  "n_bugs": 3,
+  "bug_types": [
+    "missing-edge-case",
+    "off-by-one",
+    "wrong-comparison"
+  ],
+  "constituent_mutations": [
+    {
+      "bug_type": "off-by-one",
+      "note": "After a sign, the digit start index is one too high, dropping the first digit (and raising on single-digit signed input)."
+    },
+    {
+      "bug_type": "wrong-comparison",
+      "note": "< becomes <=, so the digit '0' is rejected as invalid."
+    },
+    {
+      "bug_type": "missing-edge-case",
+      "note": "The no-digits-after-sign guard is dropped, so a lone '+'/'-' returns 0 instead of raising."
+    }
+  ],
+  "function_name": "parse_signed_int",
+  "description": "Parse a signed integer string without int() on the whole string.",
+  "difficulty": null
+}
