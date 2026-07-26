@@ -2997,3 +2997,77 @@ window* — wrong in a checker-catchable way, and competent enough to act on the
   recovered cells are in the README's V2 section body, matching v1's honesty standard.
 - **Bright line intact.** v1 files untouched (proven by the v1-analyze clone diff); no API; keys
   never printed; staging explicit; tag applied last.
+
+---
+
+## V3-P0.1 — Pre-flight certification + v3 skeleton
+
+**Step ID / date:** V3-P0.1 — 2026-07-26
+
+*(This begins Experiment 3, "the composition window," built beside the completed and
+immutable Experiments 1 and 2. V3 entries share this one append-only log; nothing under
+`phase1_tasks/` … `phase7_writeup/` or `v2_ladder/` is edited, moved, or renamed. The V3
+design — its composition generator, calibration, run plan, and registered predictions — is
+carried in the **V3 addendum** and the **update memo** relayed by the Runner in this work
+order's lineage; those documents are the substantive provenance for V3-P1 onward. This step
+is infrastructure only: certify that the inherited frozen state is byte-for-byte what V3
+will build on, and stand up the directory tree. No generator, no tasks, no code.)*
+
+**What was built:** the empty v3 skeleton only — `v3_window/{generator,tasks,calibration,
+runs/logs,runs/manifests,analysis,writeup}/`, each leaf holding a `.gitkeep`. Nothing else.
+
+**Provenance:** design authority = the V3 addendum + update memo (Runner-relayed, this
+lineage). Hashes recomputed by the frozen v1 tools (`phase1_tasks/generator/freeze_hash.py`
+and `shasum`) over the unchanged tree at tag `v2-complete`. Directories created this step;
+everything else is the untouched Exp-1/Exp-2 tree.
+
+**Evidence of correctness — certification (raw output, verbatim):**
+
+Task-set fingerprint (frozen tool) — MATCHES the pin `dfc14c26…2f2017`:
+```
+tracked files under phase1_tasks/tasks: 388
+task directories: 97  (files/dir: expected 4)
+counts OK: 97 tasks x 4 files = 388
+FREEZE_HASH sha256 dfc14c26ec267b03c2789752cf7e63c34a06fd3b94dc6cebe14f9f70b62f2017
+```
+Split sha256 — MATCHES the pin `6f69be75…9e75015`:
+```
+6f69be75d4c1b1ea0348e7b0217ac83e7cfc8c19732a6d6d71e2ec5be9e75015  phase1_tasks/validation/split.json
+```
+Tags present (`v2-prereg`, `v2-complete` both exist, alongside the v1 tags):
+```
+experiment-complete
+final-results
+phase1-freeze
+v2-complete
+v2-prereg
+```
+
+**No-other-session check (raw, stated explicitly):** `git status --short` printed **nothing**
+(clean tree, no staged/unstaged/untracked changes) before the skeleton was created; no
+`.git/index.lock` present (`ls .git/index.lock` → "no index.lock"); a filesystem sweep for
+`*.lock` / `index.lock` matched none. No dirty tree and no lock file ⇒ no concurrent agent
+session writing this repo. The skeleton `mkdir`/`touch` were the first mutations of this step.
+
+**Worked example — the certification gate itself.** `freeze_hash.py` walks the 388 git-tracked
+files under `phase1_tasks/tasks` (97 dirs × 4 files), hashes them in sorted order via
+`git show :path`, and prints `dfc14c26…2f2017`; `shasum` independently prints `6f69be75…9e75015`
+for `split.json`. Both were checked character-for-character against the pins **before** any
+directory was created or anything staged — a mismatch on either is a full stop with no changes
+made. Both matched, so the skeleton was created and this entry appended.
+
+**Decisions / surprises:**
+- **Certification is a hard gate, run first.** Both hashes verified before `mkdir`; nothing
+  would have been created or committed on a mismatch.
+- **Session-safety stated, not assumed.** Clean `git status --short`, absent `index.lock`, and
+  an empty `*.lock` sweep are the three things checked to assert no other agent session is live.
+- **Skeleton only, no code.** Seven leaf dirs, seven `.gitkeep`s; `runs/` carries no keep of its
+  own since it holds `logs/` and `manifests/`. The composition generator lands in V3-P1.
+- **Design lives in the addendum, not this entry.** V3-P0 deliberately records no predictions
+  or generator design; those are the addendum + update memo's content, cited above and built
+  from V3-P1 onward.
+- **Bright line intact.** No frozen Exp-1/Exp-2 file was read for solving, edited, moved, or
+  renamed; `phase1_tasks/` byte-for-byte unchanged (hash re-verified above); no API calls; no
+  key printed; staging for this commit is explicit (the seven new `.gitkeep`s + this log only).
+
+---
