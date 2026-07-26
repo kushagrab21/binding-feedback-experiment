@@ -1,0 +1,35 @@
+=== (a) rung1 adv step_cap ===
+rung1 advisory step_cap = 30 -> MATCH (expected 30)
+=== (b) rung3 b/c from paired logs ===
+rung3 b (adv OK bind X) = 0  c (adv X bind OK) = 13  n = 13 -> MATCH (expected b=0 c=13)
+=== (c) rung7 costs from manifests ===
+rung7 binding $0.10367 <= advisory $0.15728 -> MATCH (expected bind 0.10367 <= adv 0.15728)
+=== 12 audits ===
+rung1_llama-3.2-3b             advisory  task_002  status=model_declared_done final_passed=True steps=3
+rung1_llama-3.2-3b             binding   task_004  status=solved             final_passed=True steps=1
+rung1_llama-3.2-3b             binding   task_050  status=solved             final_passed=True steps=1
+rung2_llama-3.1-8b             advisory  task_060  status=model_declared_done final_passed=True steps=2
+rung2_llama-3.1-8b             binding   task_021  status=solved             final_passed=True steps=1
+rung3_qwen2.5-7b               advisory  task_031  status=model_declared_done final_passed=False steps=1
+rung3_qwen2.5-7b               binding   task_088  status=solved             final_passed=True steps=2
+rung4_claude-3-haiku           advisory  task_055  status=model_declared_done final_passed=False steps=1
+rung4_claude-3-haiku           binding   task_012  status=solved             final_passed=True steps=1
+rung6_gemini-2.5-flash-lite    advisory  task_005  status=model_declared_done final_passed=False steps=1
+rung6_gemini-2.5-flash-lite    binding   task_091  status=solved             final_passed=True steps=1
+rung7_gpt-4.1                  advisory  task_077  status=model_declared_done final_passed=True steps=2
+=== clone test ===
+v2: RESULTS-IDENTICAL
+v1: RESULTS-IDENTICAL
+=== git ===
+750e06d V2-P6.1: write-up + close (README V2 section, post_v2.md)
+4279385 V2-P5.1: registered analysis — the capability window
+0e1f3cf V2-P4.1: full run — 1218 episodes (87 test x 7 rungs x 2 modes), 0 errors
+1c5e1ce V2-P3.1: dev pilot (140 episodes) + four pre-authorization criteria
+998d1f2 V2-P2.1: adapter (2 routes), schema validator, per-rung smokes
+996631a V2-P1: pre-registration — ladder, ranking, predictions
+experiment-complete
+final-results
+phase1-freeze
+v2-complete
+v2-prereg
+status-exit=0
