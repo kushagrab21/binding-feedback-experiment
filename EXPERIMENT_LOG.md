@@ -3387,3 +3387,82 @@ $2/$8-per-1M; the four window models together cost ≈ $0.017.
   + split shas re-verified); keys never printed (`git grep sk-…` → 0); staging explicit.
 
 ---
+
+## V3-P3.1 — Pre-registration (the sliding-window predictions)
+
+**Step ID / date:** V3-P3.1 — 2026-07-27
+
+*(No API calls this step — pre-registration is a writing/commit/tag step. It fixes the roster,
+the predictions (verbatim), the analysis plan, the budget, and the hard P4 gate **before** any
+test-set episode. Design authority: the V3 addendum + update memo, Runner-relayed; the courier's
+prediction text is registered word-for-word. Bright lines: the 108 test tasks stay sealed; no
+frozen v1/v2/v3 file edited; the doc is the only new artifact besides this entry.)*
+
+**What was written:** `v3_window/PREREGISTRATION.md` (tagged `v3-prereg` at this commit). It
+records, in order: (§1) the inherited/fixed frame — the two frozen tiers with their freeze tags +
+`freeze_hash_k.py` sha256s and the per-tier `split.json` shas (k1 test = 60, k2 test = 48), the D18
+presentation, temp 0, cap 8, the v1 advisory/binding harnesses and the **three binding mechanisms
+unchanged** (`done_ignored`, `resubmission_rejected`, `escalated` at 3 identical), and the v2
+adapter routes/snapshots/prices reused verbatim; (§2) the **6-model full-run roster** + the k=0
+anchor policy; (§3) the dev-glimpse disclosure; (§4) predictions **P1–P5 verbatim**; (§5) the
+deterministic analysis plan; (§6) the budget + projected cost; (§7) the P4 gate.
+
+**Roster (6) + the logged drop.** Full run = the four window models (qwen-2.5-7b, claude-3-haiku,
+gpt-4o-mini, gemini-2.5-flash-lite) + **gpt-4.1** (top anchor) + **llama-3.1-8b** (bottom-edge
+anchor). **`llama-3.2-3b` is DROPPED** — a logged roster decision: in v2's committed full run it was
+below the window even at k≈0 (advisory **66/87 with 30 step_caps**; binding *below* advisory,
+Δ=−3.4pp), so it never converges for binding to rescue; deeper k only pushes it further out and adds
+step_cap noise + trickle-hang exposure at 3× episodes. `llama-3.1-8b` is kept because at k≈0 it is
+still mostly capable (80/87, 3 step_caps, 4 false-DONEs) — the right place to watch P3's
+escalation-attributed loss grow with k. **The k=0 line is taken from v2's committed test data — it
+is NOT re-run** (all six roster models were v2 rungs), so k0 stays comparable and costs nothing.
+
+**Dev-glimpse disclosure (registered AFTER the glimpse; NOT confirmatory).** The predictions were
+written after V3-P2.1's 10-task-per-tier dev calibration, whose summary is quoted in the document:
+window models sit at the **top edge** of the 40–70% band (k1 4/4 IN; k2 3/4 IN, gpt-4o-mini 80% OUT
+high), and — disclosed prominently — **gpt-4.1 showed 0 advisory false-DONEs on dev at BOTH tiers.**
+P2 nonetheless registers that gpt-4.1's advisory false-DONE count becomes **>0 at k2 on the sealed
+test split**; this runs *against* the tiny/noisy dev signal on purpose, making P2 a genuinely risky
+prediction rather than a restatement of dev. The confirmatory tests run **only** on the sealed test
+splits (k1=60, k2=48).
+
+**Predictions (as registered — see §4 for the scored-against-verbatim text).**
+- **(P1)** Each window model has Δ = binding − advisory **> 0** at both k1 and k2 (per-model paired
+  exact McNemar).
+- **(P2)** The window is a model–task-pair property: as k rises, models ABOVE the k≈0 window enter
+  the false-claiming regime — gpt-4.1's advisory false-DONE count 0 at k≈0 becomes **>0 at k2**, and
+  its Δ becomes positive at k2; more generally each model's Δ-vs-k increases over the k range where
+  its advisory false-DONE rate increases.
+- **(P3)** b-direction discordants (advisory✓/binding✗) ending `escalated` are counted as
+  escalation-attributed losses; EXPECTED to concentrate at llama-3.1-8b and grow with k (binding's
+  definition unchanged — the escalation wart becomes a measured quantity).
+- **(P4)** For any model at advisory ceiling (100%) in a tier, binding total cost ≤ advisory total
+  cost in that tier.
+- **(P5, exploratory)** the argmax-Δ ("window peak") model shifts toward stronger models across
+  k0 → k1 → k2.
+
+**Budget + projection.** v3 cumulative hard cap **$20**, stop-gate **$12**; spend to date
+**$0.074336** (calibration). Full run = **6 × 2 × 108 = 1,296 episodes**. **Projected full-run cost
+≈ $0.415**, from calibration actuals (per-model per-tier per-episode cost × the 60/48 test sizes)
+for the five calibrated models and from v2's committed per-episode cost for the un-calibrated
+llama-3.1-8b; gpt-4.1 ≈ $0.313 dominates. **Projected cumulative v3 after the full run ≈ $0.49** —
+an order of magnitude under the stop-gate.
+
+**The P4 gate (hard, restated).** No test-set episode runs until (a) tag `v3-prereg` exists **and** a
+timestamp-ordered proof at P4 shows this pre-registration commit precedes the first test-run commit,
+**and** (b) the courier's publish confirmation is logged **verbatim** in this ledger. Until both
+hold, `v3_window/runs/logs/` and `…/manifests/` stay `.gitkeep`-only.
+
+**Decisions / surprises:**
+- **P2 is deliberately staked against the dev signal.** The most informative disclosure this step
+  makes is that dev showed gpt-4.1 with 0 false-DONEs at k2, yet P2 predicts >0 on the test split.
+  Stating that openly is the point of pre-registration — the 48-task k2 test set, not the 10-task
+  dev cell, is what can surface a low-rate false-claim.
+- **k=0 reuse keeps the Δ-vs-k matrix honest and free.** Because all six roster models are v2 rungs,
+  the k0 column is v2's frozen test numbers; no re-run, no drift, no spend.
+- **No mechanism was bent for composed bugs.** Binding stays exactly as v1/v2 defined it; P3 turns
+  the escalation wart into a measured column rather than redefining success.
+- **Bright line intact.** No API call; test splits sealed (`v3_window/runs/logs` = `.gitkeep` only);
+  no `phase*/`, `v2_ladder/`, or `v3_window/tasks/` file touched; staging explicit; tag applied last.
+
+---
