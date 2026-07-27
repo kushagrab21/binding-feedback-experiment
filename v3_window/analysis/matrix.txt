@@ -1,0 +1,18 @@
+Δ (binding − advisory), pp — one row per model, columns k0 → k1 → k2
+(k0 = v2 committed test data, 87 tasks; k1 = 60 tasks; k2 = 48 tasks)
+
+model                  k0 → k1 → k2   Δpp bars (each '#' ≈ 3pp; '.'=0)
+llama-3.1-8b           k0[#          ]  2.3  k1[###        ] 10.0  k2[#          ]  2.1
+qwen-2.5-7b            k0[#####      ] 14.9  k1[###########] 31.7  k2[########   ] 22.9
+claude-3-haiku         k0[####       ] 11.5  k1[#########  ] 26.7  k2[########   ] 25.0
+gpt-4o-mini            k0[###        ]  9.2  k1[########   ] 23.3  k2[########   ] 22.9
+gemini-2.5-flash-lite  k0[###        ]  9.2  k1[########   ] 23.3  k2[########   ] 22.9
+gpt-4.1                k0[.          ]  0.0  k1[.          ]  0.0  k2[.          ]  0.0
+
+advisory false-DONE RATE (%), same k0 → k1 → k2 columns (the mediator surface):
+llama-3.1-8b           k0   4.6%  k1  11.7%  k2  10.4%
+qwen-2.5-7b            k0  18.4%  k1  40.0%  k2  33.3%
+claude-3-haiku         k0  17.2%  k1  31.7%  k2  31.2%
+gpt-4o-mini            k0   9.2%  k1  23.3%  k2  22.9%
+gemini-2.5-flash-lite  k0   9.2%  k1  23.3%  k2  22.9%
+gpt-4.1                k0   0.0%  k1   0.0%  k2   0.0%

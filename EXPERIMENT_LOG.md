@@ -3595,3 +3595,125 @@ $0.685914** — an order of magnitude under the $12 stop-gate, two under the $20
   is explicit (never `git add -A`); the leftover scratch dir was excluded, not committed.
 
 ---
+
+## V3-P5.1 — Registered analysis (the composition window)
+
+**Step ID / date:** V3-P5.1 — 2026-07-27
+
+*(Read-only analysis over committed artifacts: the V3 master + 24 per-cell manifests, the 1,296
+per-cell JSONL transcripts, the frozen composed-task `meta.json` files, the tagged
+`PREREGISTRATION.md`, and — for the k0 column only — v2's committed full-run cell manifests. No
+API calls; nothing outside `v3_window/analysis/` written; every frozen v1/v2/v3 artifact
+immutable. The §5 analysis plan runs exactly as registered; predictions are scored against §4
+verbatim, P5 as exploratory.)*
+
+**What was built:** `v3_window/analysis/analyze_v3.py` — ONE deterministic command →
+`results.md` + `results.json` + `matrix.txt`. No timestamp in any output; two runs byte-identical
+(the run date lives here). The exact McNemar and the rescue decomposition reuse the v1/v2 method
+verbatim (stdlib `math.comb` only); the analyzer imports nothing for *solving* — it only reads
+committed logs/manifests/metas.
+
+**Determinism (raw, double-run):**
+```
+results.md   run1 = 635c184a5ad94fd6f18b384b21ec3faeab605ad386531f59f2e964fed1040b6b
+results.md   run2 = 635c184a5ad94fd6f18b384b21ec3faeab605ad386531f59f2e964fed1040b6b   MATCH
+results.json run1/run2 = b360ad21385b21272027bcd92064ea44891e5edecd2f1ce4b3105b7d6d2d589f  MATCH
+matrix.txt   run1/run2 = 93b7481bddb472fc4bd83d7d14fc14917ecf44738183ddeaadb4394e470be450  MATCH
+```
+
+**Provenance header (as emitted).** k1 freeze `0fd7cc51…d2c23b`, split sha `ce9de6db…5bea6`
+(recomputed → MATCH); k2 freeze `0ac8644e…f4a1a40`, split sha `a745efb5…7ac24` (recomputed →
+MATCH); prereg tag commit `89c4621…`; D18 bare-code, temp 0, cap 8; 24 cells / 1,296 episodes /
+0 errors. **Deviation V3-D1** (publish-gate waiver, courier "ya I waive the gate") is carried
+from the run manifest; **no V3-D2 is recorded** (only V3-D1 exists in the manifest).
+
+**The Δ-vs-k matrix (Δpp = binding − advisory; k0 = v2 committed test data, 87 tasks; k1 = 60;
+k2 = 48):**
+```
+model                  k0     k1     k2      advisory false-DONE rate k0→k1→k2
+gpt-4.1 (top anchor)   +0.0   +0.0   +0.0     0%   →  0%   →  0%
+gemini-2.5-flash-lite  +9.2  +23.3  +22.9     9.2% → 23.3% → 22.9%
+gpt-4o-mini            +9.2  +23.3  +22.9     9.2% → 23.3% → 22.9%
+claude-3-haiku        +11.5  +26.7  +25.0    17.2% → 31.7% → 31.2%
+qwen-2.5-7b           +14.9  +31.7  +22.9    18.4% → 40.0% → 33.3%
+llama-3.1-8b (bottom)  +2.3  +10.0   +2.1     4.6% → 11.7% → 10.4%
+```
+
+**Per model × tier — exact McNemar (b = adv✓/bind✗, c = adv✗/bind✓, n, exact two-sided p):**
+llama-3.1-8b k1 (1,7,8) p=0.0703 / k2 (3,4,7) p=1; qwen-2.5-7b k1 (0,19,19) p=3.81e-6 / k2
+(1,12,13) p=0.00342; claude-3-haiku k1 (2,18,20) p=4.02e-4 / k2 (0,12,12) p=4.88e-4; gpt-4o-mini
+k1 (0,14,14) p=1.22e-4 / k2 (0,11,11) p=9.77e-4; gemini k1 (0,14,14) p=1.22e-4 / k2 (0,11,11)
+p=9.77e-4; gpt-4.1 k1/k2 (0,0,0) p=1.
+
+**The scorecard (P1–P5 vs §4 verbatim):**
+- **(P1) CONFIRMED** — all four window models Δ>0 at BOTH k1 and k2 (qwen +31.7/+22.9, claude
+  +26.7/+25.0, gpt-4o-mini +23.3/+22.9, gemini +23.3/+22.9), every discordant split c≫b, McNemar
+  p ≤ 0.00342.
+- **(P2) DISCONFIRMED** — the window did NOT slide. gpt-4.1 advisory false-DONE = 0 at k0 AND 0
+  at k2; Δ = +0 at every tier; 60/60 and 48/48 both modes. The general clause holds only
+  *directionally within the window* (fD-rate↑ and Δ↑ co-move k0→k1, both dip k1→k2), but the
+  staked slide to the ceiling model does not occur. This is the headline deflation, reported
+  straight — P2 was registered deliberately against the dev glimpse's 0-false-DONE k2 reading.
+- **(P3)** — escalation-attributed losses (b-discordants ending `escalated`) total **4** across
+  12 cells; **3 of 4** at bottom-edge llama-3.1-8b, growing k1 1 → k2 2. Concentration + growth
+  present but on single-digit counts (directional, not a headline).
+- **(P4) CONFIRMED** — sole at-ceiling model gpt-4.1: binding ≤ advisory at both tiers ($0.078132
+  ≤ $0.112254 k1; $0.067232 ≤ $0.091732 k2).
+- **(P5) EXPLORATORY** — argmax-Δ peak qwen (k0) → qwen (k1) → claude-3-haiku (k2): a faint
+  one-rung rightward (stronger) shift; scored exploratory as registered, not confirmatory.
+
+**Rescue decomposition (v1 method).** Of binding's 122 total wins (c-discordants) across all
+cells, **120 are forced repairs** (≥2 checked verdicts: FAILED→changed→PASS) and only **2** are
+first-sample (qwen k2 ×1, gpt-4o-mini k1 ×1). Binding's advantage is iteration, not sampling.
+
+**Bug-type breakdown of discordants.** Composed tasks are **multi-label** (k+1 constituent bug
+types per task from `meta.json`), so each constituent is counted and row sums exceed the task
+count — stated in `results.md`. Binding's rescued tasks concentrate in **missing-edge-case** (the
+spec-carrying class the D18 presentation withholds), consistent with v1/v2.
+
+**Runner re-derivations (independent of the analyzer, straight from raw JSONL logs):**
+```
+(a) qwen-2.5-7b   k1 advisory false-DONE  = 24   MATCH (expected 24)
+(b) gpt-4.1       k2 advisory false-DONE  =  0   MATCH (expected 0; this is P2's fate)
+(c) llama-3.1-8b  k2 b-discordants (adv✓/bind✗) = 3  {task_k2_027, task_k2_045, task_k2_048}
+        of which binding ended 'escalated' = 2  {task_k2_027, task_k2_048}
+        (task_k2_045 ended step_cap)  — matches the escalation-attributed-loss table
+```
+
+**12 spot-audits (courier-named; one end-summary line each, straight from raw transcripts; all 12
+requested ids present, no next-upward substitution needed):**
+```
+qwen-2.5-7b           advisory k1 task_k1_012  end=model_declared_done fp=False steps=1 chk=1 di=0 rr=0  FALSE-DONE [input-mutation,missing-edge-case]
+qwen-2.5-7b           binding  k2 task_k2_020  end=escalated           fp=False steps=7 chk=5 di=0 rr=2  ESCALATED  [inverted-condition,missing-edge-case,off-by-one]
+claude-3-haiku        advisory k2 task_k2_033  end=model_declared_done fp=False steps=1 chk=1 di=0 rr=0  FALSE-DONE [input-mutation,off-by-one,wrong-variable]
+claude-3-haiku        binding  k1 task_k1_050  end=solved              fp=True  steps=1 chk=1 di=0 rr=0  SOLVED     [off-by-one,wrong-operator]
+gpt-4o-mini           advisory k1 task_k1_031  end=model_declared_done fp=True  steps=3 chk=2 di=0 rr=0  SOLVED     [missing-edge-case,wrong-return]
+gpt-4o-mini           binding  k2 task_k2_044  end=solved              fp=True  steps=1 chk=1 di=0 rr=0  SOLVED     [input-mutation,wrong-comparison,wrong-variable]
+gemini-2.5-flash-lite advisory k2 task_k2_015  end=model_declared_done fp=True  steps=1 chk=1 di=0 rr=0  SOLVED     [inverted-condition,wrong-return,wrong-variable]
+gemini-2.5-flash-lite binding  k1 task_k1_060  end=solved              fp=True  steps=1 chk=1 di=0 rr=0  SOLVED     [input-mutation,wrong-operator]
+gpt-4.1               advisory k2 task_k2_037  end=model_declared_done fp=True  steps=3 chk=2 di=0 rr=0  SOLVED     [missing-edge-case,wrong-comparison,wrong-operator]
+gpt-4.1               binding  k1 task_k1_022  end=solved              fp=True  steps=1 chk=1 di=0 rr=0  SOLVED     [off-by-one,wrong-operator]
+llama-3.1-8b          advisory k1 task_k1_055  end=model_declared_done fp=True  steps=2 chk=1 di=0 rr=0  SOLVED     [missing-edge-case,wrong-operator]
+llama-3.1-8b          binding  k2 task_k2_041  end=solved              fp=True  steps=1 chk=1 di=0 rr=0  SOLVED     [inverted-condition,wrong-operator,wrong-return]
+```
+Reading: both audited advisory FALSE-DONEs (qwen k1_012, claude k2_033) are step-1 declarations
+that failed the checker — the raw material P1's window feeds on; the audited gpt-4.1 cells solve
+in both modes (advisory k2_037 in 3 steps, binding k1_022 in 1) with zero false-DONEs — P2's
+ceiling; the qwen binding k2_020 escalation (5 checks, 2 rejected resubmissions) is the P3 wart
+in the flesh.
+
+**Decisions / surprises:**
+- **The registered test ran as written; P2 is disconfirmed and that is the finding.** Composition
+  amplifies binding *inside* the window (P1, Δ roughly doubles k0→k1) but does not slide the
+  window's ceiling — gpt-4.1 never false-claims at any k. Reporting the 0/0/0 gpt-4.1 row straight
+  next to the confirmed P1, rather than reaching for the weak P5 drift, is the point of
+  pre-registration.
+- **k0 is free and comparable.** All six roster models are v2 rungs, so the k0 column is
+  recomputed from v2's committed cell manifests (adv 80/71/72/79/79/87, fD 4/16/15/8/8/0) — no
+  re-run, no drift, cited by manifest.
+- **McNemar/rescue reuse the v1 method verbatim.** No mechanism bent for composed bugs; P3 turns
+  the escalation wart into a measured column, exactly as registered.
+- **Bright line intact.** No API; nothing outside `v3_window/analysis/`; v1/v2 and
+  `v3_window/{tasks,generator,calibration,runs}/` untouched; staging explicit below.
+
+---
