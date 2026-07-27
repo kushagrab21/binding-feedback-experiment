@@ -3717,3 +3717,59 @@ in the flesh.
   `v3_window/{tasks,generator,calibration,runs}/` untouched; staging explicit below.
 
 ---
+
+## V3-P6.1 — Write-up, stranger test, close (tag `v3-complete`)
+
+**Step ID / date:** V3-P6.1 — 2026-07-27
+
+*(No API calls — a writing/verify/commit/tag step. Only `README.md`, `v3_window/writeup/post_v3.md`,
+and this entry are created/edited; every frozen v1/v2/v3 artifact and all of `v3_window/{tasks,
+generator,calibration,runs,analysis}/` source is immutable. Staging explicit; tag applied last.)*
+
+**What was written:**
+- `README.md` gains an **Experiment 3 — the composition window (the window that didn't slide)**
+  section: the Δ-vs-k matrix (with the advisory false-DONE-rate mediator alongside), the finding
+  stated **interaction-first** — composition *widens and deepens the window in place* (P1
+  confirmed, Δ roughly doubles k0→k1) — with the **deflation adjacent, not buried**: P2
+  DISCONFIRMED (gpt-4.1 false-DONE 0 at k0 AND k2, Δ=0 at every k — the window's ceiling is a
+  property of the model, not the model–task pair). V3-D1 waiver noted; scope/limits recorded
+  (single corpus + D18 presentation; difficulty = composed verbatim v1 mutations → multi-label,
+  bug-count not novel families; only k∈{0,1,2}; single-provider top rung; k1→k2 plateau).
+- `v3_window/writeup/post_v3.md` — "The window that didn't slide," same standard as
+  `phase7_writeup/post.md` (v1) and `v2_ladder/writeup/post_v2.md` (v2): the model–task-pair
+  question, the deepen-in-place-but-don't-slide result, the false-DONE-rate mediator, and every
+  deflation (P2 lost on purpose, P3 tiny, P4 held, P5 faint) next to the finding.
+
+**Stranger test (fresh `git clone` → regenerate → diff; captured in the acceptance paste).** A
+clean clone of the repo at the V3-P5 commit, then each analysis re-run in the stranger tree:
+```
+v1  phase6_analysis/results.md          -> RESULTS-IDENTICAL
+v2  v2_ladder/analysis/results.md       -> RESULTS-IDENTICAL
+v3  v3_window/analysis/results.md       -> RESULTS-IDENTICAL
+```
+All three regenerate byte-identical to their committed copies from a fresh checkout — proving v3's
+analysis is fully reproducible from committed artifacts, and that v1 and v2 remain untouched
+(their analyzers reproduce their committed results.md exactly).
+
+**Headline (as published).** Binding's benefit is a capability window; composing bugs (k1=2, k2=3)
+**amplifies** binding for models already in the window — all four window models Δ>0 at both tiers,
+McNemar p ≤ 0.00342, Qwen peaking at +31.7pp — but does **not** slide the window up the capability
+axis: gpt-4.1 stays at 0 advisory false-DONEs and Δ=0 at every k. P1 confirmed, P2 disconfirmed,
+P4 confirmed, P3 present-but-tiny (3/4 escalation-losses at llama-3.1-8b), P5 a faint exploratory
+rightward peak shift (qwen→qwen→claude).
+
+**Budget (final).** No spend this step. Cumulative v3 spend **$0.685914** (calibration $0.074336 +
+full run $0.611578) — an order of magnitude under the $12 stop-gate, two under the $20 hard cap.
+
+**Decisions / surprises:**
+- **The deflation sits next to the headline, by construction.** Both the README section and
+  post_v3.md state P2's disconfirmation (gpt-4.1's 0/0/0 row) in the same breath as P1's
+  confirmation — the pre-registration's discipline is that the risky bet we lost is reported as
+  loudly as the one we won.
+- **Reproducibility is the close.** The stranger test is the teeth: a stranger with the repo and
+  no other context regenerates all three experiments' results.md byte-for-byte.
+- **Bright line intact.** No API; only README + writeup + this entry written; v1/v2 and all v3
+  non-writeup source untouched (v1/v2 clone-diffs prove it); staging explicit; tag `v3-complete`
+  applied last.
+
+---
