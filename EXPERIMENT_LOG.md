@@ -3257,3 +3257,133 @@ and by git tags `v3-freeze-k1` and `v3-freeze-k2`.
   last.
 
 ---
+
+## V3-P2.1 — Dev calibration, both tiers (200 episodes)
+
+**Step ID / date:** V3-P2.1 — 2026-07-27
+
+*(Design authority: the V3 addendum + update memo, Runner-relayed. First paid calls of
+Experiment 3 (V3-P0/P1 made none). Live API use authorized by the courier for this work order
+only. Everything model-facing is the **v2 adapter, verbatim** — the roster is five of v2's frozen
+`RUNGS` dicts selected by slug, so snapshots/routes/providers/prices are byte-identical to v2's
+manifests. Bright lines held: only each tier's 10 DEV tasks were opened; the test splits and every
+frozen v1/v2/v3 file are byte-untouched; keys never printed; v3 stop-gate $12, hard cap $20.)*
+
+**Item 0 — gate (all four PASS; no API call was made until all four passed), raw:**
+```
+(1) tags present:      v3-freeze-k1  v3-freeze-k2                     [both present]
+(2) freeze re-run:     FREEZE_HASH_K1 sha256 0fd7cc51ecc24e3f6a959b064ce64ac26f29ed113c639f214eb416d48bd2c23b   (70 tasks x 4 = 280)  MATCH
+                       FREEZE_HASH_K2 sha256 0ac8644e83d3d5c21a17bccc6e32ac0d815168cfd211cabc5268e8f87f4a1a40   (58 tasks x 4 = 232)  MATCH
+(3) git log --oneline | head -4:
+    958d6ba V3-P1.1: freeze k1/k2 composition tiers + log (spot-check passed)
+    9b59e6c V3-P1 (build): composition generator + k1/k2 tasks + validation + splits (pre-freeze)
+    c7ec010 V3-P0: certification + skeleton
+    194cf3a V2-P6: add consolidated final-evidence file
+(4) git status --short:  (clean — nothing printed)
+```
+
+**What was built (all new, all under `v3_window/calibration/`; no frozen file edited):**
+- `cal_common.py` — the one place the roster (5 v2 rungs by slug), the two tiers, and the D18
+  config are named, so the runner/orchestrator/report cannot drift. Imports the v2 adapter
+  (`client.py`) and shared runner (`runner.py`) for the harness modules, `D18_CONFIG`, `_success`,
+  and `_resolved_model` verbatim.
+- `run_one_cell_v3.py` — the V2-P4.1 **SIGALRM process-per-cell** pattern, used from the START
+  (not just recovery): one process per (model × mode × tier), 150 s hard per-episode deadline (a
+  signal interrupts the blocking read itself; a socket timeout is evaded by an OpenRouter
+  slow-trickle response), retries recorded never skipped. Isolates the harness scratch-log dir per
+  cell so concurrent cell processes never collide.
+- `run_calibration.py` — orchestrator over the 20 cells (bounded pool), folds per-cell fragments
+  into the single `manifest.json`, schema-validates all 200 transcripts with the v1 validator.
+- `report.py` — deterministic report (pure function of `manifest.json` + transcripts; no API, no
+  randomness). Binding-only `done_ignored`/`resubmission_rejected` are counted from the transcripts.
+
+**The run:** roster `qwen/qwen-2.5-7b-instruct`, `anthropic/claude-3-haiku`,
+`google/gemini-2.5-flash-lite` (OpenRouter), `gpt-4o-mini-2024-07-18`, `gpt-4.1`→resolves
+`gpt-4.1-2025-04-14` (OpenAI-direct, via the alias exactly as v1/v2). **5 models × 2 modes ×
+10 dev tasks × 2 tiers = 200 episodes.** Config D18 (`show_description=False`, `step_cap=8`,
+`temperature=0`). Transcripts under `v3_window/calibration/logs/<model>__<mode>__k{1,2}/task_*.jsonl`;
+one manifest `v3_window/calibration/manifest.json` (models + resolved snapshots, routes, modes,
+tiers, tier freeze hashes, split sha256s, config, per-episode rows). **200 episodes, 0 errors,
+schema 200/200.**
+
+**Calibration table (raw; success is n/10; advisory success = final_passed, binding success =
+status==solved; fDONE = model_declared_done ∧ ¬final_passed):**
+```
+model                  tier mode       succ  fDONE    cap    esc  d_ign  resub mean_st   tokens     cost$
+---------------------------------------------------------------------------------------------------------
+qwen-2.5-7b            k1   advisory   5/10      5      0      -      -      -     1.0     2336  0.000130
+qwen-2.5-7b            k1   binding    9/10      -      0      1      0      2     1.9     7179  0.000399
+qwen-2.5-7b            k2   advisory   4/10      6      0      -      -      -     1.0     2433  0.000137
+qwen-2.5-7b            k2   binding    9/10      -      0      1      0      2     2.0     6968  0.000377
+claude-3-haiku         k1   advisory   7/10      3      0      -      -      -     1.0     2653  0.001480
+claude-3-haiku         k1   binding   10/10      -      0      0      0      0     1.3     4472  0.002615
+claude-3-haiku         k2   advisory   7/10      3      0      -      -      -     1.0     2700  0.001499
+claude-3-haiku         k2   binding   10/10      -      0      0      0      0     1.4     5234  0.002994
+gpt-4o-mini            k1   advisory   7/10      3      0      -      -      -     1.5     4036  0.000969
+gpt-4o-mini            k1   binding   10/10      -      0      0      0      0     1.5     4140  0.001046
+gpt-4o-mini            k2   advisory   8/10      2      0      -      -      -     1.5     3954  0.000932
+gpt-4o-mini            k2   binding   10/10      -      0      0      0      0     1.4     3925  0.001008
+gemini-2.5-flash-lite  k1   advisory   5/10      5      0      -      -      -     1.0     3112  0.000728
+gemini-2.5-flash-lite  k1   binding   10/10      -      0      0      0      0     1.4     3955  0.000702
+gemini-2.5-flash-lite  k2   advisory   6/10      4      0      -      -      -     1.0     3526  0.000881
+gemini-2.5-flash-lite  k2   binding   10/10      -      0      0      0      0     1.5     4350  0.000765
+gpt-4.1                k1   advisory  10/10      0      0      -      -      -     2.4     6496  0.017966
+gpt-4.1                k1   binding   10/10      -      0      0      0      0     1.4     3732  0.012384
+gpt-4.1                k2   advisory  10/10      0      0      -      -      -     2.3     6160  0.016892
+gpt-4.1                k2   binding   10/10      -      0      0      0      0     1.2     3110  0.010432
+```
+
+**(a) BAND CHECK — the four WINDOW models' ADVISORY success vs the 40–70% band (raw):**
+```
+k1   qwen-2.5-7b            advisory 5/10 = 50.0%  [IN  band]
+k1   claude-3-haiku         advisory 7/10 = 70.0%  [IN  band]
+k1   gpt-4o-mini            advisory 7/10 = 70.0%  [IN  band]
+k1   gemini-2.5-flash-lite  advisory 5/10 = 50.0%  [IN  band]
+k1   SUMMARY: 4/4 window models land inside the 40–70% band.
+k2   qwen-2.5-7b            advisory 4/10 = 40.0%  [IN  band]
+k2   claude-3-haiku         advisory 7/10 = 70.0%  [IN  band]
+k2   gpt-4o-mini            advisory 8/10 = 80.0%  [OUT band]   (high edge)
+k2   gemini-2.5-flash-lite  advisory 6/10 = 60.0%  [IN  band]
+k2   SUMMARY: 3/4 window models land inside the 40–70% band.
+```
+
+**(b) gpt-4.1 WATCH — ceiling probe, advisory (reported with NO design reaction):**
+```
+k1   gpt-4.1 advisory: success 10/10  false-DONEs 0  step_caps 0
+k2   gpt-4.1 advisory: success 10/10  false-DONEs 0  step_caps 0
+```
+
+**ORDERING CAVEAT (stated, not buried).** P3's prediction (vii) will be **registered after** this
+10-task-per-tier calibration glimpse; the **confirmatory test runs on the untouched test splits**
+(k1 test = 60 tasks, k2 test = 48 tasks). This entry reacts to no calibration number and registers
+no claim — the dev band and the gpt-4.1 watch are a pre-registration *instrument check*, not
+evidence. Reading the 10-task cells as a result would be exactly the peeking the split exists to
+prevent.
+
+**Costs.** Item-1 cost **$0.074336** (200 episodes). Cumulative v3 spend **$0.074336** (V3-P0/P1
+made no API calls, so this run is the entirety of v3 spend to date) — far under the $12 stop-gate
+and the $20 hard cap. gpt-4.1 is ~93% of the bill (its advisory cells alone ≈ $0.035) at
+$2/$8-per-1M; the four window models together cost ≈ $0.017.
+
+**Decisions / surprises (data description only — no design reaction):**
+- **Both bands sit high, not centred.** On dev the window models cluster at the top of the 40–70%
+  band (k1: 50/70/70/50; k2: 40/70/80/60), with gpt-4o-mini k2 the one that pokes above at 80%. As
+  a 10-task glimpse this is noise-dominated (±~15 pp per cell); it is recorded, not acted on.
+- **The advisory false-DONE texture is already visible.** Every window-model advisory miss here is
+  a false-DONE (model declares DONE on still-failing composed code): qwen 5/6, gemini 5/4,
+  claude 3/3, gpt-4o-mini 3/2 across k1/k2 — and binding converts essentially all of them to
+  passes (window binding = 9–10/10 everywhere). This is the same shape v2 saw on single-bug dev;
+  whether it holds on the composed **test** splits is what (vii) will test.
+- **Zero step_caps anywhere; escalations only on qwen.** No cell hit the step-8 cap; the only
+  binding escalations were qwen (1 per tier, each from 2 identical resubmissions), i.e. the one
+  window model that ever gets stuck resubmitting byte-identical failing code.
+- **gpt-4.1 ceiling holds on composed bugs (watch only).** 10/10 in both tiers and both modes,
+  0 false-DONEs, 0 step_caps — recorded under the watch, no inference drawn.
+- **SIGALRM-from-the-start paid off operationally.** 200/200 with 0 errors and 0 retries needed;
+  no cell wedged. The process-per-cell deadline was in place before the first call per the V2-P4.1
+  lesson, not bolted on after a hang.
+- **Bright line intact.** Only the 20 dev tasks/tier were opened; the 108 test tasks (60 k1 +
+  48 k2) untouched; no `phase*/`, `v2_ladder/`, or `v3_window/tasks/` file modified (freeze hashes
+  + split shas re-verified); keys never printed (`git grep sk-…` → 0); staging explicit.
+
+---
