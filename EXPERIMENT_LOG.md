@@ -3466,3 +3466,132 @@ hold, `v3_window/runs/logs/` and `…/manifests/` stay `.gitkeep`-only.
   no `phase*/`, `v2_ladder/`, or `v3_window/tasks/` file touched; staging explicit; tag applied last.
 
 ---
+
+## V3-P4.1 — The full run (1,296 confirmatory episodes)
+
+**Step ID / date:** V3-P4.1 — 2026-07-27
+
+*(This is the paid confirmatory run. Live calls authorized by the courier. Roster, tiers, splits,
+presentation, decode, mechanisms, budget, and the P4 gate are exactly as pre-registered in
+`v3_window/PREREGISTRATION.md` (tag `v3-prereg`, commit `89c4621`). Infra-only builder: the
+harness ran the episodes; nothing about the task set, the harnesses, or the binding mechanisms was
+changed for this step. This step runs the sealed **test** splits only and reports RAW COUNTS —
+**no analysis, no statistics, no conclusions** (that is P5).)*
+
+**The P4 gate — all conditions checked BEFORE the first test-set API call (item 0).**
+- **(a) `v3-prereg` tag exists** — `git tag -l v3-prereg` → `v3-prereg`. ✔
+- **(b) `v3_window/runs/logs/` was `.gitkeep`-only** at gate time — `git ls-files` and a filesystem
+  `find` both returned only `v3_window/runs/logs/.gitkeep`. ✔
+- **(c) both tier freeze hashes re-verified** by re-running `freeze_hash_k.py` against the registered
+  values: K1 = `0fd7cc51…d2c23b` (70 tasks × 4 = 280 files) and K2 = `0ac8644e…f4a1a40` (58 × 4 =
+  232 files) — **both matched byte-for-byte.** ✔
+- **(d) Publish gate (condition b of PREREG §7) — WAIVED by the courier.** Recorded verbatim as
+  **deviation V3-D1**, courier's words: **"ya I waive the gate"**, Runner-accepted; the write-up's
+  publication is tracked outside the experiment. The V3-D1 waiver is also embedded verbatim in the
+  master manifest (`deviation_V3_D1`). ✔ (timestamp-ordering condition (a) is additionally
+  discharged empirically below.)
+
+All gate conditions held → the run was authorized.
+
+**What was built (infra for the run; committed under `v3_window/runs/`):**
+- `run_common.py` — the ONE place the full-run roster (6 models), the two frozen tiers, the D18
+  config, the prereg commit, the V3-D1 waiver text, and the log/manifest layout are named. Everything
+  model-facing is the **v2 adapter, verbatim** (six of v2's frozen `RUNGS` dicts selected by slug →
+  identical snapshots, routes, providers, per-1M prices). **TEST tasks only** (`split.json['test']`,
+  k1 = 60, k2 = 48).
+- `run_one_cell_full.py` — one process per (model × mode × tier) cell with a **SIGALRM 150 s hard
+  per-episode deadline from the start** (the V2-P4.1 lesson: a socket timeout is evaded by an
+  OpenRouter slow-trickle response, an alarm is not). Up to 2 in-episode attempts, then up to 2
+  whole-cell retry passes over still-errored episodes; retries recorded, never skipped. Writes
+  transcripts to `logs/full/<model>__<mode>__k{1,2}/<task>.jsonl` and a committed per-cell manifest
+  `manifests/full/full_<cell>.json` (rows + resolved snapshot + tier freeze hash + split sha + prereg
+  commit + config).
+- `run_full_v3.py` — orchestrator over the 24 cells (bounded concurrency 6), folds the 24 per-cell
+  manifests into `manifests/full_master.json` (models+snapshots, routes, modes, tiers+freeze hashes+
+  split shas, prereg tag commit `89c4621…`, the **V3-D1 waiver quoted**, per-cell summary, totals),
+  then schema-validates every transcript with the frozen v1 validator (`v2_ladder/adapter/
+  validate_schema.py`).
+- `tally.py` — the deterministic RAW tally for item 2 (per-cell table; per model×tier success/Δ/
+  false-DONE/step_cap/escalation counts; the timestamp-ordering proof; costs). No statistics.
+
+**Provenance:** the run is `python3 v3_window/runs/run_full_v3.py` over the sealed test splits;
+every model call is the v2 adapter unchanged; the checker/harnesses/mechanisms are the frozen v1
+modules. Nothing hand-authored per episode. The k0 column referenced by the predictions is NOT
+re-run here (it is v2's committed test data, per PREREG §2).
+
+**Evidence of correctness — raw run summary (24 cells, all exit 0):**
+
+```
+V3 full run: 24 cells (k1=60 + k2=48 test tasks per model x mode) = 1296 episodes
+… [all 24 cells reported] OK  CELL <cell> DONE: {60|48} episodes, 0 errors …
+==== V3 FULL-RUN SUMMARY ====
+cells exit 0: 24/24  (nonzero: none)
+episodes: 1296   errors: 0
+schema-validated: 1296/1296   (after removing one leftover scratch dir — see incident)
+item-1 cost: $0.611578
+cumulative v3 spend: $0.685914  (calibration $0.074336 + this run $0.611578)
+v3 stop-gate $12.00: OK   hard cap $20.00: OK
+```
+
+**Incident (full transparency, per the V2-P4.1 standard) — leftover harness-scratch dir.**
+The orchestrator's first schema pass reported **1296/1298**: its recursive glob picked up **two
+truncated files** in a `_harness_scratch/` temp dir under the cell `llama-3.1-8b__advisory__k2`
+(`task_k2_057…_47.jsonl` = `system_prompt, user_message, model_response`; `task_k2_058…_48.jsonl` =
+`system_prompt, user_message` — both lacking `episode_end`). These are **harness scratch, not run
+output**: each cell isolates the harness's log dir to a per-cell `_harness_scratch/` and copies the
+finished transcript out; `run_one_cell_full.py` then `shutil.rmtree(_scratch, ignore_errors=True)`.
+For this one cell — the last to finish writing — that removal silently failed on the two
+most-recently-written files (a race with the iCloud-synced Desktop, `ignore_errors=True` swallowing
+it), leaving the temp dir behind. Root cause of the two *truncated* files: they are **interrupted
+first attempts** on tasks 057/058 (the OpenRouter trickle-hang the SIGALRM guards against); the
+**in-episode retry recovered both** — their complete transcripts are in the cell dir
+(`task_k2_057.jsonl` ends in `episode_end`, 2672 B; `task_k2_058.jsonl` ends in `episode_end`,
+2296 B) and their manifest rows are successful (`model_declared_done`, `success=True`, no error).
+The stale temp dir is referenced by **no** manifest (manifests are built from cell rows, never from
+globbing), so the master's counts were always 1,296/0-errors. Resolution: the temp dir was removed
+and validation re-run → **1296 files, 1296 ok, 0 bad.** No committed artifact was affected; the two
+affected tasks are present, complete, and successful. (Because successful-after-retry episodes are
+not separately flagged in the row schema, the exact count of deadline-recovered episodes across the
+23 cells whose scratch was cleaned is not recoverable from the logs; the invariant that matters —
+**0 errored episodes in the final state, 1,296/1,296 schema-valid** — holds and is verified.)
+
+**Worked example — one committed episode.** `v3_window/runs/logs/full/gpt-4o-mini__binding__k1/`
+holds 60 transcripts; the cell manifest `manifests/full/full_gpt-4o-mini__binding__k1.json` records
+60 episodes / 0 errors and, e.g., gpt-4o-mini reached **60/60 binding vs 46/60 advisory at k1**
+(Δ = +14; see the raw tally). Each transcript is a JSONL event stream
+(`system_prompt → user_message → model_response → … → episode_end`) that the v1 validator accepts.
+
+**Raw tally (item 2 — counts only; the analysis is P5).** Full output is produced by
+`python3 v3_window/runs/tally.py`. Headlines, as raw counts (NO claim registered here):
+- **Per-cell:** 24 cells, each 60 (k1) or 48 (k2) episodes, **all 0 errors**; total **1,296 / 0**.
+- **Per model × tier (advisory→binding success, Δ; advisory false-DONE; step_cap; escalation):**
+  llama-3.1-8b k1 49→55 (Δ+6, fD7, esc2) / k2 42→43 (Δ+1, fD5, esc2);
+  qwen-2.5-7b k1 36→55 (Δ+19, fD24, esc4) / k2 32→43 (Δ+11, fD16, esc5);
+  claude-3-haiku k1 41→57 (Δ+16, fD19, esc0) / k2 33→45 (Δ+12, fD15, esc1);
+  gpt-4o-mini k1 46→60 (Δ+14, fD14) / k2 37→48 (Δ+11, fD11);
+  gemini-2.5-flash-lite k1 46→60 (Δ+14, fD14) / k2 37→48 (Δ+11, fD11);
+  gpt-4.1 k1 60→60 (Δ0, fD0) / k2 48→48 (Δ0, fD0).
+- **Timestamp-ordering proof:** `v3-prereg` tag time **2026-07-27 11:22:10 +0800** precedes the
+  earliest test-log episode timestamp **2026-07-27T11:31:16.138714+08:00**
+  (`…/llama-3.1-8b__advisory__k1/task_k1_011.jsonl`) → **PASS**; the V3-P4.1 run-logs commit is
+  created after this entry, so it post-dates the registration by construction too.
+
+**Cost.** Full-run **$0.611578** (gpt-4.1 ≈ $0.349 of it; gemini advisory unusually heavy at
+$0.110 — long transcripts, still trivial); vs the projected ≈ $0.415. **Cumulative v3 spend
+$0.685914** — an order of magnitude under the $12 stop-gate, two under the $20 cap.
+
+**Decisions / surprises (RAW observations only — no conclusion, that is P5):**
+- **SIGALRM-from-the-start earned its keep.** The only anomaly of the run was two OpenRouter
+  trickle-hangs on `llama-3.1-8b` (evidenced by the surviving scratch partials); the hard deadline
+  caught them and the retry recovered them, so the final state is 0 errors with no wedged worker —
+  exactly the V2-P4.1 failure mode, handled.
+- **`ignore_errors=True` on the scratch rmtree hid one cleanup failure.** On the iCloud-synced
+  Desktop this left one temp dir behind; it changed no committed data but did inflate the first glob
+  count. Disclosed in full above; the fix applied for THIS step was to remove the dir and re-validate.
+- **gpt-4.1 is at ceiling on both tiers (60/60, 48/48; 0 false-DONEs).** This is the raw number the
+  P5 scorecard will weigh against prediction **(P2)** — recorded here without reaction.
+- **Bright line intact.** Only `v3_window/runs/` artifacts + this log entry were created; no
+  `phase*/`, `v2_ladder/`, or `v3_window/{tasks,generator,calibration}/` file was touched; staging
+  is explicit (never `git add -A`); the leftover scratch dir was excluded, not committed.
+
+---
