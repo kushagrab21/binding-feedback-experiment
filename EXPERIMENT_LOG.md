@@ -3071,3 +3071,189 @@ made. Both matched, so the skeleton was created and this entry appended.
   key printed; staging for this commit is explicit (the seven new `.gitkeep`s + this log only).
 
 ---
+
+## V3-P1.1 — Composition generator + invariants + tier freezes
+
+**Step ID / date:** V3-P1.1 — 2026-07-27
+
+*(Design authority: the V3 addendum, Runner-relayed. Reuses the frozen v1 generator + freeze
+discipline (entries 1.5 / 1.7) without modifying a single v1 file. Bright lines held: v1/v2
+byte-untouched; everything new lives under `v3_window/`; no API calls this step — running
+`unittest` in a subprocess is local execution, not a model call.)*
+
+**What was built (all under `v3_window/generator/`):**
+- `suite_runner.py` — shared read-only helpers so the generator and validator cannot drift:
+  reads the frozen `phase1_tasks/generator/mutations.json` + seed sources/suites, computes the
+  character span of a mutation's `old`, tests pairwise-disjointness of spans, composes a buggy
+  source by applying k+1 mutations in **manifest order** (with a defensive exactly-once guard
+  per edit), and runs a suite via the v1 `solution.py` copy contract under the v1 20s hang guard.
+- `compose_tasks.py` — deterministic composition generator (no randomness, no timestamps). For
+  tier k ∈ {1,2} (total bugs = k+1): per seed, enumerate every size-(k+1) combination of that
+  seed's mutations whose `old` snippets are pairwise disjoint (each already occurs exactly once
+  — the v1 per-mutation contract); order a seed's combos by their sorted bug-type tuple
+  (bug_types are unique per seed ⇒ a total order); select **round-robin across seeds** (seed_id
+  ascending, one emitted task per seed per round) for maximum seed diversity until 70 tasks or
+  supply exhausts. Acceptance is inline: the composed buggy must fail ≥1 test; a composition that
+  passes the whole suite means the **bugs cancel** (a mutation-interaction reject) and is logged
+  + skipped, that seed's turn refilling from its next combo. Emits
+  `v3_window/tasks/k{1,2}/task_k{1,2}_NNN/{buggy.py, reference.py, tests.py, meta.json}`
+  (reference/tests verbatim from the seed; meta records seed, tier k, n_bugs, and ALL
+  constituent bug types), plus a per-tier `rejected_combos.json`.
+- `validate_k_tasks.py` — independent audit: for every emitted task re-checks (a) reference
+  passes the entire suite and (b) composed buggy fails ≥1 test, via the copy contract + subprocess
+  + 20s guard; then re-verifies each recorded interaction reject by re-composing and re-running it.
+  Writes `v3_window/tasks/k{tier}/validation_report.txt` (committed, hash-pinned); non-zero exit on
+  any invariant violation or reject-recheck mismatch.
+- `split_k.py` — per-tier deterministic split. Rule: tasks in emission (round-robin) order by
+  task_id; drop any beyond the first 70; **dev = first 10 task_ids, test = the rest.** Because
+  round 1 emits one task per contributing seed in seed_id order, the first 10 task_ids are 10
+  **distinct seeds** by construction (asserted). Writes `v3_window/tasks/k{tier}/split.json`.
+- `freeze_hash_k.py` — the v1 `freeze_hash.py` **method, parameterized by tier** (the v1 tool is
+  not touched): sha256 over git-tracked files inside `task_*/` dirs under
+  `v3_window/tasks/k{tier}`, read via `git show :path`, so untracked noise cannot perturb it. Task
+  count is whatever the tier emitted (not hardcoded), files/dir asserted == 4.
+
+**Provenance:** every bug is a frozen v1 mutation applied verbatim; the generator only *selects
+and composes* v1 mutations — it authors no new edits. reference.py/tests.py are the seed's own
+files byte-for-byte. Task content is 100% generated and regenerate-only. No task was hand-edited.
+
+**Yield + evidence (raw):**
+```
+[tier k=1, 2 bugs] valid disjoint combos in supply: 120
+[tier k=1] emitted (accepted) tasks: 70
+[tier k=1] mutation-interaction rejects (cancel/hang/not-composable): 0
+[tier k=2, 3 bugs] valid disjoint combos in supply: 58
+[tier k=2] emitted (accepted) tasks: 58  (supply exhausted before 70; achievable count reported, not forced)
+[tier k=2] mutation-interaction rejects (cancel/hang/not-composable): 0
+
+K1 VALIDATION: OK (70 accepted, both invariants hold for every task; all 0 interaction rejects re-verified)
+K2 VALIDATION: OK (58 accepted, both invariants hold for every task; all 0 interaction rejects re-verified)
+
+[tier k=1] total emitted=70 kept=70 dropped_beyond_70=0 -> dev=10 test=60 (dev seeds distinct: 10)
+[tier k=2] total emitted=58 kept=58 dropped_beyond_70=0 -> dev=10 test=48 (dev seeds distinct: 10)
+```
+Determinism: regenerating the tree leaves it byte-identical (whole-tree sha256 stable); each
+freeze hash printed twice is identical. Every one of the 128 tasks carries exactly k+1
+constituent mutations, each on a **distinct source line** (checked), so every reference→buggy diff
+shows exactly k+1 distinct local edits — no same-line collisions.
+
+**k=2 falls short of 70 by design, not by bug.** Only 58 triples of pairwise-disjoint mutations
+exist across the corpus (many seeds host <3 mutations, or their mutations share a line). Per the
+addendum's "report the achievable count — don't force," k=2 ships 58; the tail of k=2 is
+seed_019-heavy (binary_search has the most disjoint triples, 10), which is a supply property, not
+a defect. Zero interaction rejects in either tier: disjoint single-edit mutations targeting
+different behaviours essentially never cancel.
+
+**Report + companion hashes at freeze:**
+```
+k1 validation_report.txt  3f88d3ae0bd84eabb7f25ac0e1a8b070556bead44028988198ba768c1ac85d76
+k2 validation_report.txt  4182f9c00bfb36b17dc899929d9e32ef775d4a93d79bc63b3b2c9e61ed1c5554
+k1 split.json             ce9de6db0ee266f5d5e73a25cf1796c8bd102a639cbea2ae4d536e1c8d55bea6
+k2 split.json             a745efb527ca5cfc03dd7f40d97f2d27412496c02807678f20576dc477ac4f24
+```
+
+**Runner spot-check — six named tasks (BEFORE freeze). All six passed all three criteria:
+(i) the reference→buggy diff shows exactly k+1 distinct local edits, (ii) meta records seed / k /
+all constituent bug types, (iii) the composed buggy fails ≥1 test (validator row + raw run).**
+
+*Worked example A (full) — task_k1_005 — seed_005 `is_palindrome`, k=1 (2 bugs:
+inverted-condition + off-by-one), fails `test_case_sensitive` (buggy=FAIL 3/6):*
+```diff
+-    right = len(s) - 1
+-    while left < right:
++    right = len(s)
++    while not left < right:
+```
+Two distinct local edits on two lines: `len(s) - 1`→`len(s)` shifts the right index by one
+(off-by-one), and `while left < right`→`while not left < right` negates the loop guard
+(inverted-condition). Raw run of buggy against the seed suite:
+```
+IndexError: string index out of range
+FAIL: test_case_sensitive (tests.TestIsPalindrome.test_case_sensitive)
+AssertionError: True is not false
+FAIL: test_non_palindrome (tests.TestIsPalindrome.test_non_palindrome)
+AssertionError: True is not false
+Ran 6 tests in 0.001s
+FAILED (failures=2, errors=1)
+```
+Verdict: PASS.
+
+*Worked example B (full) — task_k2_031 — seed_016 `is_valid_identifier`, k=2 (3 bugs:
+missing-edge-case + off-by-one + wrong-comparison), fails `test_bare_underscore`
+(buggy=FAIL 6/7):*
+```diff
+-    if not s:
+-        return False
+...
+-    if not (first.isalpha() or first == "_"):
++    if not (first.isalpha() or first != "_"):
+...
+-    for ch in s[1:]:
++    for ch in s[2:]:
+```
+Three distinct local edits on three lines: the empty-string guard is deleted (missing-edge-case),
+`first == "_"`→`first != "_"` swaps the comparison operator (wrong-comparison), and `s[1:]`→`s[2:]`
+shifts the scan start by one (off-by-one). Raw run of buggy:
+```
+IndexError: string index out of range
+FAIL: test_bare_underscore (tests.TestIsValidIdentifier.test_bare_underscore)
+AssertionError: False is not true
+FAIL: test_hyphen_invalid (tests.TestIsValidIdentifier.test_hyphen_invalid)
+AssertionError: True is not false
+FAIL: test_leading_digit_invalid (tests.TestIsValidIdentifier.test_leading_digit_invalid)
+AssertionError: True is not false
+FAIL: test_single_digit_invalid (tests.TestIsValidIdentifier.test_single_digit_invalid)
+AssertionError: True is not false
+FAIL: test_underscore_start_with_digit (tests.TestIsValidIdentifier.test_underscore_start_with_digit)
+AssertionError: False is not true
+Ran 7 tests in 0.001s
+```
+Verdict: PASS.
+
+*The other four (verdict lines):*
+- **task_k1_023** — seed_023, k=1 [inverted-condition + missing-edge-case]; edits: delete
+  `if not s: raise ValueError("empty string")` (missing-edge-case) + `if current < previous`→
+  `if not current < previous` (inverted-condition); 2 distinct edits; fails `test_additive`
+  (6/7). **PASS.**
+- **task_k1_047** — seed_024 `parse_csv_line`, k=1 [inverted-condition + off-by-one]; edits:
+  `while index < len(line)`→`while index < len(line) - 1` (off-by-one) + `if in_quotes`→
+  `if not in_quotes` (inverted-condition); 2 distinct edits; fails `test_doubled_quote_escape`
+  (5/6). **PASS.**
+- **task_k2_009** — seed_012, k=2 [input-mutation + missing-edge-case + off-by-one]; edits:
+  `result = []`→`result = seq` (input-mutation) + delete `if n == 0: return result`
+  (missing-edge-case) + `(index + shift) % n`→`(index + shift + 1) % n` (off-by-one); 3 distinct
+  edits; fails `test_empty_sequence` (6/6). **PASS.**
+- **task_k2_052** — seed_021, k=2 [off-by-one + wrong-comparison + wrong-operator]; edits:
+  `index = 1`→`index = 2` (off-by-one) + `if ch < "0"`→`if ch <= "0"` (wrong-comparison) +
+  `value * 10 + (...)`→`value * 10 - (...)` (wrong-operator); 3 distinct edits; fails
+  `test_leading_zeros` (5/8). **PASS.**
+
+**FREEZE DECLARATION.** The V3 composition tiers are FROZEN at this commit. Tasks are immutable;
+later-discovered broken tasks are excluded and logged, never fixed. During V3 calibration/runs
+only each tier's 10 dev tasks may be opened until the test split is released. The frozen sets are
+pinned by:
+```
+FREEZE_HASH_K1 sha256 0fd7cc51ecc24e3f6a959b064ce64ac26f29ed113c639f214eb416d48bd2c23b   (70 tasks x 4 = 280 files)
+FREEZE_HASH_K2 sha256 0ac8644e83d3d5c21a17bccc6e32ac0d815168cfd211cabc5268e8f87f4a1a40   (58 tasks x 4 = 232 files)
+```
+and by git tags `v3-freeze-k1` and `v3-freeze-k2`.
+
+**Decisions / surprises:**
+- **Spot-check is a hard gate.** The pre-freeze build was committed first (`9b59e6c`), the six
+  Runner-named tasks inspected, and only after all six passed were the freeze tags applied and
+  this entry written — a failed inspection would have stopped with no tags.
+- **Round-robin buys dev diversity for free.** Because round 1 emits one task per seed in seed_id
+  order, `dev = first 10 task_ids` is automatically 10 distinct seeds; no separate dev-selection
+  machinery (unlike v1's multi-pass split) was needed.
+- **Manifest-order application + disjoint-span pre-filter.** Composition applies edits in
+  mutations.json order with a defensive exactly-once guard; the pairwise-disjoint pre-filter means
+  that guard never actually trips, but it makes any future textual interaction a logged reject
+  rather than a silent corruption.
+- **v1 tool untouched; method reused.** `freeze_hash_k.py` re-implements the v1 algorithm with a
+  tier parameter rather than editing the frozen `freeze_hash.py`; the v1 hash still verifies
+  `dfc14c26…2f2017` and split.json `6f69be75…75015` after this step.
+- **Bright line intact.** The build commit touched only `v3_window/`; no `phase*/` or `v2_ladder/`
+  path in either commit; no API calls; no key printed; staging explicit throughout; tags applied
+  last.
+
+---
