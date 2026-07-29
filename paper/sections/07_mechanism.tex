@@ -1,0 +1,16 @@
+\section{The mechanism, unified}
+
+\paragraph{One quantity explains all three experiments.} Each experiment varied a different thing: Experiment 1 varied the mode, Experiment 2 the model, and Experiment 3 the task difficulty. Yet in every case the binding advantage moved with a single quantity, the advisory false-DONE rate, which is the rate at which a model left alone declares a still-failing task done.
+
+The evidence stacks across the program. In Experiment 1, all 8 of the weak model's advisory failures were false-DONEs, and binding converted all 8. In Experiment 2, the false-DONE counts across the ladder form a hump, 0, 8, 8, 15, 16, 4, 1 from strongest to weakest, and the $\Delta$ curve is a window peaked in the same place, with $\Delta$ negative exactly at the rung where false claiming gives way to thrashing. In Experiment 3, the false-DONE rate and $\Delta$ move in the same direction in all 12 model-by-tier transitions, rising together from k0 to k1 and dipping together from k1 to k2, while both sit at zero for GPT-4.1 at every tier.
+
+\paragraph{The mechanism in one statement.} Binding does exactly one thing: it converts false claims into forced repairs. Its value therefore equals the rate of false claiming times the model's ability to repair once refused, and it is zero at both ends for opposite reasons: at the ceiling there are no false claims to convert, and below the floor the refused model cannot complete the repair. Nearly every binding win in the program is a genuine forced repair, 6 of 8 in Experiment 1 and 120 of 122 in Experiment 3, so the conversion is real iteration rather than resampling luck.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\textwidth]{fig4_mediator_scatter.png}
+\caption{$\Delta$ against the advisory false-DONE rate, one point per cell across Experiments 2 and 3, with color for the model and shape for the difficulty tier. Coincident points are slightly separated for visibility, values unchanged. Drawn by \texttt{writeup\_figures/plot\_all.py} from \texttt{writeup\_figures/data/mediator\_scatter.csv}.}
+\label{fig:mediator}
+\end{figure}
+
+\paragraph{What follows for practice.} The quantity that decides whether gating pays is measurable in advance. A short advisory probe that counts false-DONEs predicts the gate's value: a model that never false-claims gains nothing from the gate although it loses nothing either, a model that false-claims and can repair gains the most, and a model that fails without ever claiming needs capability, not enforcement.

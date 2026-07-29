@@ -1,0 +1,2 @@
+# stale scatter placeholder removed: the figure is placed in this section
+Figure. [Placeholder: scatter of Δ against advisory false-DONE rate, one point per cell across all\nthree experiments, which collapses the entire program onto a single rising line through the\norigin.]>>>
