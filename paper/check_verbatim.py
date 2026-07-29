@@ -39,7 +39,10 @@ def detex(tex_path):
     t = re.sub(r"\\(section|subsection)\*?\{[^}]*\}", " ", t)
     t = re.sub(r"\\paragraph\*?\{([^}]*)\}", r"\1", t)
     t = re.sub(r"\\(textbf|textit|emph|texttt|url|mbox)\{([^}]*)\}", r"\2", t)
-    t = re.sub(r"\\(begin|end)\{[^}]*\}", " ", t)
+    t = re.sub(r"\\includegraphics(\[[^\]]*\])?\{[^}]*\}", " ", t)
+    t = re.sub(r"\\caption\{[^}]*\}", " ", t)
+    t = re.sub(r"\\label\{[^}]*\}", " ", t)
+    t = re.sub(r"\\(begin|end)\{[^}]*\}(\[[^\]]*\])?", " ", t)
     t = t.replace("\\%", "%").replace("\\&", "&").replace("\\_", "_").replace("\\#", "#")
     t = t.replace("\\$", "$")
     t = re.sub(r"\$([^$]*)\$", r"\1", t)                    # inline math to its content
