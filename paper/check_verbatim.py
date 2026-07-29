@@ -49,6 +49,7 @@ def detex(tex_path):
     t = re.sub(r"\$([^$]*)\$", r"\1", t)                    # inline math to its content
     t = t.replace("\x00", "$")
     t = t.replace("\\times", "×").replace("\\Delta", "Δ").replace("\\rho", "rho")
+    t = t.replace("\\geq", "≥").replace("\\leq", "≤")
     t = t.replace("---", "—").replace("--", "–")
     t = t.replace("``", '"').replace("''", '"')
     t = re.sub(r"\\\\(\[[^]]*\])?", " ", t)

@@ -61,7 +61,44 @@ def exp1():
         for gc, wc in zip(g, w):
             check(f"exp1 row {w[0]}", gc.replace("\\%", "%"), wc)
 
-TABLES = {"exp1": exp1}
+
+def fmt_p(p):
+    p = float(p)
+    return "1" if p == 1 else f"{p:.2g}"
+
+def exp2():
+    r = sorted(rows("exp2_ladder.csv"), key=lambda x: int(x["rank"]))
+    want = []
+    for x in r:
+        d = float(x["delta_pp"])
+        want.append([x["rank"], x["model"], f"{x['advisory_solved']}/87",
+                     f"{x['binding_solved']}/87", f"{d:+.1f}",
+                     x["b"], x["c"], fmt_p(x["mcnemar_p"])])
+    got = tex_table_rows(os.path.join(HERE, "sections", "05_exp2.tex"))
+    got_ladder = [g for g in got if len(g) == 8]
+    if len(got_ladder) != 7:
+        errors.append(f"exp2 ladder: {len(got_ladder)} rows found, expected 7"); return
+    for g, w in zip(got_ladder, want):
+        for gc, wc in zip(g, w):
+            check(f"exp2 ladder rank {w[0]}", gc, str(wc))
+
+def exp2exits():
+    r = sorted(rows("exp2_ladder.csv"), key=lambda x: int(x["rank"]))
+    want = []
+    for x in r:
+        d = float(x["delta_pp"])
+        want.append([x["model"], x["adv_true_done"], x["adv_false_done"],
+                     x["adv_cap_pass"], x["adv_cap_fail"], x["bind_solved"],
+                     x["bind_escalated"], x["bind_step_cap"], f"{d:+.1f}"])
+    got = tex_table_rows(os.path.join(HERE, "sections", "05_exp2.tex"))
+    got_exits = [g for g in got if len(g) == 9 and g[0] != "model"]
+    if len(got_exits) != 7:
+        errors.append(f"exp2 exits: {len(got_exits)} rows found, expected 7"); return
+    for g, w in zip(got_exits, want):
+        for gc, wc in zip(g, w):
+            check(f"exp2 exits {w[0]}", gc, str(wc))
+
+TABLES = {"exp1": exp1, "exp2": exp2, "exp2exits": exp2exits}
 
 if __name__ == "__main__":
     if len(sys.argv) != 2 or sys.argv[1] not in TABLES:
