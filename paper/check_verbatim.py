@@ -49,12 +49,14 @@ def detex(tex_path):
     t = re.sub(r"\$([^$]*)\$", r"\1", t)                    # inline math to its content
     t = t.replace("\x00", "$")
     t = t.replace("\\times", "×").replace("\\Delta", "Δ").replace("\\rho", "rho")
-    t = t.replace("\\geq", "≥").replace("\\leq", "≤")
+    t = t.replace("\\geq", "≥").replace("\\leq", "≤").replace("\\rightarrow", "→")
     t = t.replace("---", "—").replace("--", "–")
     t = t.replace("``", '"').replace("''", '"')
     t = re.sub(r"\\\\(\[[^]]*\])?", " ", t)
     t = re.sub(r"\\[A-Za-z]+\*?", " ", t)                   # any remaining command
+    t = t.replace("^{-", "^-")
     t = t.replace("{", " ").replace("}", " ").replace("~", " ")
+    t = re.sub(r"\s+([.,;:])", r"\1", t)
     return t
 
 def normalize(s):
@@ -62,6 +64,7 @@ def normalize(s):
     s = s.replace("\u201c", '"').replace("\u201d", '"')
     s = s.replace("\u2013", "-").replace("\u2014", "-").replace("\u2212", "-")
     s = s.replace("\ufb01", "fi").replace("\ufb02", "fl")
+    s = s.replace("\u207b\u2076", "^-6")
     for d, r in zip("\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079", "0123456789"):
         s = s.replace(d, "^" + r)
     s = re.sub(r"\s+", " ", s).strip()

@@ -1,0 +1,92 @@
+\section{Experiment 3: the composition window}
+
+\paragraph{Bridge from Experiment 2.} Experiment 2 replaced the line with a window: binding pays off in a middle band of capability, does nothing at the ceiling, and hurts below the floor. But the ladder varied only the model, holding task difficulty fixed at one bug per task, so the window it drew is a slice at a single difficulty. This leaves the sharpest question of the program open: is the window a property of the model, or of the model and task together? The two hypotheses make different predictions. If the window belongs to the model--task pair, then difficulty and capability trade off, and raising the difficulty should make the window slide up the capability axis, so that a model at the ceiling begins to false-claim and binding begins to help it. If the window belongs to the model alone, the ceiling stays where it is no matter how hard the task becomes. Experiment 3 was built to decide between the two. The design follows directly: keep the models and every harness condition exactly as they were, turn the other knob by raising task difficulty in controlled steps, and measure each model's $\Delta$ at every difficulty tier. The registered expectation was that the window slides: by the hardest tier, the strongest model's false-DONE count becomes positive and its $\Delta$ turns positive with it.
+
+\paragraph{Preconditions.} Experiment 3 changes exactly one factor: task difficulty. Difficulty is raised by bug composition, where a k1 task applies 2 of the original Experiment 1 mutations verbatim on distinct lines of one seed function, and a k2 task applies 3. Nothing new is authored, since the generator only selects and composes the frozen v1 mutations, so a harder task means more independent bugs at once and nothing else. The two tiers are frozen with their own content hashes and dev-test splits: 60 test tasks at k1 and 48 at k2, with 10 dev tasks per tier used only for calibration.
+
+The roster is six models spanning the Experiment 2 ladder: Llama-3.1-8B as the bottom-edge anchor, the four window models Qwen2.5-7B, Claude-3-Haiku, GPT-4o-mini, and Gemini-2.5-Flash-Lite, and GPT-4.1 as the top anchor. Llama-3.2-3B is dropped, as a logged roster decision: it was already below the window at one bug per task, failing by step cap rather than false claim, so raising difficulty could only push it further out of range and buy noise instead of signal.
+
+No other condition changes. The harnesses, the three binding rules, the bare-code presentation, the checker, temperature 0, step cap 8, and each model's exact snapshot and route are inherited from the earlier experiments unchanged. The k0 column of every result is Experiment 2's committed test data, cited from its manifests rather than re-run, which keeps the baseline comparable and spends nothing. The scale follows from the design: 6 models × 2 modes × 108 test tasks = 1,296 episodes, all committed with zero errors.
+
+Because everything except difficulty is held fixed, any change in a model's $\Delta$ across the tiers is attributable to task difficulty alone.
+
+\paragraph{Predictions.} Five predictions were registered and locked with a git tag before any test episode ran. One disclosure inside the registration matters for reading them: before registering, a small calibration was run on 10 dev tasks per tier and its results were quoted verbatim in the preregistration itself. That glimpse showed GPT-4.1 with zero false-DONEs at both tiers. Prediction 2 was registered against that glimpse deliberately, on the reasoning that 10 tasks cannot surface a low-rate event that theory expected to appear on the larger sealed test sets. This makes it a risky prediction rather than a restatement of what the dev data already showed.
+
+1. For each window model, $\Delta$ > 0 at both k1 and k2, by per-model task-paired exact McNemar.\\
+2. The window is a property of the model--task pair: as difficulty rises, models above the window enter the false-claiming regime. Operationally, GPT-4.1's advisory false-DONE count, zero at one bug per task, becomes positive at k2, and its $\Delta$ turns positive with it.\\
+3. Escalation-attributed losses, meaning tasks solved in advisory but lost in binding through escalation, concentrate at the bottom-edge anchor and grow with k. The escalation rule is deliberately left unchanged so that this known wart becomes a measured quantity.\\
+4. For any model at the advisory ceiling within a tier, binding total cost is at most advisory total cost.\\
+5. Exploratory: the window peak, the model with the largest $\Delta$, shifts toward stronger models as k rises.
+
+\paragraph{Results.} The central table is the $\Delta$-vs-k matrix, one row per model, showing $\Delta$ = success(binding) $-$ success(advisory) in percentage points at each difficulty tier. The k0 column is Experiment 2's committed test data.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\toprule
+model & $\Delta$ @ k0 (1 bug) & $\Delta$ @ k1 (2 bugs) & $\Delta$ @ k2 (3 bugs)\\
+\midrule
+GPT-4.1 & +0.0 & +0.0 & +0.0\\
+Gemini-2.5-Flash-Lite & +9.2 & +23.3 & +22.9\\
+GPT-4o-mini & +9.2 & +23.3 & +22.9\\
+Claude-3-Haiku & +11.5 & +26.7 & +25.0\\
+Qwen2.5-7B & +14.9 & +31.7 & +22.9\\
+Llama-3.1-8B & +2.3 & +10.0 & +2.1\\
+\bottomrule
+\end{tabular}
+\caption{The $\Delta$-vs-k matrix. Source: \texttt{v3\_window/analysis/results.md}, with the k0 column cited from Experiment 2.}
+\label{tab:matrix}
+\end{table}
+
+The full per-cell results behind the matrix, with the paired disagreement counts and exact McNemar values:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llcccccc}
+\toprule
+model & tier & advisory & binding & $\Delta$ (pp) & b & c & exact p\\
+\midrule
+Llama-3.1-8B & k1 & 49/60 & 55/60 & +10.0 & 1 & 7 & 0.070\\
+Llama-3.1-8B & k2 & 42/48 & 43/48 & +2.1 & 3 & 4 & 1\\
+Qwen2.5-7B & k1 & 36/60 & 55/60 & +31.7 & 0 & 19 & 3.8e-06\\
+Qwen2.5-7B & k2 & 32/48 & 43/48 & +22.9 & 1 & 12 & 0.0034\\
+Claude-3-Haiku & k1 & 41/60 & 57/60 & +26.7 & 2 & 18 & 0.0004\\
+Claude-3-Haiku & k2 & 33/48 & 45/48 & +25.0 & 0 & 12 & 0.0005\\
+GPT-4o-mini & k1 & 46/60 & 60/60 & +23.3 & 0 & 14 & 0.0001\\
+GPT-4o-mini & k2 & 37/48 & 48/48 & +22.9 & 0 & 11 & 0.001\\
+Gemini-2.5-Flash-Lite & k1 & 46/60 & 60/60 & +23.3 & 0 & 14 & 0.0001\\
+Gemini-2.5-Flash-Lite & k2 & 37/48 & 48/48 & +22.9 & 0 & 11 & 0.001\\
+GPT-4.1 & k1 & 60/60 & 60/60 & +0.0 & 0 & 0 & 1\\
+GPT-4.1 & k2 & 48/48 & 48/48 & +0.0 & 0 & 0 & 1\\
+\bottomrule
+\end{tabular}
+\caption{Per model and tier results. Source: \texttt{v3\_window/analysis/results.md}.}
+\label{tab:cells}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig3_composition_window.png}
+\caption{The window deepens in place and does not slide: the binding advantage on the left, the advisory false-DONE rate on the right, with the same shape in both panels. Drawn by \texttt{writeup\_figures/plot\_all.py} from \texttt{writeup\_figures/data/exp3\_matrix.csv}.}
+\label{fig:composition}
+\end{figure}
+
+\paragraph{Reading the matrix.} Two things happen at once, and only one of them was predicted. Reading the window rows left to right, every window model's $\Delta$ roughly doubles from k0 to k1 and stays large at k2, with every window cell McNemar-significant. The window deepens as bugs compose. Reading the GPT-4.1 row, nothing happens at all: 60/60 and 48/48 in both modes, zero disagreements, $\Delta$ pinned at exactly zero at every tier. A difficulty at which Qwen false-claims 40\% of the time did not extract a single false claim from the strongest model. The window deepened in place, and it did not slide.
+
+\paragraph{Patterns in the table.} Reading the matrix by rows and columns, three number series form the section's findings.
+
+The GPT-4.1 row is +0.0, +0.0, +0.0, with false-DONE counts 0, 0, 0. The pattern is a fixed ceiling. The inference is that the window's upper edge did not move under difficulty, which is the disconfirmation of prediction 2 and the headline of the experiment.
+
+The Qwen row is +14.9, +31.7, +22.9. The pattern is deepen-then-plateau, and every window row shows it: the gain roughly doubles at k1 and dips slightly at k2. The inference is that composition amplifies binding for models already inside the window, but the amplification saturates rather than growing without bound.
+
+The Llama-3.1-8B row is +2.3, +10.0, +2.1. The pattern is an edge model sliding toward the floor: its gain rises at k1, then collapses at k2 as it begins to fail by thrashing rather than false claiming. The inference is that difficulty does move the window's floor, just never its ceiling.
+
+\paragraph{The mediator.} The advisory false-DONE rate per model per tier, k0 $\rightarrow$ k1 $\rightarrow$ k2: Qwen 18\% $\rightarrow$ 40\% $\rightarrow$ 33\%, Haiku 17\% $\rightarrow$ 32\% $\rightarrow$ 31\%, GPT-4o-mini and Gemini both 9\% $\rightarrow$ 23\% $\rightarrow$ 23\%, Llama-3.1-8B 5\% $\rightarrow$ 12\% $\rightarrow$ 10\%, GPT-4.1 0\% $\rightarrow$ 0\% $\rightarrow$ 0\%. Across all 12 model-by-tier transitions, the direction of the false-DONE rate and the direction of $\Delta$ agree 12 out of 12. The causal reading is direct: more simultaneous bugs mean more chances to leave one unfixed and confidently declare done, so the advisory arm false-claims more, and binding converts exactly those claims into repairs. Where the rate is pinned at zero, $\Delta$ is pinned at zero, because binding can only convert false claims that happen. The slight dip in the rate from k1 to k2, mirrored by the dip in $\Delta$, is why the window deepens once and plateaus.
+
+\paragraph{Rescue quality.} Of the 122 binding wins across all cells, 120 are genuine forced repairs, meaning a FAILED verdict followed by a changed submission that passed, and only 2 are first-sample passes. The sampling-variance caveat from Experiment 1 is essentially gone at higher difficulty.
+
+\paragraph{Scoring the predictions.} Prediction 1 is confirmed: every window model has $\Delta$ > 0 at both tiers, with p from 0.0034 down to $3.8 \times 10^{-6}$. Prediction 2 is disconfirmed: GPT-4.1's false-DONE count is zero at every tier and its $\Delta$ never moves, re-derived directly from the raw logs. This was the risky bet, placed against the dev glimpse, and losing it is the result: the window's ceiling is anchored to the model. Prediction 3 is directionally supported on small numbers: 4 escalation-attributed losses in total across all 12 cells, 3 of them at the bottom-edge anchor, growing from 1 at k1 to 2 at k2. Prediction 4 is confirmed a third time: GPT-4.1 binding is cheaper than advisory at both tiers, \$0.078 against \$0.112 at k1 and \$0.067 against \$0.092 at k2. Prediction 5, exploratory, shows a faint drift in the predicted direction: the peak model is Qwen at k0 and k1, then Haiku, one step stronger, at k2.
+
+\paragraph{Deviations.} The preregistration's hard gate had two conditions before any test episode: a timestamp proof that the registration tag precedes the first test commit, and a logged publish confirmation. The timestamp half was discharged, and the publish-confirmation half was waived, with the waiver recorded verbatim in the log as deviation V3-D1.
+
+\paragraph{Inference.} The window did not slide, so the question the experiment was built to answer is settled in the direction the registration bet against: the capability window is a property of the model, not of the model--task pair. Raising difficulty deepens the window for models already inside it, because their false-DONE rate rises and binding has more to convert, but it cannot drag a stronger model in, because mechanical difficulty never manufactured a false claim from a model that does not false-claim. The asymmetry sharpens the sentence: difficulty moves the window's floor, pushing edge models down toward thrashing, but it never moved the ceiling. A model strong enough not to false-claim at one bug per task remained exactly that strong at three, and gating it remained free but useless.
