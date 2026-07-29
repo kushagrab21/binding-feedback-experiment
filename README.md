@@ -6,6 +6,96 @@ The findings in one paragraph: binding lifted a weak model by 9.2 points and lef
 
 Everything below is a map: each state of the experiment has a place on disk, and each action has a command that reproduces or verifies it. Task generation and analysis are offline, and only re running the live episodes needs an API key.
 
+## Reproduce it
+
+This block replays the program in the order it actually happened, following the workflow figure. Offline steps carry full commands and expected outputs. The paid steps are marked with a key placeholder: with keys in place the live episodes re run exactly, and without them every offline claim is still checkable because the episode logs are committed.
+
+```bash
+git clone https://github.com/kushagrab21/binding-feedback-experiment.git
+cd binding-feedback-experiment
+
+# ---------- Experiment 1 ----------
+
+# state: 25 hand written Python functions
+python3 phase1_tasks/seeds/validate_seeds.py
+
+# action: copy each function and break one line
+# state: 97 buggy tasks (never edited again)
+python3 phase1_tasks/generator/generate_tasks.py
+python3 phase1_tasks/generator/validate_tasks.py
+python3 phase1_tasks/generator/freeze_hash.py
+# must print dfc14c26ec267b03c2789752cf7e63c34a06fd3b94dc6cebe14f9f70b62f2017
+
+# action: split into open and hidden
+# state: 10 open tasks and 87 hidden tasks
+shasum -a 256 phase1_tasks/validation/split.json
+# must print 6f69be75d4c1b1ea0348e7b0217ac83e7cfc8c19732a6d6d71e2ec5be9e75015
+
+# the loop machinery: the checker and the two arms, tested offline
+(cd phase2_checker && python3 -m unittest test_checker)
+(cd phase3_advisory && python3 -m unittest test_harness)
+(cd phase4_binding && python3 -m unittest test_harness)
+
+# action: run trials on the open tasks (paid step)
+export OPENAI_API_KEY="put a paid OpenAI key here to reproduce the live episodes exactly"
+python3 phase5_runs/run_pilot.py
+
+# state: written predictions (date stamped)
+# Experiment 1 registered its predictions in EXPERIMENT_LOG.md entry 5.3, before any hidden task ran
+
+# action: run every model on every hidden task in both modes (paid step)
+python3 phase5_runs/run_full.py
+
+# action: count the outcomes from the record (offline, needs no key, the logs are committed)
+# the analyze scripts print nothing on success, they rewrite the results files in place
+python3 phase6_analysis/analyze.py
+
+# ---------- Experiment 2: seven models over the same frozen tasks ----------
+
+# the registration came first: v2_ladder/PREREGISTRATION.md, locked as git tag v2-prereg
+# the five OpenRouter models need this key, the two anchors use the OpenAI key above
+export OPENROUTER_API_KEY="put a paid OpenRouter key here to reproduce the live episodes exactly"
+python3 v2_ladder/runs/run_pilot.py     # paid: trial runs on the open tasks
+python3 v2_ladder/runs/run_full.py      # paid: 1218 episodes
+
+# count the outcomes (offline, silent on success)
+python3 v2_ladder/analysis/analyze_v2.py
+
+# ---------- Experiment 3: two and three bugs composed per task ----------
+
+# state: the composed tiers, built and pinned offline from Experiment 1 bugs
+python3 v3_window/generator/compose_tasks.py
+python3 v3_window/generator/validate_k_tasks.py
+python3 v3_window/generator/freeze_hash_k.py --tier 1
+# must print FREEZE_HASH_K1 sha256 0fd7cc51ecc24e3f6a959b064ce64ac26f29ed113c639f214eb416d48bd2c23b
+python3 v3_window/generator/freeze_hash_k.py --tier 2
+# must print FREEZE_HASH_K2 sha256 0ac8644e83d3d5c21a17bccc6e32ac0d815168cfd211cabc5268e8f87f4a1a40
+
+# the dev calibration ran next and was disclosed inside the registration,
+# then the registration was locked as git tag v3-prereg
+python3 v3_window/calibration/run_calibration.py   # paid: the disclosed dev glimpse
+python3 v3_window/runs/run_full_v3.py              # paid: 1296 episodes
+
+# count the outcomes (offline, silent on success)
+python3 v3_window/analysis/analyze_v3.py
+
+# after the offline steps above nothing committed has changed: regeneration is byte identical
+git diff --stat
+# must be empty
+
+# ---------- the figures ----------
+
+(cd writeup_figures && python3 verify_data.py)
+# must print discrepancies: 0
+# the figure data is checked above, the drawings themselves can be redrawn too,
+# though the PNG bytes may differ slightly across matplotlib versions
+(cd writeup_figures && python3 plot_all.py && python3 plot_diagrams.py)
+git checkout -- writeup_figures/figures
+# restores the committed figure files if the redraw differed
+```
+
+Six commands above are paid. Everything else runs offline, and the whole live program cost under one US dollar.
+
 ## Start here
 
 1. Read this README.
