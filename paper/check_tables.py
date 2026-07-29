@@ -137,6 +137,10 @@ def exp3cells():
     got = tex_table_rows(os.path.join(HERE, "sections", "06_exp3.tex"), "tab:cells")
     if len(got) != 12:
         errors.append(f"exp3 cells: {len(got)} rows, expected 12"); return
+    got_pairs = sorted((g[0], g[1]) for g in got)
+    csv_pairs = sorted((y["model"], y["tier"]) for y in r)
+    if got_pairs != csv_pairs:
+        errors.append(f"exp3 cells: tex rows {got_pairs} != CSV rows {csv_pairs}")
     for g in got:
         m, tier = g[0], g[1]
         x = next((y for y in r if y["model"] == m and y["tier"] == tier), None)

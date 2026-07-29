@@ -1,0 +1,13 @@
+\section{Limitations}
+
+Every limitation below is drawn from the experiment ledger, and stating them here is cheaper than having a reviewer state them for us.
+
+1. \textbf{Synthetic tasks.} The corpus is single-mutation bugs, and their compositions, in short standard-library Python functions. Organic bugs from real codebases are not represented, and whether the window sits in the same place for other task families is untested.\\
+2. \textbf{The effect exists only under spec starvation.} With descriptions or docstrings visible, every model one-shots essentially every task and the modes are indistinguishable. The bare-code presentation is what makes the corpus discriminate, and this is reported as a finding about when gating matters rather than hidden as a condition, but it remains one presentation regime.\\
+3. \textbf{Possible training contamination.} The seed functions are common utilities the models have likely seen. This inflates absolute success rates but not the advisory-versus-binding difference, which is what every conclusion rests on.\\
+4. \textbf{The presentation was hardened after the pilots.} The spec-stripping steps were adopted in response to the dev-set ceiling, then registered before any test episode. They were not fixed in advance of seeing the pilots.\\
+5. \textbf{Small discordant bases.} Experiment 1's effect rests on 8 tasks concentrated in one bug class, and Experiment 3's escalation finding rests on 4 events. The large and repeated effects, such as the window models' $\Delta$ at k1 and k2, do not share this fragility, but the fine-grained claims do.\\
+6. \textbf{The ceiling is one model from one provider.} Every statement about the window's upper edge rests on GPT-4.1. A different frontier model could in principle false-claim under composition.\\
+7. \textbf{Capability rank is imported, not measured.} The ladder order comes from published benchmarks combined by a fixed rule, which avoids circularity at the cost of trusting external scores.\\
+8. \textbf{The difficulty axis is bug count only.} Three points were measured, at 1, 2, and 3 bugs. Harder in this program means more independent mechanical faults, not novel bug families, longer programs, or missing information of a different kind, and the composed tasks are multi-label in the bug-type breakdowns.\\
+9. \textbf{Operational scars are logged.} Two Experiment 2 cells were re-run under a hard deadline after provider hangs, the checker's guard is a static filter rather than an OS-level sandbox, and one half of Experiment 3's publish gate was waived, recorded verbatim as a deviation.
