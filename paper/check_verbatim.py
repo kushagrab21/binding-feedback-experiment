@@ -36,6 +36,7 @@ def extract_section(source_path, heading):
 def detex(tex_path):
     t = open(tex_path, encoding="utf-8").read()
     t = re.sub(r"(?<!\\)%.*", "", t)                       # comments
+    t = re.sub(r"\\begin\{table\}.*?\\end\{table\}", " ", t, flags=re.S)
     t = re.sub(r"\\(section|subsection)\*?\{[^}]*\}", " ", t)
     t = re.sub(r"\\paragraph\*?\{([^}]*)\}", r"\1", t)
     t = re.sub(r"\\(textbf|textit|emph|texttt|url|mbox)\{([^}]*)\}", r"\2", t)
@@ -44,8 +45,9 @@ def detex(tex_path):
     t = re.sub(r"\\label\{[^}]*\}", " ", t)
     t = re.sub(r"\\(begin|end)\{[^}]*\}(\[[^\]]*\])?", " ", t)
     t = t.replace("\\%", "%").replace("\\&", "&").replace("\\_", "_").replace("\\#", "#")
-    t = t.replace("\\$", "$")
+    t = t.replace("\\$", "\x00")                            # protect literal dollars
     t = re.sub(r"\$([^$]*)\$", r"\1", t)                    # inline math to its content
+    t = t.replace("\x00", "$")
     t = t.replace("\\times", "×").replace("\\Delta", "Δ").replace("\\rho", "rho")
     t = t.replace("---", "—").replace("--", "–")
     t = t.replace("``", '"').replace("''", '"')
@@ -59,6 +61,8 @@ def normalize(s):
     s = s.replace("\u201c", '"').replace("\u201d", '"')
     s = s.replace("\u2013", "-").replace("\u2014", "-").replace("\u2212", "-")
     s = s.replace("\ufb01", "fi").replace("\ufb02", "fl")
+    for d, r in zip("\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079", "0123456789"):
+        s = s.replace(d, "^" + r)
     s = re.sub(r"\s+", " ", s).strip()
     return s.split(" ")
 
@@ -82,6 +86,8 @@ def main():
             old, sep, new = line.partition(">>>")
             if not sep:
                 sys.exit(f"bad exception line: {line!r}")
+            old = old.replace("\\n", "\n")
+            new = new.replace("\\n", "\n")
             if old not in src:
                 sys.exit(f"exception OLD text not found in source: {old!r}")
             src = src.replace(old, new)

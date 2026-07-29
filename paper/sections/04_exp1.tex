@@ -1,0 +1,48 @@
+\section{Experiment 1: the interaction}
+
+\paragraph{Results.} The rows of the table are the two models, weak (gpt-4o-mini) and strong (gpt-4.1), and the columns are the two modes, with each cell showing the number of tasks solved out of 87.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\toprule
+ & advisory & binding & $\Delta$ (binding $-$ advisory)\\
+\midrule
+weak (gpt-4o-mini) & 79/87 (90.8\%) & 87/87 (100\%) & +9.2 pp\\
+strong (gpt-4.1) & 87/87 (100\%) & 87/87 (100\%) & +0.0 pp\\
+\bottomrule
+\end{tabular}
+\caption{Experiment 1 success rates. Source: \texttt{phase6\_analysis/results.md}, regenerated deterministically from the committed logs.}
+\label{tab:exp1}
+\end{table}
+
+\paragraph{Reading the table.} Three of the four cells sit at 100\%, so the experiment effectively lives in the weak-advisory cell, which loses 8 tasks. Since the effect of mode clearly depends on which model it is applied to, the two factors are coupled, and the correct summary of the table is their interaction rather than either factor alone.
+
+\paragraph{Interaction term.} It is defined as the difference of differences, which here is 9.2 $-$ 0.0 = +9.2 percentage points. Binding helps the weak model, and does nothing measurable for the strong one.
+
+\paragraph{Statistical test.}
+
+\emph{Definition.} Both arms ran the same 87 tasks, so each task has a pair of outcomes, one from advisory and one from binding. A task where both modes succeed, or both fail, tells us nothing about the difference between the modes, so the test uses only the tasks where the two modes disagree. There are two directions of disagreement: b is the count of tasks solved in advisory but failed in binding, and c is the count of tasks solved in binding but failed in advisory. The null hypothesis is that mode has no effect on outcomes. If that is true, then each disagreement is equally likely to fall in either direction, with probability one half, and the probability of observing a split as extreme as (b, c) is given by the exact binomial distribution. This is the McNemar test.
+
+\emph{Calculation.} For the weak model, the observed split is b = 0 and c = 8, and the probability of all eight disagreements falling on one side of a fair coin is p = 2 $\times$ $(1/2)^8$ = 0.0078. For the strong model, b = 0 and c = 0, so there are no disagreements and no test to run.
+
+\emph{Inference.} The p-value of 0.0078 rejects the null hypothesis for the weak model, so the mode difference is statistically real and not a chance pattern across 8 tasks. The value b = 0 adds a separate fact: binding never lost a single task that advisory had solved, so the improvement came without any losses. For the strong model, the absence of disagreements means the two modes were behaviorally identical.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{fig1_experiment1_2x2.png}
+\caption{Experiment 1 success rate by model and mode. Drawn by \texttt{writeup\_figures/plot\_all.py} from \texttt{writeup\_figures/data/exp1\_results.csv}.}
+\label{fig:exp1}
+\end{figure}
+
+\paragraph{Failure breakdown.} When the weak-advisory cell is broken down by bug type, a single class accounts for 6 of the 8 failures: missing-edge-case bugs, solved 9/15 in advisory against 15/15 in binding. This class deletes a guard whose requirement was documented only in the docstring that the presentation strips, so the failures concentrate exactly where the withheld specification mattered most.
+
+\paragraph{Interpreting the failures.} A reviewer may object that a corpus the weak model fully solves under binding must be too easy to be informative. The objection misses what the ceiling establishes: binding at 100\% demonstrates that every task was within the model's ability to solve under this harness, so the 8 advisory failures were not tasks the model could not do, they were tasks on which it quit while wrong. On a harder corpus, failures of ability and failures of judgment would mix together, and no later analysis could separate them, which is why the easy corpus works as an isolation mechanism rather than a weakness.
+
+\paragraph{Breakdown of the rescues.} The 8 rescues are not all of one kind. In 6 of them binding produced a genuine forced repair, meaning a FAILED verdict followed by a changed submission that passed. In the remaining 2, binding's first submission happened to pass while advisory's first draft on the same task false-DONEd, which is sampling variance at temperature 0 rather than iteration. The +9.2 pp therefore carries a small stochastic component, and it is reported rather than rounded away.
+
+\paragraph{The strong model.} The strong model was not spared failing verdicts, as it hit FAILED mid-episode on 6 tasks in advisory. It then iterated to a passing solution before declaring done in every case, averaging 2.02 steps per task against the weak model's 1.20. A model that already waits for green before claiming leaves binding nothing to catch.
+
+\paragraph{Contribution of the three rules.} Binding consists of three rules, but identical-resubmission rejection and escalation never fired across all 348 episodes. The entire effect therefore comes from computed completion alone, the rule that the model may not quit while the checker is red.
+
+\paragraph{Cost.} For the strong model, binding was also 31\% cheaper, \$0.107 against \$0.155, because binding ends the moment the checker passes while advisory spends additional tokens composing its declaration. The same cost pattern reappears in both later experiments.

@@ -1,0 +1,3 @@
+# the PDF extraction of the 2x2 table, removed: the table is typeset from
+# writeup_figures/data/exp1_results.csv and verified by check_tables.py
+advisory\n\nbinding\n\nΔ (binding − advisory)\n\nweak (gpt-4o-mini)\n\n79/87 (90.8%)\n\n87/87 (100%)\n\n+9.2 pp\n\nstrong (gpt-4.1)\n\n87/87 (100%)\n\n87/87 (100%)\n\n+0.0 pp\n>>>
