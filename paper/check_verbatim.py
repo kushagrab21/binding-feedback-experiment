@@ -43,6 +43,8 @@ def detex(tex_path):
     t = re.sub(r"\\(section|subsection)\*?\{[^}]*\}", " ", t)
     t = re.sub(r"\\paragraph\*?\{([^}]*)\}", r"\1", t)
     t = re.sub(r"\\(textbf|textit|emph|texttt|url|mbox)\{([^}]*)\}", r"\2", t)
+    # citation markers point at the references section and are not prose
+    t = re.sub(r"~?\\cite\{[^}]*\}", " ", t)
     t = re.sub(r"\\includegraphics(\[[^\]]*\])?\{[^}]*\}", " ", t)
     t = re.sub(r"\\caption\{[^}]*\}", " ", t)
     t = re.sub(r"\\label\{[^}]*\}", " ", t)

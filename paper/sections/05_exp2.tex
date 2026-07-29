@@ -4,7 +4,7 @@
 
 \paragraph{Preconditions:} Experiment 2 runs seven models: Llama-3.2-3B, Llama-3.1-8B, Qwen2.5-7B, Claude-3-Haiku, GPT-4o-mini, Gemini-2.5-Flash-Lite, and GPT-4.1, of which the last two are carried over from Experiment 1 as anchors, and each is pinned to an exact snapshot ID. No other condition changes. The corpus, the dev-test split, the bare-code presentation, the prompts, the harness rules, the checker, temperature 0, and step cap 8 are all inherited from Experiment 1 and hash-verified before the run. The scale follows from the design: 7 models × 2 modes × 87 test tasks = 1,218 episodes, all committed with zero errors. Because everything except the model is held fixed, any change in $\Delta$ across the ladder is attributable to capability alone.
 
-\paragraph{The capability ranking:} The seven models must be placed on a capability axis before the experiment runs. The ranking uses two published sources, snapshotted on a fixed date before any episode: the LMArena Chatbot Arena Elo score and the MMLU (5-shot) score reported on each vendor's official model card. The combining rule is fixed and mechanical. Within each source, models are ranked 1 for the strongest upward in order of that source's score. Each model's composite score is the mean of its per-source ranks, and a model absent from a source is ranked only on the sources that list it, which applies to Qwen2.5-7B since it was absent from the Elo snapshot. The ladder is ordered by ascending composite score, and any tie would be broken by the Elo rank. No tie arose.
+\paragraph{The capability ranking:} The seven models must be placed on a capability axis before the experiment runs. The ranking uses two published sources, snapshotted on a fixed date before any episode: the LMArena Chatbot Arena Elo score~\cite{chiang2024} and the MMLU (5-shot) score~\cite{hendrycks2021} reported on each vendor's official model card. The combining rule is fixed and mechanical. Within each source, models are ranked 1 for the strongest upward in order of that source's score. Each model's composite score is the mean of its per-source ranks, and a model absent from a source is ranked only on the sources that list it, which applies to Qwen2.5-7B since it was absent from the Elo snapshot. The ladder is ordered by ascending composite score, and any tie would be broken by the Elo rank. No tie arose.
 
 The resulting order, from strongest to weakest:
 
@@ -58,7 +58,7 @@ rank & model & advisory & binding & $\Delta$ (pp) & b & c & exact p\\
 
 \paragraph{Statistical test:}
 
-\emph{Definition:} Prediction 2 claims a monotone relation between $\Delta$ and capability rank. The Spearman rank correlation measures exactly this: it is +1 when $\Delta$ only rises as rank weakens, $-$1 when $\Delta$ only falls, and near 0 when there is no consistent direction. The test is one-sided in the registered direction, and the p-value is exact, computed by comparing the observed correlation against all 5,040 possible orderings of 7 ranks.
+\emph{Definition:} Prediction 2 claims a monotone relation between $\Delta$ and capability rank. The Spearman rank correlation~\cite{spearman1904} measures exactly this: it is +1 when $\Delta$ only rises as rank weakens, $-$1 when $\Delta$ only falls, and near 0 when there is no consistent direction. The test is one-sided in the registered direction, and the p-value is exact, computed by comparing the observed correlation against all 5,040 possible orderings of 7 ranks.
 
 \emph{Calculation:} The observed correlation is rho = $-$0.13 with p = 0.62.
 
