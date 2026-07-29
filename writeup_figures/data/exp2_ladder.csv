@@ -1,0 +1,8 @@
+rank,model,advisory_solved,binding_solved,total,delta_pp,b,c,mcnemar_p,adv_true_done,adv_false_done,adv_cap_pass,adv_cap_fail,bind_solved,bind_escalated,bind_step_cap,forced_repairs,first_sample,resub_rejected
+1,GPT-4.1,87,87,87,0.0,0,0,1,87,0,0,0,87,0,0,0,0,0
+2,Gemini-2.5-Flash-Lite,79,87,87,9.2,0,8,0.0078125,79,8,0,0,87,0,0,5,3,1
+3,GPT-4o-mini,79,87,87,9.2,0,8,0.0078125,79,8,0,0,87,0,0,6,2,0
+4,Claude-3-Haiku,72,82,87,11.5,2,12,0.0129395,72,15,0,0,82,4,1,10,2,10
+5,Qwen2.5-7B,71,84,87,14.9,0,13,0.000244141,71,16,0,0,84,3,0,12,1,7
+6,Llama-3.1-8B,80,82,87,2.3,3,5,0.726562,80,4,0,3,82,2,3,5,0,13
+7,Llama-3.2-3B,66,63,87,-3.4,9,6,0.607239,56,1,10,20,63,10,14,2,4,37
