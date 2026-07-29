@@ -1,10 +1,10 @@
 \section{Experiment 2: the capability ladder}
 
-\paragraph{Bridge from Experiment 1.} Experiment 1 produced a 2×2 table, which for the capability question is just two points: a weak model helped by +9.2 pp and a strong model unchanged. Two points can always be connected by a line, and the line suggested here is a tempting one: the weaker the model, the larger the binding advantage. If that line were real, binding would be a general safety net, and the frailer the model the more one would gain by bolting it on. Experiment 2 was built to test the line. The design follows directly: keep the dataset and every harness condition exactly as they were, pass multiple models of graded capability through the same tasks, and place each model's $\Delta$ = success(binding) $-$ success(advisory) on a capability axis. The registered expectation was monotone: $\Delta$ should only rise as capability falls.
+\paragraph{Bridge from Experiment 1:} Experiment 1 produced a 2×2 table, which for the capability question is just two points: a weak model helped by +9.2 pp and a strong model unchanged. Two points can always be connected by a line, and the line suggested here is a tempting one: the weaker the model, the larger the binding advantage. If that line were real, binding would be a general safety net, and the frailer the model the more one would gain by bolting it on. Experiment 2 was built to test the line. The design follows directly: keep the dataset and every harness condition exactly as they were, pass multiple models of graded capability through the same tasks, and place each model's $\Delta$ = success(binding) $-$ success(advisory) on a capability axis. The registered expectation was monotone: $\Delta$ should only rise as capability falls.
 
-\paragraph{Preconditions.} Experiment 2 runs seven models: Llama-3.2-3B, Llama-3.1-8B, Qwen2.5-7B, Claude-3-Haiku, GPT-4o-mini, Gemini-2.5-Flash-Lite, and GPT-4.1, of which the last two are carried over from Experiment 1 as anchors, and each is pinned to an exact snapshot ID. No other condition changes. The corpus, the dev-test split, the bare-code presentation, the prompts, the harness rules, the checker, temperature 0, and step cap 8 are all inherited from Experiment 1 and hash-verified before the run. The scale follows from the design: 7 models × 2 modes × 87 test tasks = 1,218 episodes, all committed with zero errors. Because everything except the model is held fixed, any change in $\Delta$ across the ladder is attributable to capability alone.
+\paragraph{Preconditions:} Experiment 2 runs seven models: Llama-3.2-3B, Llama-3.1-8B, Qwen2.5-7B, Claude-3-Haiku, GPT-4o-mini, Gemini-2.5-Flash-Lite, and GPT-4.1, of which the last two are carried over from Experiment 1 as anchors, and each is pinned to an exact snapshot ID. No other condition changes. The corpus, the dev-test split, the bare-code presentation, the prompts, the harness rules, the checker, temperature 0, and step cap 8 are all inherited from Experiment 1 and hash-verified before the run. The scale follows from the design: 7 models × 2 modes × 87 test tasks = 1,218 episodes, all committed with zero errors. Because everything except the model is held fixed, any change in $\Delta$ across the ladder is attributable to capability alone.
 
-\paragraph{The capability ranking.} The seven models must be placed on a capability axis before the experiment runs. The ranking uses two published sources, snapshotted on a fixed date before any episode: the LMArena Chatbot Arena Elo score and the MMLU (5-shot) score reported on each vendor's official model card. The combining rule is fixed and mechanical. Within each source, models are ranked 1 for the strongest upward in order of that source's score. Each model's composite score is the mean of its per-source ranks, and a model absent from a source is ranked only on the sources that list it, which applies to Qwen2.5-7B since it was absent from the Elo snapshot. The ladder is ordered by ascending composite score, and any tie would be broken by the Elo rank. No tie arose.
+\paragraph{The capability ranking:} The seven models must be placed on a capability axis before the experiment runs. The ranking uses two published sources, snapshotted on a fixed date before any episode: the LMArena Chatbot Arena Elo score and the MMLU (5-shot) score reported on each vendor's official model card. The combining rule is fixed and mechanical. Within each source, models are ranked 1 for the strongest upward in order of that source's score. Each model's composite score is the mean of its per-source ranks, and a model absent from a source is ranked only on the sources that list it, which applies to Qwen2.5-7B since it was absent from the Elo snapshot. The ladder is ordered by ascending composite score, and any tie would be broken by the Elo rank. No tie arose.
 
 The resulting order, from strongest to weakest:
 
@@ -18,7 +18,7 @@ The resulting order, from strongest to weakest:
 
 The ranking was computed this way for one reason. The experiment plots $\Delta$ against capability, so capability must be measured independently of the experiment's own data. If the models were ranked by their success on our tasks, the curve would be our data plotted against itself. Using external published benchmarks, combined by a rule stated in advance and locked with a git tag before the first episode, makes the x-axis independent of everything the experiment later measures.
 
-\paragraph{Predictions.} Five predictions were registered and locked before the first episode. The first four are confirmatory and the fifth is explicitly exploratory.
+\paragraph{Predictions:} Five predictions were registered and locked before the first episode. The first four are confirmatory and the fifth is explicitly exploratory.
 
 1. $\Delta \geq 0$ for every model, meaning binding never hurts.\\
 2. $\Delta$ decreases with capability, tested as a one-sided Spearman correlation against the fixed ranking.\\
@@ -26,7 +26,7 @@ The ranking was computed this way for one reason. The experiment plots $\Delta$ 
 4. For any model at the advisory ceiling, binding total cost is at most advisory total cost.\\
 5. Exploratory: $\Delta$ may reverse at the weak end, because a model can be too weak to rescue. If observed, this defines a capability window for completion gating.
 
-\paragraph{Results.} The main table has one row per model, ordered strongest to weakest by the locked ranking, with each cell showing tasks solved out of 87. The columns b and c are the paired disagreement counts defined in Experiment 1, and p is the exact McNemar value.
+\paragraph{Results:} The main table has one row per model, ordered strongest to weakest by the locked ranking, with each cell showing tasks solved out of 87. The columns b and c are the paired disagreement counts defined in Experiment 1, and p is the exact McNemar value.
 
 \begin{table}[h]
 \centering
@@ -47,28 +47,35 @@ rank & model & advisory & binding & $\Delta$ (pp) & b & c & exact p\\
 \label{tab:ladder}
 \end{table}
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{fig2_capability_window.png}
 \caption{The capability window: the three regimes as shaded bands, filled dots for McNemar-significant rungs. Drawn by \texttt{writeup\_figures/plot\_all.py} from \texttt{writeup\_figures/data/exp2\_ladder.csv}.}
 \label{fig:window}
 \end{figure}
 
-\paragraph{Reading the curve.} The registered expectation was that $\Delta$ rises steadily as models weaken. The observed curve does something else. $\Delta$ starts at zero for the strongest model, rises through the middle of the ladder, peaks at Qwen2.5-7B with +14.9, then collapses at the weak end and crosses below zero at the weakest rung, where binding makes the model worse by 3.4 points. The shape is a window with a ceiling and a floor, not a slope.
+\paragraph{Reading the curve:} The registered expectation was that $\Delta$ rises steadily as models weaken. The observed curve does something else. $\Delta$ starts at zero for the strongest model, rises through the middle of the ladder, peaks at Qwen2.5-7B with +14.9, then collapses at the weak end and crosses below zero at the weakest rung, where binding makes the model worse by 3.4 points. The shape is a window with a ceiling and a floor, not a slope.
 
-\paragraph{Statistical test.}
+\paragraph{Statistical test:}
 
-\emph{Definition.} Prediction 2 claims a monotone relation between $\Delta$ and capability rank. The Spearman rank correlation measures exactly this: it is +1 when $\Delta$ only rises as rank weakens, $-$1 when $\Delta$ only falls, and near 0 when there is no consistent direction. The test is one-sided in the registered direction, and the p-value is exact, computed by comparing the observed correlation against all 5,040 possible orderings of 7 ranks.
+\emph{Definition:} Prediction 2 claims a monotone relation between $\Delta$ and capability rank. The Spearman rank correlation measures exactly this: it is +1 when $\Delta$ only rises as rank weakens, $-$1 when $\Delta$ only falls, and near 0 when there is no consistent direction. The test is one-sided in the registered direction, and the p-value is exact, computed by comparing the observed correlation against all 5,040 possible orderings of 7 ranks.
 
-\emph{Calculation.} The observed correlation is rho = $-$0.13 with p = 0.62.
+\emph{Calculation:} The observed correlation is rho = $-$0.13 with p = 0.62.
 
-\emph{Inference.} The prediction is not confirmed, and the correlation is slightly negative, which is the wrong sign. The cause is visible in the results table: the trend holds from rank 1 to rank 5 and then reverses at ranks 6 and 7, so the weak end breaks the monotone story. Per rung, the McNemar values show the middle of the ladder is individually significant, with p from 0.013 down to 0.00024, while neither weak rung is.
+\emph{Inference:} The prediction is not confirmed, and the correlation is slightly negative, which is the wrong sign. The cause is visible in the results table: the trend holds from rank 1 to rank 5 and then reverses at ranks 6 and 7, so the weak end breaks the monotone story. Per rung, the McNemar values show the middle of the ladder is individually significant, with p from 0.013 down to 0.00024, while neither weak rung is.
 
-\paragraph{Scoring the predictions.} Prediction 1 is disconfirmed, since $\Delta$ is negative at the weakest rung. Prediction 2 is disconfirmed by the Spearman test above. Prediction 3 is disconfirmed, since the false-DONE counts form a hump rather than a slope, as shown below. Prediction 4 is confirmed at the one rung where it can be tested, since GPT-4.1 is the only model at advisory ceiling. Prediction 5, the exploratory one, is observed, and it names the finding: a capability window. Three of four confirmatory predictions failed, and reporting them as failures rather than adjusting them afterwards is what the preregistration was for.
+\paragraph{Scoring the predictions:} Prediction 1 is disconfirmed, since $\Delta$ is negative at the weakest rung. Prediction 2 is disconfirmed by the Spearman test above. Prediction 3 is disconfirmed, since the false-DONE counts form a hump rather than a slope, as shown below. Prediction 4 is confirmed at the one rung where it can be tested, since GPT-4.1 is the only model at advisory ceiling. Prediction 5, the exploratory one, is observed, and it names the finding: a capability window. Three of four confirmatory predictions failed, and reporting them as failures rather than adjusting them afterwards is what the preregistration was for.
 
-\paragraph{Exit classification.} Every episode ends at exactly one exit. Advisory has four end states: the model declares done and the code passes (true-DONE), the model declares done and the code fails (false-DONE), the step cap is reached with passing code the model never recognized (cap, code passing), and the step cap is reached with failing code (cap, code failing). Binding has three: the checker passes (solved), three identical failed submissions (escalated), and the step budget runs out (step cap). Each mode's columns sum to 87.
+\paragraph{Exit classification:} Every episode ends at exactly one exit. Advisory has four end states: the model declares done and the code passes (true-DONE), the model declares done and the code fails (false-DONE), the step cap is reached with passing code the model never recognized (cap, code passing), and the step cap is reached with failing code (cap, code failing). Binding has three: the checker passes (solved), three identical failed submissions (escalated), and the step budget runs out (step cap). Each mode's columns sum to 87.
 
-\begin{table}[h]
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{fig5_exit_trees.png}
+\caption{Episode exits under the two modes, as decision trees. Drawn by \texttt{writeup\_figures/plot\_diagrams.py}.}
+\label{fig:exits}
+\end{figure}
+
+\begin{table}[H]
 \centering
 \small
 \setlength{\tabcolsep}{4.5pt}
@@ -91,14 +98,7 @@ Llama-3.2-3B & 56 & 1 & 10 & 20 & 63 & 10 & 14 & $-$3.4\\
 \label{tab:exits}
 \end{table}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\textwidth]{fig5_exit_trees.png}
-\caption{Episode exits under the two modes, as decision trees. Drawn by \texttt{writeup\_figures/plot\_diagrams.py}.}
-\label{fig:exits}
-\end{figure}
-
-\paragraph{Patterns in the table.} Reading each column down the ladder, from strongest model to weakest, three number series form the section's findings.
+\paragraph{Patterns in the table:} Reading each column down the ladder, from strongest model to weakest, three number series form the section's findings.
 
 The false-DONE series is 0, 8, 8, 15, 16, 4, 1. The pattern is a hump: false claiming is absent at the top, frequent in the middle, and nearly absent again at the bottom. The inference is that confident wrong completion is a mid-capability phenomenon, since it requires enough capability to construct a plausible answer and claim it, which the weakest models do not reach.
 
@@ -106,14 +106,14 @@ The $\Delta$ series is +0.0, +9.2, +9.2, +11.5, +14.9, +2.3, $-$3.4. The pattern
 
 The advisory step cap series, taking both cap columns together, is 0, 0, 0, 0, 0, 3, 30. The pattern is a floor signature: step capping appears only at the weak end and explodes at the weakest rung. The inference is that the weakest model fails by thrashing rather than by false claiming, including 10 episodes where it had already written passing code and did not recognize it, and for a thrashing model binding's forced iteration adds failure exits instead of rescues.
 
-\paragraph{The floor.} The weakest model is the one binding hurts, and the mechanism is visible in its exits. Binding lost 9 tasks that advisory had solved: 5 ended escalated after three identical failed submissions and 4 burned all eight steps still failing. Forced iteration helps a model whose next attempt can be better, but for a model that thrashes, extra forced turns are extra chances to trip the harness machinery. Two binding rules that stayed dormant through all of Experiment 1 came alive at the weak end here: identical-resubmission rejection fired 37 times for Llama-3.2-3B, and escalation ended 10 of its episodes. The statement from Experiment 1 that only computed completion ever fires is therefore true of Experiment 1 only, and the first recorded contribution of the other two rules was harm.
+\paragraph{The floor:} The weakest model is the one binding hurts, and the mechanism is visible in its exits. Binding lost 9 tasks that advisory had solved: 5 ended escalated after three identical failed submissions and 4 burned all eight steps still failing. Forced iteration helps a model whose next attempt can be better, but for a model that thrashes, extra forced turns are extra chances to trip the harness machinery. Two binding rules that stayed dormant through all of Experiment 1 came alive at the weak end here: identical-resubmission rejection fired 37 times for Llama-3.2-3B, and escalation ended 10 of its episodes. The statement from Experiment 1 that only computed completion ever fires is therefore true of Experiment 1 only, and the first recorded contribution of the other two rules was harm.
 
-\paragraph{The window interior.} The models in the middle of the ladder share a specific profile: capable enough to produce a plausible wrong answer and declare it done, and capable enough to repair once the claim is refused. Both halves are visible in the logs. Qwen's 13 rescues contain 12 genuine forced repairs, meaning a FAILED verdict followed by a changed submission that passed, and Haiku's 12 contain 10, so the middle of the ladder is rescued by real iteration rather than sampling luck. The rescued tasks concentrate again in missing-edge-case bugs, 8 of Qwen's 13 and 6 of Haiku's 12, the same specification-carrying class as Experiment 1.
+\paragraph{The window interior:} The models in the middle of the ladder share a specific profile: capable enough to produce a plausible wrong answer and declare it done, and capable enough to repair once the claim is refused. Both halves are visible in the logs. Qwen's 13 rescues contain 12 genuine forced repairs, meaning a FAILED verdict followed by a changed submission that passed, and Haiku's 12 contain 10, so the middle of the ladder is rescued by real iteration rather than sampling luck. The rescued tasks concentrate again in missing-edge-case bugs, 8 of Qwen's 13 and 6 of Haiku's 12, the same specification-carrying class as Experiment 1.
 
-\paragraph{Replication.} GPT-4o-mini reproduces its Experiment 1 result exactly, +9.2 with b = 0 and c = 8, and GPT-4.1 reproduces its zero. Gemini-2.5-Flash-Lite, from a different provider, lands on the same +9.2 with the same split.
+\paragraph{Replication:} GPT-4o-mini reproduces its Experiment 1 result exactly, +9.2 with b = 0 and c = 8, and GPT-4.1 reproduces its zero. Gemini-2.5-Flash-Lite, from a different provider, lands on the same +9.2 with the same split.
 
-\paragraph{Cost.} Prediction 4 holds at the ceiling: GPT-4.1 under binding cost \$0.104 against \$0.157 under advisory, cheaper by a third, for the same structural reason as in Experiment 1. One economic observation follows: Qwen2.5-7B under binding reaches 84/87, three tasks short of GPT-4.1, at roughly 2\% of GPT-4.1's advisory cost.
+\paragraph{Cost:} Prediction 4 holds at the ceiling: GPT-4.1 under binding cost \$0.104 against \$0.157 under advisory, cheaper by a third, for the same structural reason as in Experiment 1. One economic observation follows: Qwen2.5-7B under binding reaches 84/87, three tasks short of GPT-4.1, at roughly 2\% of GPT-4.1's advisory cost.
 
-\paragraph{Deviations.} Two of the 14 cells stalled mid-run on slow provider connections and were re-run to completion under a hard per-episode deadline. The interruption is recorded as a logged deviation, and all 1,218 episode logs are schema-identical.
+\paragraph{Deviations:} Two of the 14 cells stalled mid-run on slow provider connections and were re-run to completion under a hard per-episode deadline. The interruption is recorded as a logged deviation, and all 1,218 episode logs are schema-identical.
 
-\paragraph{Inference.} The line drawn from Experiment 1 is dead. Binding is not a safety net that pays more the weaker the model. It pays inside a window: below the ceiling, because a model at ceiling never false-claims, and above the floor, because a model that cannot iterate on feedback is not rescued by being forced to iterate. The value of the gate tracks the false-DONE rate, and false claiming is a mid-capability phenomenon. This raises the question Experiment 3 exists to answer: is the window a property of the model, or of the model and task together? If task difficulty rises, does the window slide up the capability axis?
+\paragraph{Inference:} The line drawn from Experiment 1 is dead. Binding is not a safety net that pays more the weaker the model. It pays inside a window: below the ceiling, because a model at ceiling never false-claims, and above the floor, because a model that cannot iterate on feedback is not rescued by being forced to iterate. The value of the gate tracks the false-DONE rate, and false claiming is a mid-capability phenomenon. This raises the question Experiment 3 exists to answer: is the window a property of the model, or of the model and task together? If task difficulty rises, does the window slide up the capability axis?

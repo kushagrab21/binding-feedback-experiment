@@ -2,7 +2,7 @@
 
 This repository holds three preregistered experiments on one question: when an LLM agent repairs code in a loop with a checker, does it matter who holds the authority to call the task done. In advisory mode the model may declare the task done and the declaration is believed, while in binding mode the declaration is ignored and the episode ends as solved only when the checker passes the code.
 
-The findings in one paragraph: binding lifted a weak model by 9.2 points and left a strong model unchanged. Across a seven model ladder the gain is a window: it peaks in the middle at +14.9 points, it is zero at the strongest model, and it turns negative at the weakest model. Raising task difficulty by composing two and three bugs roughly doubled the window but never moved its ceiling. The full write up is in `docs/writeup_draft.pdf`.
+The findings in one paragraph: binding lifted a weak model by 9.2 points and left a strong model unchanged. Across a seven model ladder the gain is a window: it peaks in the middle at +14.9 points, it is zero at the strongest model, and it turns negative at the weakest model. Raising task difficulty by composing two and three bugs roughly doubled the window but never moved its ceiling. The full write up is in `paper/main.pdf`, and its LaTeX source lives in `paper/` together with the checkers that verify its text and tables against this repository.
 
 Everything below is a map: each state of the experiment has a place on disk, and each action has a command that reproduces or verifies it. Task generation and analysis are offline, and only re running the live episodes needs an API key.
 

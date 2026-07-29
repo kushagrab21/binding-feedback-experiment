@@ -43,7 +43,7 @@ def fig1():
     ax.set_ylim(0, 128); ax.set_yticks([0, 25, 50, 75, 100])
     ax.set_xticks(x, labels)
     ax.set_ylabel("test tasks solved (%)")
-    ax.set_title("Experiment 1 — success rate by model and mode", pad=14)
+    ax.set_title("Experiment 1: success rate by model and mode", pad=14)
     ax.grid(axis="x", visible=False)
     for rect, pct, n in zip(list(b1)+list(b2), adv+bnd, ca+cb):
         cx = rect.get_x() + rect.get_width()/2

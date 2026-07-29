@@ -37,6 +37,9 @@ def detex(tex_path):
     t = open(tex_path, encoding="utf-8").read()
     t = re.sub(r"(?<!\\)%.*", "", t)                       # comments
     t = re.sub(r"\\begin\{table\}.*?\\end\{table\}", " ", t, flags=re.S)
+    # run-in headings and list labels end with a colon in the tex where the
+    # source text ends them with a full stop: an approved presentation change
+    t = re.sub(r"(\\(?:paragraph\*?|textbf|textit|emph)\{[^}]*):\}", r"\1.}", t)
     t = re.sub(r"\\(section|subsection)\*?\{[^}]*\}", " ", t)
     t = re.sub(r"\\paragraph\*?\{([^}]*)\}", r"\1", t)
     t = re.sub(r"\\(textbf|textit|emph|texttt|url|mbox)\{([^}]*)\}", r"\2", t)

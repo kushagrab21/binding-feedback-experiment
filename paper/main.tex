@@ -6,11 +6,27 @@
 \usepackage{microtype}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{float}
 \usepackage{parskip}
 \usepackage{xcolor}
 \definecolor{bindingblue}{HTML}{1668A1}
 \usepackage[colorlinks=true,allcolors=bindingblue]{hyperref}
 \graphicspath{{../writeup_figures/figures/}}
+
+% tighter spacing: run-in headings sit closer to their text, less vertical
+% air above them, and math relations spaced like ordinary words
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+  {1.25ex \@plus .5ex \@minus .2ex}%
+  {-0.5em}%
+  {\normalfont\normalsize\bfseries}}
+\makeatother
+\thickmuskip=3mu plus 2mu
+\medmuskip=3mu plus 1mu minus 2mu
+\frenchspacing
+\makeatletter
+\renewcommand\@seccntformat[1]{\csname the#1\endcsname\hspace{0.6em}}
+\makeatother
 
 \title{\LARGE Who Decides When the Task Is Done?\\[3pt]\large Measuring the Effect of Moving Completion Authority\\from LLMs to Checkers}
 \author{Kushagra Bhatnagar\\
